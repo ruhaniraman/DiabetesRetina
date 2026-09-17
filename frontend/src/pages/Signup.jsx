@@ -1,187 +1,155 @@
 import React, { useState } from 'react';
-import { FiUser, FiMail, FiLock, FiEye, FiArrowRight, FiShield, FiGlobe, FiBriefcase } from 'react-icons/fi';
 
-export default function Signup({ onSignup, onSwitchToLogin, lang = 'en', setLang }) {
-  const [formData, setFormData] = useState({
-    fullName: '',
-    email: '',
-    role: 'Ophthalmologist',
-    password: '',
-    confirmPassword: ''
-  });
-  const [showPassword, setShowPassword] = useState(false);
-
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
+export default function Signup({ onSignup, onGoToLogin }) {
+  const [fullName, setFullName] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (onSignup) onSignup(formData);
+    onSignup();
   };
 
   return (
-    <div className="min-h-screen bg-[#f4f5f8] text-slate-800 font-sans p-4 md:p-6 flex items-center justify-center relative select-none">
-      
-      {/* Top Right Language Switcher Pill */}
-      <div className="absolute top-6 right-6 flex items-center bg-white border border-slate-200/80 rounded-2xl p-1 shadow-sm text-xs font-semibold">
-        <FiGlobe className="ml-3 mr-1 text-slate-400" />
-        <button 
-          type="button"
-          onClick={() => setLang && setLang('en')} 
-          className={`px-3 py-1.5 rounded-xl transition ${lang === 'en' ? 'bg-slate-900 text-white' : 'text-slate-500 hover:text-slate-900'}`}
-        >
-          EN
-        </button>
-        <button 
-          type="button"
-          onClick={() => setLang && setLang('hi')} 
-          className={`px-3 py-1.5 rounded-xl transition ${lang === 'hi' ? 'bg-slate-900 text-white' : 'text-slate-500 hover:text-slate-900'}`}
-        >
-          हिंदी
-        </button>
-        <button 
-          type="button"
-          onClick={() => setLang && setLang('kn')} 
-          className={`px-3 py-1.5 rounded-xl transition ${lang === 'kn' ? 'bg-slate-900 text-white' : 'text-slate-500 hover:text-slate-900'}`}
-        >
-          ಕನ್ನಡ
-        </button>
-      </div>
+    <div className="min-h-screen bg-[#eceff4] flex items-center justify-center p-4 sm:p-6 font-sans">
+      {/* Dynamic Moving Gradient Styles */}
+      <style>{`
+        @keyframes moveProminentGradient {
+          0% { background-position: 0% 50%; }
+          50% { background-position: 100% 50%; }
+          100% { background-position: 0% 50%; }
+        }
+        @keyframes floatGlowLarge {
+          0%, 100% { transform: translate(0px, 0px) scale(1); opacity: 0.7; }
+          50% { transform: translate(35px, -35px) scale(1.3); opacity: 1; }
+        }
+        .vibrant-hero-bg {
+          background: linear-gradient(-45deg, #0d1424, #1e293b, #b45309, #2563eb, #0f172a);
+          background-size: 350% 350%;
+          animation: moveProminentGradient 6s ease infinite;
+        }
+        .prominent-glow-1 {
+          animation: floatGlowLarge 5s ease-in-out infinite;
+        }
+        .prominent-glow-2 {
+          animation: floatGlowLarge 7s ease-in-out infinite reverse;
+        }
+      `}</style>
 
-      <div className="w-full max-w-lg bg-white rounded-[2.5rem] p-8 md:p-10 shadow-[0_10px_30px_rgba(0,0,0,0.03)] border border-slate-100 relative overflow-hidden">
-        {/* Background Decorative Graphic */}
-        <div className="absolute -right-12 -bottom-12 opacity-5 pointer-events-none">
-          <FiEye className="text-[280px] text-slate-900" />
-        </div>
+      <div className="bg-white rounded-[32px] p-3 sm:p-4 shadow-xl max-w-4xl w-full flex flex-col md:flex-row gap-6 border border-gray-200/60">
+        
+        {/* Left Side: Animated Hero Panel */}
+        <div className="vibrant-hero-bg w-full md:w-1/2 text-white rounded-[24px] p-8 sm:p-10 flex flex-col justify-start relative overflow-hidden min-h-[380px] md:min-h-[460px]">
+          
+          <div className="prominent-glow-1 absolute -bottom-10 -left-10 w-72 h-72 bg-amber-500/45 rounded-full blur-3xl pointer-events-none" />
+          <div className="prominent-glow-2 absolute top-0 -right-10 w-64 h-64 bg-blue-500/35 rounded-full blur-3xl pointer-events-none" />
 
-        {/* Header Branding */}
-        <div className="flex items-center gap-3 mb-6">
-          <div className="w-10 h-10 rounded-2xl bg-amber-100 text-amber-900 flex items-center justify-center font-bold text-lg shadow-sm">
-            <FiEye />
-          </div>
-          <div>
-            <span className="text-xs font-bold tracking-wider text-slate-400 uppercase block">RetinaRescue</span>
-            <span className="text-[10px] font-semibold text-emerald-600 flex items-center gap-1">
-              <FiShield /> Clinical AI Suite v2.4
-            </span>
+          <div className="relative z-10 pt-2">
+            <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight leading-tight text-white mb-4">
+              Join Retina Rescue Portal.
+            </h1>
+            <p className="text-slate-200 text-sm sm:text-base font-medium max-w-xs drop-shadow-sm">
+              Start monitoring retinal health with intelligent deep learning tools.
+            </p>
           </div>
         </div>
 
-        <div className="mb-6">
-          <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">Create Account</h1>
-          <p className="text-xs font-medium text-slate-400 mt-1">Register for verified clinical practitioner access</p>
-        </div>
+        {/* Right Side: Form Panel */}
+        <div className="w-full md:w-1/2 p-4 sm:p-8 flex flex-col justify-center">
+          
+          {/* Brand Header with Custom Eye Icon */}
+          <div className="flex items-center gap-3.5 mb-6">
+            <div className="w-11 h-11 bg-[#fef6e4] rounded-[16px] flex items-center justify-center flex-shrink-0 border border-[#fde4b8] shadow-sm">
+              <svg 
+                className="w-6 h-6 text-[#b44300]" 
+                viewBox="0 0 24 24" 
+                fill="none" 
+                stroke="currentColor" 
+                strokeWidth="2.6" 
+                strokeLinecap="round" 
+                strokeLinejoin="round"
+              >
+                <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7z" />
+                <circle cx="12" cy="12" r="3" strokeWidth="2.6" />
+              </svg>
+            </div>
+            <div>
+              <span className="text-2xl font-extrabold text-[#0d1424] tracking-tight block leading-none">
+                Retina Rescue
+              </span>
+              <span className="text-[10px] font-black uppercase tracking-[0.2em] text-amber-600 block mt-1.5">
+                Personal Health Portal
+              </span>
+            </div>
+          </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Full Name Input */}
-          <div>
-            <label className="block text-xs font-bold text-slate-600 mb-1.5 uppercase tracking-wider">Full Name</label>
-            <div className="relative flex items-center">
-              <FiUser className="absolute left-4 text-slate-400 text-base" />
+          <h2 className="text-xl font-extrabold text-[#0d1424] mb-1">Create Account</h2>
+          <p className="text-xs text-slate-500 font-medium mb-6">Enter your details below to set up your account.</p>
+
+          <form onSubmit={handleSubmit} className="space-y-3.5">
+            <div>
+              <label className="block text-[10px] font-extrabold uppercase tracking-wider text-slate-400 mb-1">
+                Full Name
+              </label>
               <input
                 type="text"
-                name="fullName"
                 required
-                value={formData.fullName}
-                onChange={handleChange}
-                placeholder="Dr. Sarah Jenkins"
-                className="w-full bg-slate-50 border border-slate-100 rounded-2xl pl-11 pr-4 py-3 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-400/50 focus:bg-white transition"
+                value={fullName}
+                onChange={(e) => setFullName(e.target.value)}
+                placeholder="Dr. Alex Vance"
+                className="w-full px-4 py-2.5 rounded-xl border border-slate-200/80 text-xs font-semibold text-[#0d1424] bg-slate-50/70 focus:bg-white focus:outline-none focus:border-[#0d1424] focus:ring-1 focus:ring-[#0d1424] transition-all"
               />
             </div>
-          </div>
 
-          {/* Email Input */}
-          <div>
-            <label className="block text-xs font-bold text-slate-600 mb-1.5 uppercase tracking-wider">Work Email</label>
-            <div className="relative flex items-center">
-              <FiMail className="absolute left-4 text-slate-400 text-base" />
+            <div>
+              <label className="block text-[10px] font-extrabold uppercase tracking-wider text-slate-400 mb-1">
+                Email address
+              </label>
               <input
                 type="email"
-                name="email"
                 required
-                value={formData.email}
-                onChange={handleChange}
-                placeholder="sarah.jenkins@hospital.org"
-                className="w-full bg-slate-50 border border-slate-100 rounded-2xl pl-11 pr-4 py-3 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-400/50 focus:bg-white transition"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="doctor@retinarescue.com"
+                className="w-full px-4 py-2.5 rounded-xl border border-slate-200/80 text-xs font-semibold text-[#0d1424] bg-slate-50/70 focus:bg-white focus:outline-none focus:border-[#0d1424] focus:ring-1 focus:ring-[#0d1424] transition-all"
               />
             </div>
-          </div>
-
-          {/* Role Dropdown */}
-          <div>
-            <label className="block text-xs font-bold text-slate-600 mb-1.5 uppercase tracking-wider">Clinical Role</label>
-            <div className="relative flex items-center">
-              <FiBriefcase className="absolute left-4 text-slate-400 text-base" />
-              <select
-                name="role"
-                value={formData.role}
-                onChange={handleChange}
-                className="w-full bg-slate-50 border border-slate-100 rounded-2xl pl-11 pr-4 py-3 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-amber-400/50 focus:bg-white transition cursor-pointer"
-              >
-                <option value="Ophthalmologist">Ophthalmologist</option>
-                <option value="Retinal Specialist">Retinal Specialist</option>
-                <option value="General Practitioner">General Practitioner</option>
-                <option value="Clinical Researcher">Clinical Researcher</option>
-              </select>
-            </div>
-          </div>
-
-          {/* Passwords */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div>
-              <label className="block text-xs font-bold text-slate-600 mb-1.5 uppercase tracking-wider">Password</label>
-              <div className="relative flex items-center">
-                <FiLock className="absolute left-4 text-slate-400 text-base" />
-                <input
-                  type={showPassword ? 'text' : 'password'}
-                  name="password"
-                  required
-                  value={formData.password}
-                  onChange={handleChange}
-                  placeholder="••••••••"
-                  className="w-full bg-slate-50 border border-slate-100 rounded-2xl pl-11 pr-4 py-3 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-400/50 focus:bg-white transition"
-                />
-              </div>
-            </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-600 mb-1.5 uppercase tracking-wider">Confirm</label>
-              <div className="relative flex items-center">
-                <FiLock className="absolute left-4 text-slate-400 text-base" />
-                <input
-                  type={showPassword ? 'text' : 'password'}
-                  name="confirmPassword"
-                  required
-                  value={formData.confirmPassword}
-                  onChange={handleChange}
-                  placeholder="••••••••"
-                  className="w-full bg-slate-50 border border-slate-100 rounded-2xl pl-11 pr-4 py-3 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-400/50 focus:bg-white transition"
-                />
-              </div>
+              <label className="block text-[10px] font-extrabold uppercase tracking-wider text-slate-400 mb-1">
+                Password
+              </label>
+              <input
+                type="password"
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="••••••••"
+                className="w-full px-4 py-2.5 rounded-xl border border-slate-200/80 text-xs font-semibold text-[#0d1424] bg-slate-50/70 focus:bg-white focus:outline-none focus:border-[#0d1424] focus:ring-1 focus:ring-[#0d1424] transition-all"
+              />
             </div>
-          </div>
 
-          {/* Submit Button */}
-          <button
-            type="submit"
-            className="w-full mt-4 bg-slate-900 hover:bg-slate-800 text-white font-bold py-3.5 rounded-2xl shadow-lg transition flex items-center justify-center gap-2 text-xs uppercase tracking-wider active:scale-[0.99]"
-          >
-            Create Account <FiArrowRight className="text-base" />
-          </button>
-        </form>
+            <button
+              type="submit"
+              className="w-full py-3.5 px-4 bg-[#0d1424] hover:bg-[#1a2744] text-white font-bold text-xs uppercase tracking-wider rounded-xl transition-all shadow-md active:scale-[0.99] mt-3 flex items-center justify-center gap-2 cursor-pointer"
+            >
+              <span>Get Started</span>
+              <span className="text-base">→</span>
+            </button>
+          </form>
 
-        {/* Switch Link */}
-        <div className="mt-6 text-center text-xs text-slate-400 font-medium pt-4 border-t border-slate-100">
-          Already registered?{' '}
-          <button
-            type="button"
-            onClick={onSwitchToLogin}
-            className="text-slate-900 font-extrabold hover:underline ml-1"
-          >
-            Sign In
-          </button>
+          <p className="text-xs text-center text-slate-500 font-medium mt-6">
+            Already have an account?{' '}
+            <button
+              type="button"
+              onClick={onGoToLogin}
+              className="font-bold text-[#0d1424] hover:underline cursor-pointer"
+            >
+              Sign In
+            </button>
+          </p>
         </div>
+
       </div>
     </div>
   );

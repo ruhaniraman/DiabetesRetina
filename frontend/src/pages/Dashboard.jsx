@@ -1,394 +1,506 @@
-import React, { useState, useRef } from 'react';
+import React, { useState } from 'react';
 import { 
-  FiGrid, FiUser, FiCalendar, FiActivity, FiBell, FiSettings, 
-  FiArrowLeft, FiPlus, FiMinus, FiUpload, FiGlobe, FiEye, 
-  FiCheck, FiX, FiFileText, FiShield
+  FiEye, FiUploadCloud, FiGlobe, 
+  FiAlertTriangle, FiLogOut, FiRefreshCw, 
+  FiPlay, FiArrowRight 
 } from 'react-icons/fi';
-import { translations } from '../translations';
 
-export default function Dashboard({ user, onLogout, lang = 'en', setLang }) {
-  const [activeLang, setActiveLang] = useState(lang);
-  const [selectedImage, setSelectedImage] = useState(null);
-  const [selectedGrade, setSelectedGrade] = useState('G-2');
-  const [zoomLevel, setZoomLevel] = useState(100);
-  const [activeTab, setActiveTab] = useState('overview');
+const TRANSLATIONS = {
+  en: {
+    portalSub: "RETINARESCUE • PERSONAL RETINAL HEALTH PORTAL",
+    title: "Retina Rescue",
+    overallRiskTitle: "Overall Assessment: Stage 2 - Moderate Risk",
+    overallRiskDesc: "Moderate signs detected in Left Eye (OS). Right Eye (OD) is clear. Keep blood sugar controlled and schedule a consultation.",
+    dualCardTitle: "Bilateral Retinal Examination (OS / OD)",
+    leftEyeLabel: "Left Eye (OS)",
+    rightEyeLabel: "Right Eye (OD)",
+    rawView: "Standard",
+    aiView: "AI Heatmap",
+    replaceBtn: "Replace Photo",
+    processAllBtn: "Run Sequential AI Assessment",
+    processingLeft: "Processing Left Eye Pipeline...",
+    processingRight: "Processing Right Eye Pipeline...",
+    queued: "Queued for Processing",
+    recordsTitle: "My Health Record",
+    assignedDoctorLabel: "YOUR EYE SPECIALIST",
+    indicatorLabel: "KEY FINDINGS",
+    indicatorVal: "Minor Spots (OS)",
+    maculaLabel: "CENTER VISION",
+    maculaVal: "Clear & Healthy",
+    recentScans: "PREVIOUS EYE RECORDS",
+    detailedReportBtn: "DETAILED REPORT",
+    logout: "Log Out"
+  },
+  hi: {
+    portalSub: "रेटीना रेस्क्यू • व्यक्तिगत आंख स्वास्थ्य पोर्टल",
+    title: "रेटीना रेस्क्यू",
+    overallRiskTitle: "समग्र मूल्यांकन: चरण 2 - मध्यम जोखिम",
+    overallRiskDesc: "बाईं आंख (OS) में मध्यम लक्षण पाए गए हैं। दाहिनी आंख (OD) सामान्य है। अपने ब्लड शुगर को नियंत्रित रखें।",
+    dualCardTitle: "द्विपक्षीय रेटिना जांच (OS / OD)",
+    leftEyeLabel: "बाईं आंख (OS)",
+    rightEyeLabel: "दाहिनी आंख (OD)",
+    rawView: "सामान्य",
+    aiView: "एआई विश्लेषण",
+    replaceBtn: "तस्वीर बदलें",
+    processAllBtn: "एआई जांच शुरू करें",
+    processingLeft: "बाईं आंख की जांच जारी है...",
+    processingRight: "दाहिनी आंख की जांच जारी है...",
+    queued: "कतार में",
+    recordsTitle: "मेरा स्वास्थ्य रिकॉर्ड",
+    assignedDoctorLabel: "आपके नेत्र विशेषज्ञ",
+    indicatorLabel: "मुख्य निष्कर्ष",
+    indicatorVal: "छोटे धब्बे (OS)",
+    maculaLabel: "केंद्र दृष्टि",
+    maculaVal: "स्पष्ट और स्वस्थ",
+    recentScans: "पुराने आंख के रिकॉर्ड",
+    detailedReportBtn: "विस्तृत रिपोर्ट",
+    logout: "लॉग आउट"
+  },
+  kn: {
+    portalSub: "ರೆಟಿನಾ ರೆಸ್ಕ್ಯೂ • ವೈಯಕ್ತಿಕ ಕಣ್ಣಿನ ಆರೋಗ್ಯ ಪೋರ್ಟಲ್",
+    title: "ರೆಟಿನಾ ರೆಸ್ಕ್ಯೂ",
+    overallRiskTitle: "ಒಟ್ಟಾರೆ ತಪಾಸಣೆ: ಹಂತ 2 - ಮಧ್ಯಮ ಅಪಾಯ",
+    overallRiskDesc: "ಎಡ ಕಣ್ಣಿನಲ್ಲಿ (OS) ಸಣ್ಣ ಪ್ರಮಾಣದ ಲಕ್ಷಣಗಳು ಕಂಡುಬಂದಿವೆ. ಬಲ ಕಣ್ಣು (OD) ಸಾಮಾನ್ಯವಾಗಿದೆ. ರಕ್ತದ ಸಕ್ಕರೆ ಮಟ್ಟವನ್ನು ನಿಯಂತ್ರಣದಲ್ಲಿಟ್ಟುಕೊಳ್ಳಿ.",
+    dualCardTitle: "ಎರಡೂ ಕಣ್ಣುಗಳ ತಪಾಸಣೆ (OS / OD)",
+    leftEyeLabel: "ಎಡ ಕಣ್ಣು (OS)",
+    rightEyeLabel: "ಬಲ ಕಣ್ಣು (OD)",
+    rawView: "ಸಾಮಾನ್ಯ",
+    aiView: "ಎಐ ತಪಾಸಣೆ",
+    replaceBtn: "ಚಿತ್ರ ಬದಲಾಯಿಸಿ",
+    processAllBtn: "ಎಐ ತಪಾಸಣೆ ಪ್ರಾರಂಭಿಸಿ",
+    processingLeft: "ಎಡ ಕಣ್ಣಿನ ತಪಾಸಣೆ ನಡೆಯುತ್ತಿದೆ...",
+    processingRight: "ಬಲ ಕಣ್ಣಿನ ತಪಾಸಣೆ ನಡೆಯುತ್ತಿದೆ...",
+    queued: "ಸರತಿಯಲ್ಲಿದೆ",
+    recordsTitle: "ನನ್ನ ಆರೋಗ್ಯ ದಾಖಲೆ",
+    assignedDoctorLabel: "ನಿಮ್ಮ ಕಣ್ಣಿನ ತಜ್ಞರು",
+    indicatorLabel: "ಪ್ರಮುಖ ಅಂಶಗಳು",
+    indicatorVal: "ಸಣ್ಣ ಕಲೆಗಳು (OS)",
+    maculaLabel: "ಕೇಂದ್ರ ದೃಷ್ಟಿ",
+    maculaVal: "ಸ್ಪಷ್ಟವಾಗಿದೆ",
+    recentScans: "ಹಿಂದಿನ ಕಣ್ಣಿನ ವರದಿಗಳು",
+    detailedReportBtn: "ವಿವರವಾದ ವರದಿ",
+    logout: "ನಿರ್ಗಮಿಸಿ"
+  }
+};
 
-  const [clinicalContext, setClinicalContext] = useState({
-    age: 54,
-    hba1c: '8.2',
-    sysBP: '138',
-    diaBP: '86',
-    duration: '12'
+export default function Dashboard({ user, onLogout, onViewDetailedReport, lang: externalLang, setLang: externalSetLang }) {
+  const [internalLang, setInternalLang] = useState('en');
+  const currentLang = externalLang || internalLang;
+  const t = TRANSLATIONS[currentLang] || TRANSLATIONS.en;
+
+  const [isProcessingPipeline, setIsProcessingPipeline] = useState(false);
+
+  // Left Eye (OS) and Right Eye (OD) States
+  const [leftEye, setLeftEye] = useState({
+    uploaded: true,
+    status: 'completed',
+    stage: 'Stage 2 - Moderate',
+    accuracy: '96.4%',
+    showAi: false
   });
 
-  const fileInputRef = useRef(null);
-  const t = translations[activeLang] || translations.en;
+  const [rightEye, setRightEye] = useState({
+    uploaded: true,
+    status: 'completed',
+    stage: 'Stage 0 - Clear',
+    accuracy: '98.1%',
+    showAi: false
+  });
 
   const handleLangChange = (newLang) => {
-    setActiveLang(newLang);
-    if (setLang) setLang(newLang);
+    if (externalSetLang) externalSetLang(newLang);
+    else setInternalLang(newLang);
   };
 
-  const handleImageUpload = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      setSelectedImage(URL.createObjectURL(file));
-    }
+  // Sequential AI Processing Execution
+  const runSequentialPipeline = () => {
+    if (isProcessingPipeline) return;
+    setIsProcessingPipeline(true);
+
+    setLeftEye(prev => ({ ...prev, status: 'processing' }));
+    setRightEye(prev => ({ ...prev, status: 'queued' }));
+
+    setTimeout(() => {
+      setLeftEye(prev => ({ ...prev, status: 'completed' }));
+      setRightEye(prev => ({ ...prev, status: 'processing' }));
+
+      setTimeout(() => {
+        setRightEye(prev => ({ ...prev, status: 'completed' }));
+        setIsProcessingPipeline(false);
+      }, 2000);
+
+    }, 2000);
   };
 
   return (
-    <div className="min-h-screen bg-[#f4f5f8] text-slate-800 font-sans p-4 md:p-6 flex gap-6 select-none">
+    <div className="min-h-screen bg-[#f1f3f7] text-slate-800 font-sans p-3 md:p-6 select-none max-w-7xl mx-auto">
       
-      {/* 1. FAR-LEFT FLOATING SIDEBAR NAVIGATION */}
-      <aside className="hidden lg:flex flex-col items-center justify-between py-6 px-3 bg-white rounded-[2.5rem] shadow-[0_10px_30px_rgba(0,0,0,0.03)] border border-slate-100 w-20 shrink-0">
-        <div className="flex flex-col items-center gap-8">
-          {/* Logo / Back Button */}
-          <button 
-            onClick={onLogout}
-            className="w-12 h-12 rounded-2xl bg-slate-100 text-slate-700 flex items-center justify-center hover:bg-slate-200 transition"
-            title="Exit Workspace"
-          >
-            <FiArrowLeft className="text-xl" />
-          </button>
-
-          {/* Main Navigation Stack */}
-          <nav className="flex flex-col gap-4">
-            <button 
-              onClick={() => setActiveTab('overview')}
-              className={`w-12 h-12 rounded-2xl flex items-center justify-center text-lg transition ${
-                activeTab === 'overview' 
-                  ? 'bg-amber-100 text-amber-900 font-bold shadow-sm' 
-                  : 'text-slate-400 hover:text-slate-700 hover:bg-slate-50'
-              }`}
-            >
-              <FiGrid />
-            </button>
-            
-            <button 
-              onClick={() => setActiveTab('patient')}
-              className={`w-12 h-12 rounded-2xl flex items-center justify-center text-lg transition ${
-                activeTab === 'patient' 
-                  ? 'bg-amber-100 text-amber-900 font-bold shadow-sm' 
-                  : 'text-slate-400 hover:text-slate-700 hover:bg-slate-50'
-              }`}
-            >
-              <FiUser />
-            </button>
-
-            <button 
-              onClick={() => setActiveTab('calendar')}
-              className={`w-12 h-12 rounded-2xl flex items-center justify-center text-lg transition ${
-                activeTab === 'calendar' 
-                  ? 'bg-amber-100 text-amber-900 font-bold shadow-sm' 
-                  : 'text-slate-400 hover:text-slate-700 hover:bg-slate-50'
-              }`}
-            >
-              <FiCalendar />
-            </button>
-
-            <button 
-              onClick={() => setActiveTab('analytics')}
-              className={`w-12 h-12 rounded-2xl flex items-center justify-center text-lg transition ${
-                activeTab === 'analytics' 
-                  ? 'bg-amber-100 text-amber-900 font-bold shadow-sm' 
-                  : 'text-slate-400 hover:text-slate-700 hover:bg-slate-50'
-              }`}
-            >
-              <FiActivity />
-            </button>
-
-            <button 
-              className="w-12 h-12 rounded-2xl flex items-center justify-center text-lg text-slate-400 hover:text-slate-700 hover:bg-slate-50 transition relative"
-            >
-              <FiBell />
-              <span className="absolute top-3 right-3 w-2 h-2 rounded-full bg-rose-500" />
-            </button>
-          </nav>
-        </div>
-
-        {/* Settings Button */}
-        <button className="w-12 h-12 rounded-2xl text-slate-400 hover:text-slate-700 hover:bg-slate-50 flex items-center justify-center text-lg transition">
-          <FiSettings />
-        </button>
-      </aside>
-
-      {/* MAIN DASHBOARD LAYOUT */}
-      <div className="flex-1 grid grid-cols-1 xl:grid-cols-12 gap-6 items-start">
+      {/* MAIN CONTENT AREA */}
+      <main className="flex flex-col gap-5">
         
-        {/* 2. CENTER & LEFT CONTENT AREA */}
-        <div className="xl:col-span-8 flex flex-col gap-6">
-          
-          {/* Top Header Bar with Language Picker */}
-          <div className="flex items-center justify-between pt-2">
-            <div>
-              <span className="text-xs font-semibold tracking-wider text-slate-400 uppercase">
-                {t.title} • {t.subtitle}
-              </span>
-              <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight mt-1">
-                Retinal Assessment
+        {/* Seamless Header Bar */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 px-2 py-1">
+          <div>
+            <span className="text-[11px] font-extrabold tracking-wider text-slate-400 uppercase block mb-1">
+              {t.portalSub}
+            </span>
+            <div className="flex items-center gap-2.5">
+              <FiEye className="text-2xl md:text-3xl text-amber-600 shrink-0" />
+              <h1 className="text-2xl md:text-3xl font-black text-slate-900 tracking-tight">
+                {t.title}
               </h1>
             </div>
+          </div>
 
-            {/* Language Switcher Pill */}
+          <div className="flex items-center gap-2.5 self-start sm:self-auto">
+            {/* Language Switcher */}
             <div className="flex items-center bg-white border border-slate-200/80 rounded-2xl p-1 shadow-sm text-xs font-semibold">
-              <FiGlobe className="ml-3 mr-1 text-slate-400" />
+              <FiGlobe className="ml-2.5 mr-1 text-slate-400" />
               <button 
+                type="button"
                 onClick={() => handleLangChange('en')} 
-                className={`px-3 py-1.5 rounded-xl transition ${activeLang === 'en' ? 'bg-slate-900 text-white' : 'text-slate-500 hover:text-slate-900'}`}
+                className={`px-3 py-1.5 rounded-xl transition ${currentLang === 'en' ? 'bg-slate-900 text-white' : 'text-slate-500 hover:text-slate-900'}`}
               >
                 EN
               </button>
               <button 
+                type="button"
                 onClick={() => handleLangChange('hi')} 
-                className={`px-3 py-1.5 rounded-xl transition ${activeLang === 'hi' ? 'bg-slate-900 text-white' : 'text-slate-500 hover:text-slate-900'}`}
+                className={`px-3 py-1.5 rounded-xl transition ${currentLang === 'hi' ? 'bg-slate-900 text-white' : 'text-slate-500 hover:text-slate-900'}`}
               >
                 हिंदी
               </button>
               <button 
+                type="button"
                 onClick={() => handleLangChange('kn')} 
-                className={`px-3 py-1.5 rounded-xl transition ${activeLang === 'kn' ? 'bg-slate-900 text-white' : 'text-slate-500 hover:text-slate-900'}`}
+                className={`px-3 py-1.5 rounded-xl transition ${currentLang === 'kn' ? 'bg-slate-900 text-white' : 'text-slate-500 hover:text-slate-900'}`}
               >
                 ಕನ್ನಡ
               </button>
             </div>
+
+            {/* Log Out Button */}
+            <button 
+              onClick={onLogout}
+              title={t.logout}
+              className="p-2.5 rounded-2xl text-slate-500 hover:text-rose-600 hover:bg-rose-50 border border-slate-200/80 bg-white shadow-sm flex items-center justify-center transition cursor-pointer"
+            >
+              <FiLogOut className="text-lg" />
+            </button>
           </div>
+        </div>
 
-          {/* Key Metrics Overview */}
-          <div className="flex items-center gap-6">
-            <div>
-              <div className="text-5xl font-extrabold text-slate-900 tracking-tight">G-2</div>
-              <div className="text-xs font-semibold text-slate-400 mt-1 uppercase tracking-wider">Moderate NPDR Risk</div>
-            </div>
-
-            <div className="h-10 w-[1px] bg-slate-200" />
-
-            {/* Quick Zoom Controls */}
-            <div className="flex items-center gap-2">
-              <button 
-                onClick={() => setZoomLevel(prev => Math.min(prev + 20, 200))}
-                className="w-10 h-10 rounded-2xl bg-white border border-slate-200/80 text-slate-700 flex items-center justify-center shadow-sm hover:bg-slate-50 active:scale-95 transition"
-              >
-                <FiPlus />
-              </button>
-              <button 
-                onClick={() => setZoomLevel(prev => Math.max(prev - 20, 100))}
-                className="w-10 h-10 rounded-2xl bg-white border border-slate-200/80 text-slate-700 flex items-center justify-center shadow-sm hover:bg-slate-50 active:scale-95 transition"
-              >
-                <FiMinus />
-              </button>
-            </div>
-          </div>
-
-          {/* MAIN FUNDUS SCAN CARD (Centered Graphic Focus) */}
-          <div className="relative bg-white rounded-[2.5rem] p-6 shadow-[0_10px_30px_rgba(0,0,0,0.02)] border border-slate-100 flex flex-col md:flex-row items-center justify-between gap-6 overflow-hidden min-h-[320px]">
+        <div className="flex flex-col lg:flex-row gap-6">
+          
+          {/* CENTER ASSESSMENT SECTION */}
+          <div className="flex-1 flex flex-col gap-5">
             
-            {/* Background Anatomical Decorative Outline */}
-            <div className="absolute -right-10 top-1/2 -translate-y-1/2 opacity-10 pointer-events-none">
-              <FiEye className="text-[320px] text-slate-900" />
-            </div>
-
-            {/* Floating Dark Card (Inspiration Style Overlay) */}
-            <div className="bg-slate-900 text-white rounded-[2rem] p-6 shadow-2xl w-full md:w-72 shrink-0 z-10 flex flex-col justify-between h-72">
-              <div className="flex items-center justify-between">
-                <div className="w-10 h-10 rounded-xl bg-slate-800 text-amber-400 flex items-center justify-center">
-                  <FiEye className="text-lg" />
-                </div>
-                <div className="text-right">
-                  <span className="text-[10px] text-slate-400 font-mono block uppercase">Confidence</span>
-                  <span className="text-xl font-bold text-emerald-400">96.4%</span>
-                </div>
-              </div>
-
+            {/* Stage Risk Assessment Banner */}
+            <div className="bg-[#f7efe1] border border-amber-200/60 rounded-[2rem] p-5 flex items-center justify-between gap-4">
               <div>
-                <h3 className="text-lg font-bold text-white">Retinal Scan</h3>
-                <p className="text-xs text-slate-400 mt-0.5">Fundus Image • Stage 01</p>
-                
-                {/* Micro Severity Indicator */}
-                <div className="flex gap-1.5 mt-4">
-                  {['G0', 'G1', 'G2', 'G3', 'G4'].map((g, idx) => (
-                    <div 
-                      key={g} 
-                      className={`h-2 flex-1 rounded-full ${idx <= 2 ? 'bg-amber-400' : 'bg-slate-800'}`} 
-                    />
-                  ))}
+                <div className="flex items-center gap-2">
+                  <FiAlertTriangle className="text-amber-700 text-lg" />
+                  <span className="text-xl font-black text-amber-950">{t.overallRiskTitle}</span>
                 </div>
+                <p className="text-xs text-amber-900/80 font-medium mt-1">
+                  {t.overallRiskDesc}
+                </p>
               </div>
-
-              <button 
-                onClick={() => fileInputRef.current?.click()}
-                className="w-full bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold py-2.5 rounded-xl transition flex items-center justify-center gap-2 border border-slate-700"
-              >
-                <FiUpload /> Change Image
-              </button>
             </div>
 
-            {/* Diagnostic Image Display Area */}
-            <div className="w-full h-full flex flex-col items-center justify-center relative min-h-[260px] z-10">
-              <input 
-                type="file" 
-                ref={fileInputRef} 
-                onChange={handleImageUpload} 
-                accept="image/*" 
-                className="hidden" 
-              />
-
-              {!selectedImage ? (
-                <div 
-                  onClick={() => fileInputRef.current?.click()}
-                  className="w-full h-full border-2 border-dashed border-slate-200 hover:border-amber-400 rounded-[2rem] p-8 flex flex-col items-center justify-center cursor-pointer transition bg-slate-50/50 group"
-                >
-                  <div className="w-12 h-12 rounded-2xl bg-amber-100 text-amber-800 flex items-center justify-center mb-3 group-hover:scale-110 transition">
-                    <FiUpload className="text-xl" />
-                  </div>
-                  <p className="text-sm font-bold text-slate-700">{t.dropText}</p>
-                  <p className="text-xs text-slate-400 mt-1 text-center">{t.stage1Sub}</p>
+            {/* DUAL RETINAL SCAN CONTAINER (OS & OD SIDE BY SIDE) */}
+            <div className="bg-white border border-slate-100 rounded-[2.5rem] p-6 shadow-sm space-y-4">
+              
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div>
+                  <h3 className="font-extrabold text-slate-900 text-sm flex items-center gap-2">
+                    <FiEye className="text-amber-600" /> {t.dualCardTitle}
+                  </h3>
+                  <p className="text-[11px] text-slate-400 font-medium">Bilateral Assessment • Oculus Sinister (OS) & Oculus Dexter (OD)</p>
                 </div>
-              ) : (
-                <div className="relative w-full h-64 rounded-[2rem] overflow-hidden flex items-center justify-center bg-slate-950 shadow-inner">
-                  <img 
-                    src={selectedImage} 
-                    alt="Retina Fundus Scan" 
-                    className="max-h-full max-w-full object-contain transition-transform duration-200"
-                    style={{ transform: `scale(${zoomLevel / 100})` }}
-                  />
-                  <button 
-                    onClick={() => setSelectedImage(null)}
-                    className="absolute top-3 right-3 w-8 h-8 rounded-full bg-slate-900/80 text-white flex items-center justify-center hover:bg-rose-600 transition"
-                  >
-                    <FiX />
+
+                {/* Sequential AI Trigger Button */}
+                <button 
+                  onClick={runSequentialPipeline}
+                  disabled={isProcessingPipeline}
+                  className={`px-4 py-2.5 rounded-2xl text-xs font-bold flex items-center gap-2 transition cursor-pointer shadow-sm ${
+                    isProcessingPipeline 
+                      ? 'bg-amber-100 text-amber-800 border border-amber-200' 
+                      : 'bg-slate-900 hover:bg-slate-800 text-white'
+                  }`}
+                >
+                  {isProcessingPipeline ? (
+                    <>
+                      <FiRefreshCw className="animate-spin text-sm" />
+                      <span>Processing Pipeline...</span>
+                    </>
+                  ) : (
+                    <>
+                      <FiPlay className="text-sm fill-current" />
+                      <span>{t.processAllBtn}</span>
+                    </>
+                  )}
+                </button>
+              </div>
+
+              {/* DUAL CARDS GRID */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                
+                {/* 1. LEFT EYE (OS) CARD */}
+                <div className="bg-slate-50 border border-slate-200/80 rounded-[2rem] p-4 flex flex-col justify-between space-y-3 relative overflow-hidden">
+                  <div className="flex justify-between items-center">
+                    <div>
+                      <span className="text-xs font-black text-slate-900 block">{t.leftEyeLabel}</span>
+                      <span className="text-[10px] font-bold text-amber-700 bg-amber-100/80 px-2 py-0.5 rounded-md inline-block mt-0.5">
+                        {leftEye.stage}
+                      </span>
+                    </div>
+
+                    {/* AI Heatmap Switcher */}
+                    <div className="flex bg-slate-200/70 p-0.5 rounded-xl text-[10px] font-bold">
+                      <button 
+                        onClick={() => setLeftEye(prev => ({ ...prev, showAi: false }))}
+                        className={`px-2.5 py-1 rounded-lg transition ${!leftEye.showAi ? 'bg-white text-slate-900 shadow-xs' : 'text-slate-500'}`}
+                      >
+                        {t.rawView}
+                      </button>
+                      <button 
+                        onClick={() => setLeftEye(prev => ({ ...prev, showAi: true }))}
+                        className={`px-2.5 py-1 rounded-lg transition ${leftEye.showAi ? 'bg-amber-500 text-white shadow-xs' : 'text-slate-500'}`}
+                      >
+                        {t.aiView}
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Display Canvas Box */}
+                  <div className="relative bg-[#0b1329] rounded-[1.5rem] p-6 min-h-[200px] flex flex-col items-center justify-center text-center overflow-hidden border border-slate-800">
+                    {leftEye.status === 'processing' ? (
+                      <div className="flex flex-col items-center gap-2 text-amber-400">
+                        <FiRefreshCw className="text-3xl animate-spin" />
+                        <span className="text-xs font-bold text-white">{t.processingLeft}</span>
+                      </div>
+                    ) : leftEye.status === 'queued' ? (
+                      <div className="text-slate-400 text-xs font-bold">
+                        <span>⏳ {t.queued}</span>
+                      </div>
+                    ) : (
+                      <>
+                        <div className="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center text-amber-400 text-2xl mb-2 backdrop-blur-md">
+                          <FiEye className={leftEye.showAi ? 'scale-110 text-amber-300 transition' : ''} />
+                        </div>
+                        <span className="text-white font-bold text-xs">
+                          {leftEye.showAi ? "AI Lesion Heatmap" : "Original Fundus Image"}
+                        </span>
+                        <span className="text-[10px] text-emerald-400 font-bold mt-1">Accuracy: {leftEye.accuracy}</span>
+                      </>
+                    )}
+                  </div>
+
+                  <button className="w-full bg-white hover:bg-slate-100 text-slate-800 font-bold py-2.5 rounded-xl text-xs flex items-center justify-center gap-2 border border-slate-200 transition cursor-pointer">
+                    <FiUploadCloud className="text-sm text-slate-500" /> {t.replaceBtn}
                   </button>
                 </div>
-              )}
-            </div>
-          </div>
 
-          {/* RECENT ASSIGNMENTS / TESTS SECTION */}
-          <div>
-            <h2 className="text-lg font-bold text-slate-900 mb-4">Recent Tests & Context</h2>
-            
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                {/* 2. RIGHT EYE (OD) CARD */}
+                <div className="bg-slate-50 border border-slate-200/80 rounded-[2rem] p-4 flex flex-col justify-between space-y-3 relative overflow-hidden">
+                  <div className="flex justify-between items-center">
+                    <div>
+                      <span className="text-xs font-black text-slate-900 block">{t.rightEyeLabel}</span>
+                      <span className="text-[10px] font-bold text-emerald-700 bg-emerald-100/80 px-2 py-0.5 rounded-md inline-block mt-0.5">
+                        {rightEye.stage}
+                      </span>
+                    </div>
+
+                    {/* AI Heatmap Switcher */}
+                    <div className="flex bg-slate-200/70 p-0.5 rounded-xl text-[10px] font-bold">
+                      <button 
+                        onClick={() => setRightEye(prev => ({ ...prev, showAi: false }))}
+                        className={`px-2.5 py-1 rounded-lg transition ${!rightEye.showAi ? 'bg-white text-slate-900 shadow-xs' : 'text-slate-500'}`}
+                      >
+                        {t.rawView}
+                      </button>
+                      <button 
+                        onClick={() => setRightEye(prev => ({ ...prev, showAi: true }))}
+                        className={`px-2.5 py-1 rounded-lg transition ${rightEye.showAi ? 'bg-amber-500 text-white shadow-xs' : 'text-slate-500'}`}
+                      >
+                        {t.aiView}
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Display Canvas Box */}
+                  <div className="relative bg-[#0b1329] rounded-[1.5rem] p-6 min-h-[200px] flex flex-col items-center justify-center text-center overflow-hidden border border-slate-800">
+                    {rightEye.status === 'processing' ? (
+                      <div className="flex flex-col items-center gap-2 text-amber-400">
+                        <FiRefreshCw className="text-3xl animate-spin" />
+                        <span className="text-xs font-bold text-white">{t.processingRight}</span>
+                      </div>
+                    ) : rightEye.status === 'queued' ? (
+                      <div className="text-slate-400 text-xs font-bold">
+                        <span>⏳ {t.queued}</span>
+                      </div>
+                    ) : (
+                      <>
+                        <div className="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center text-emerald-400 text-2xl mb-2 backdrop-blur-md">
+                          <FiEye className={rightEye.showAi ? 'scale-110 text-amber-300 transition' : ''} />
+                        </div>
+                        <span className="text-white font-bold text-xs">
+                          {rightEye.showAi ? "AI Lesion Heatmap" : "Original Fundus Image"}
+                        </span>
+                        <span className="text-[10px] text-emerald-400 font-bold mt-1">Accuracy: {rightEye.accuracy}</span>
+                      </>
+                    )}
+                  </div>
+
+                  <button className="w-full bg-white hover:bg-slate-100 text-slate-800 font-bold py-2.5 rounded-xl text-xs flex items-center justify-center gap-2 border border-slate-200 transition cursor-pointer">
+                    <FiUploadCloud className="text-sm text-slate-500" /> {t.replaceBtn}
+                  </button>
+                </div>
+
+              </div>
+            </div>
+
+            {/* DIAGNOSTIC TELEMETRY CARDS */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3.5">
               
-              {/* Test Card 1 - HbA1c */}
-              <div className="bg-white rounded-[2rem] p-5 shadow-[0_10px_25px_rgba(0,0,0,0.02)] border border-slate-100 flex flex-col justify-between">
-                <div className="flex items-center justify-between">
-                  <div className="w-9 h-9 rounded-xl bg-amber-100 text-amber-800 flex items-center justify-center font-bold text-xs">
-                    HbA1c
+              {/* Quality Gate Card */}
+              <div className="bg-white border border-slate-100 rounded-[1.5rem] p-4 shadow-sm flex flex-col justify-between">
+                <div>
+                  <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block mb-1.5">
+                    Quality Gate
+                  </span>
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-xl font-black text-slate-900">84%</span>
+                    <span className="text-xs font-black text-emerald-600 uppercase">Good</span>
                   </div>
-                  <span className="text-[10px] font-semibold text-slate-400">Everyday</span>
                 </div>
-                <div className="mt-4">
-                  <span className="text-2xl font-extrabold text-slate-900">{clinicalContext.hba1c}%</span>
-                  <p className="text-xs text-slate-400 font-medium mt-0.5">Glycated Hemoglobin</p>
-                </div>
+                <p className="text-[11px] text-slate-500 font-medium mt-2">
+                  Image is suitable for screening.
+                </p>
               </div>
 
-              {/* Test Card 2 - BP */}
-              <div className="bg-white rounded-[2rem] p-5 shadow-[0_10px_25px_rgba(0,0,0,0.02)] border border-slate-100 flex flex-col justify-between">
-                <div className="flex items-center justify-between">
-                  <div className="w-9 h-9 rounded-xl bg-sky-100 text-sky-800 flex items-center justify-center font-bold text-xs">
-                    BP
+              {/* Confidence Score Card */}
+              <div className="bg-white border border-slate-100 rounded-[1.5rem] p-4 shadow-sm flex flex-col justify-between">
+                <div>
+                  <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block mb-1.5">
+                    Confidence Score
+                  </span>
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-xl font-black text-slate-900">60%</span>
+                    <span className="text-xs font-black text-emerald-600 uppercase">Medium</span>
                   </div>
-                  <span className="text-[10px] font-semibold text-slate-400">28 Nov</span>
                 </div>
-                <div className="mt-4">
-                  <span className="text-2xl font-extrabold text-slate-900">{clinicalContext.sysBP}/{clinicalContext.diaBP}</span>
-                  <p className="text-xs text-slate-400 font-medium mt-0.5">Blood Pressure (mmHg)</p>
-                </div>
+                <p className="text-[11px] text-slate-500 font-medium mt-2">
+                  Top class softmax margin
+                </p>
               </div>
 
-              {/* Test Card 3 - Duration */}
-              <div className="bg-white rounded-[2rem] p-5 shadow-[0_10px_25px_rgba(0,0,0,0.02)] border border-slate-100 flex flex-col justify-between">
-                <div className="flex items-center justify-between">
-                  <div className="w-9 h-9 rounded-xl bg-rose-100 text-rose-800 flex items-center justify-center font-bold text-xs">
-                    DM
+              {/* MCDO Epistemic Card */}
+              <div className="bg-white border border-slate-100 rounded-[1.5rem] p-4 shadow-sm flex flex-col justify-between">
+                <div>
+                  <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block mb-1.5">
+                    MCDO Epistemic
+                  </span>
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-xl font-black text-emerald-600">0.0025</span>
+                    <span className="text-xs font-black text-emerald-600 uppercase">Stable</span>
                   </div>
-                  <span className="text-[10px] font-semibold text-slate-400">30 Nov</span>
                 </div>
-                <div className="mt-4">
-                  <span className="text-2xl font-extrabold text-slate-900">{clinicalContext.duration} Yrs</span>
-                  <p className="text-xs text-slate-400 font-medium mt-0.5">Diabetes History</p>
+                <p className="text-[11px] text-slate-500 font-medium mt-2">
+                  10-Pass Bayesian Var
+                </p>
+              </div>
+
+              {/* OOD Detector Card */}
+              <div className="bg-white border border-slate-100 rounded-[1.5rem] p-4 shadow-sm flex flex-col justify-between">
+                <div>
+                  <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block mb-1.5">
+                    OOD Detector
+                  </span>
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-xl font-black text-rose-600">YES</span>
+                    <span className="text-xs font-extrabold text-slate-400 uppercase">In-Dist</span>
+                  </div>
                 </div>
+                <p className="text-[11px] text-slate-500 font-medium mt-2">
+                  Real fundus verified
+                </p>
               </div>
 
             </div>
+
           </div>
 
-        </div>
-
-        {/* 3. RIGHT PANEL - DISEASE HISTORY & TIMELINE */}
-        <div className="xl:col-span-4 bg-white rounded-[2.5rem] p-6 shadow-[0_10px_30px_rgba(0,0,0,0.03)] border border-slate-100 flex flex-col gap-6">
-          
-          <div className="flex items-center justify-between pb-2 border-b border-slate-100">
-            <h2 className="text-xl font-extrabold text-slate-900 tracking-tight">Patient Record</h2>
-            <span className="text-xs font-semibold text-slate-400 font-mono">#DR-2026</span>
-          </div>
-
-          {/* Timeline Node 1 */}
-          <div className="space-y-3">
-            <div className="flex items-center gap-3">
-              <span className="text-xs font-bold text-slate-400 font-mono">Nov</span>
-              <span className="text-2xl font-extrabold text-slate-900">24</span>
-            </div>
-
-            {/* Doctor Card */}
-            <div className="bg-slate-50 rounded-2xl p-4 flex items-center gap-3 border border-slate-100">
-              <div className="w-10 h-10 rounded-full bg-blue-100 text-blue-800 flex items-center justify-center font-bold text-sm">
-                DV
+          {/* RIGHT SIDEBAR: MY HEALTH RECORD CARD */}
+          <div className="w-full lg:w-80 bg-white rounded-[2.5rem] p-6 border border-slate-100 flex flex-col justify-between shrink-0 shadow-sm">
+            
+            <div className="space-y-6">
+              
+              {/* Header */}
+              <div className="flex items-center justify-between">
+                <h2 className="text-lg font-black text-slate-900">{t.recordsTitle}</h2>
+                <span className="text-[10px] font-extrabold text-slate-400">#PT-2026</span>
               </div>
+
+              {/* Doctor Info */}
+              <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100 flex items-center gap-3">
+                <div className="w-10 h-10 rounded-2xl bg-blue-100 text-blue-900 font-extrabold flex items-center justify-center text-sm shrink-0">
+                  AV
+                </div>
+                <div>
+                  <span className="text-[9px] uppercase font-bold text-slate-400 block">{t.assignedDoctorLabel}</span>
+                  <p className="text-xs font-bold text-slate-900">Dr. Alex Vance</p>
+                  <p className="text-[10px] text-slate-500 font-medium">Chief Ophthalmologist</p>
+                </div>
+              </div>
+
+              {/* Key Findings Grid */}
+              <div className="grid grid-cols-2 gap-3">
+                <div className="bg-[#fef9ee] p-3.5 rounded-2xl border border-amber-100/60">
+                  <span className="text-[9px] uppercase font-bold text-amber-700 block">{t.indicatorLabel}</span>
+                  <p className="text-xs font-extrabold text-amber-900 mt-1">{t.indicatorVal}</p>
+                </div>
+                <div className="bg-[#f0fdf4] p-3.5 rounded-2xl border border-emerald-100/60">
+                  <span className="text-[9px] uppercase font-bold text-emerald-700 block">{t.maculaLabel}</span>
+                  <p className="text-xs font-extrabold text-emerald-900 mt-1">{t.maculaVal}</p>
+                </div>
+              </div>
+
+              {/* Timeline Records */}
               <div>
-                <h4 className="text-sm font-bold text-slate-900">Dr. Alex Vance</h4>
-                <p className="text-xs text-slate-400">Chief Ophthalmologist</p>
-              </div>
-            </div>
-
-            {/* Clinical Indicators */}
-            <div className="grid grid-cols-2 gap-2 pt-1">
-              <div className="bg-amber-50 border border-amber-100 rounded-2xl p-3">
-                <span className="text-[10px] font-bold text-amber-800 uppercase block">Indicator</span>
-                <span className="text-xs font-bold text-amber-900 mt-0.5 block">Microaneurysms</span>
-              </div>
-              <div className="bg-sky-50 border border-sky-100 rounded-2xl p-3">
-                <span className="text-[10px] font-bold text-sky-800 uppercase block">Macula Status</span>
-                <span className="text-xs font-bold text-sky-900 mt-0.5 block">Clear Center</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Timeline Node 2 - Scans Grid */}
-          <div className="space-y-3 pt-2">
-            <div className="flex items-center gap-3">
-              <span className="text-xs font-bold text-slate-400 font-mono">Oct</span>
-              <span className="text-2xl font-extrabold text-slate-900">28</span>
-            </div>
-
-            <div className="bg-slate-50 rounded-2xl p-4 border border-slate-100">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-xs font-bold text-slate-700 flex items-center gap-1.5">
-                  <FiActivity className="text-amber-500" /> OCT Scans
+                <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block mb-3">
+                  {t.recentScans}
                 </span>
-                <span className="text-[10px] text-slate-400 font-mono">4 Images</span>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="bg-[#0b1329] text-white p-4 rounded-2xl text-center text-xs font-bold cursor-pointer hover:opacity-90 transition shadow-sm">
+                    SCAN 01
+                    <span className="block text-[9px] text-slate-400 font-normal mt-0.5">Nov 24</span>
+                  </div>
+                  <div className="bg-[#0b1329] text-white p-4 rounded-2xl text-center text-xs font-bold cursor-pointer hover:opacity-90 transition shadow-sm">
+                    SCAN 02
+                    <span className="block text-[9px] text-slate-400 font-normal mt-0.5">Oct 28</span>
+                  </div>
+                </div>
               </div>
 
-              {/* 2x2 Thumbnail Grid (Matching the Brain MRI style in image) */}
-              <div className="grid grid-cols-2 gap-2 mt-2">
-                <div className="h-16 bg-slate-900 rounded-xl overflow-hidden flex items-center justify-center text-slate-600 text-xs font-mono">
-                  SCAN 01
-                </div>
-                <div className="h-16 bg-slate-900 rounded-xl overflow-hidden flex items-center justify-center text-slate-600 text-xs font-mono">
-                  SCAN 02
-                </div>
-              </div>
             </div>
-          </div>
 
-          {/* Final Action Button */}
-          <button className="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-3.5 rounded-2xl shadow-lg transition flex items-center justify-center gap-2 text-xs uppercase tracking-wider mt-2">
-            <FiFileText /> Export Diagnostic Report
-          </button>
+            {/* Detailed Report Navigation Action */}
+            <button 
+              onClick={onViewDetailedReport}
+              className="w-full mt-6 bg-slate-900 hover:bg-slate-800 text-white font-bold py-4 rounded-2xl shadow-md transition flex items-center justify-center gap-2 text-xs uppercase tracking-wider active:scale-[0.99] cursor-pointer"
+            >
+              <span>{t.detailedReportBtn}</span>
+              <FiArrowRight className="text-base" />
+            </button>
+
+          </div>
 
         </div>
 
-      </div>
+      </main>
+
     </div>
   );
 }
