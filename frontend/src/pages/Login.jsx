@@ -1,326 +1,138 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { 
-  FiMail, FiLock, FiEye, FiEyeOff, FiArrowRight, FiGlobe 
-} from 'react-icons/fi';
-import { FcGoogle } from 'react-icons/fc';
-import { FaHospitalUser } from 'react-icons/fa';
+import React, { useState } from 'react';
 
-// --- TRANSLATION DICTIONARY ---
-const TRANSLATIONS = {
-  en: {
-    title: "Welcome Back!",
-    subtitle: "Enter your practitioner credentials to access clinical tools",
-    emailLabel: "Email Address",
-    emailPlaceholder: "doctor@hospital.org",
-    passwordLabel: "Password",
-    rememberMe: "Remember me",
-    forgotPassword: "Forgot Password?",
-    loginBtn: "Log In",
-    googleSso: "Google SSO",
-    hospitalPortal: "Hospital Portal",
-    or: "OR",
-    noAccount: "Don't have an account?",
-    signUp: "Sign up"
-  },
-  hi: {
-    title: "वापसी पर स्वागत है!",
-    subtitle: "नैदानिक उपकरणों तक पहुंचने के लिए अपनी साख दर्ज करें",
-    emailLabel: "ईमेल पता",
-    emailPlaceholder: "doctor@hospital.org",
-    passwordLabel: "पासवर्ड",
-    rememberMe: "मुझे याद रखें",
-    forgotPassword: "पासवर्ड भूल गए?",
-    loginBtn: "लॉग इन करें",
-    googleSso: "गूगल एसएसओ",
-    hospitalPortal: "अस्पताल पोर्टल",
-    or: "या",
-    noAccount: "क्या आपका खाता नहीं है?",
-    signUp: "साइन अप करें"
-  },
-  kn: {
-    title: "ಮತ್ತೆ ಸ್ವಾಗತ!",
-    subtitle: "ಕ್ಲಿನಿಕಲ್ ಪರಿಕರಗಳನ್ನು ಪ್ರವೇಶಿಸಲು ನಿಮ್ಮ ವಿವರಗಳನ್ನು ನಮೂದಿಸಿ",
-    emailLabel: "ಇಮೇಲ್ ವಿಳಾಸ",
-    emailPlaceholder: "doctor@hospital.org",
-    passwordLabel: "ಪಾಸ್‌ವರ್ಡ್",
-    rememberMe: "ನನ್ನನ್ನು ನೆನಪಿಡಿ",
-    forgotPassword: "ಪಾಸ್‌ವರ್ಡ್ ಮರೆತಿದ್ದೀರಾ?",
-    loginBtn: "ಲಾಗಿನ್ ಮಾಡಿ",
-    googleSso: "ಗೂಗಲ್ SSO",
-    hospitalPortal: "ಆಸ್ಪತ್ರೆ ಪೋರ್ಟಲ್",
-    or: "ಅಥವಾ",
-    noAccount: "ಖಾತೆ ಇಲ್ಲವೇ?",
-    signUp: "ಸೈನ್ ಅಪ್ ಮಾಡಿ"
-  }
-};
-
-// --- UNIFORM TRACKING EYE COMPONENT ---
-function UniformEye({ mousePos }) {
-  const eyeRef = useRef(null);
-  const [pupil, setPupil] = useState({ x: 0, y: 0 });
-
-  useEffect(() => {
-    if (!eyeRef.current || !mousePos.x) return;
-
-    const rect = eyeRef.current.getBoundingClientRect();
-    const centerX = rect.left + rect.width / 2;
-    const centerY = rect.top + rect.height / 2;
-
-    const dx = mousePos.x - centerX;
-    const dy = mousePos.y - centerY;
-
-    const angle = Math.atan2(dy, dx);
-    const dist = Math.sqrt(dx * dx + dy * dy);
-
-    const maxTravel = 11;
-    const travel = Math.min(dist / 12, maxTravel);
-
-    setPupil({
-      x: Math.cos(angle) * travel,
-      y: Math.sin(angle) * travel,
-    });
-  }, [mousePos]);
-
-  return (
-    <div 
-      ref={eyeRef} 
-      className="relative w-28 h-16 flex items-center justify-center shrink-0"
-    >
-      <svg viewBox="0 0 100 55" className="w-full h-full drop-shadow-sm">
-        <path 
-          d="M 4 27.5 Q 50 1 96 27.5 Q 50 54 4 27.5 Z" 
-          fill="#f5efe0" 
-        />
-      </svg>
-
-      <div 
-        className="absolute w-10 h-10 rounded-full bg-[#0a0f1d] flex items-center justify-center transition-transform duration-75 ease-out"
-        style={{ transform: `translate(${pupil.x}px, ${pupil.y}px)` }}
-      >
-        <div className="w-2 h-2 rounded-full bg-white absolute top-1.5 right-2 opacity-90" />
-      </div>
-    </div>
-  );
-}
-
-// --- FULL PANEL EYE WALLPAPER ---
-function EyePatternWallpaperPanel() {
-  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
-
-  useEffect(() => {
-    const handleMouseMove = (e) => {
-      setMousePos({ x: e.clientX, y: e.clientY });
-    };
-    window.addEventListener('mousemove', handleMouseMove);
-    return () => window.removeEventListener('mousemove', handleMouseMove);
-  }, []);
-
-  const rows = [
-    { id: 'r1', offset: true },
-    { id: 'r2', offset: false },
-    { id: 'r3', offset: true },
-    { id: 'r4', offset: false },
-    { id: 'r5', offset: true },
-    { id: 'r6', offset: false },
-  ];
-
-  return (
-    <div className="w-full md:w-5/12 bg-[#1d4ed8] rounded-[2rem] relative overflow-hidden flex items-center justify-center min-h-[420px] md:min-h-full cursor-pointer select-none">
-      <div className="w-[135%] flex flex-col gap-6 py-4 justify-center items-center">
-        {rows.map((row) => (
-          <div 
-            key={row.id}
-            className={`flex justify-center gap-6 w-full ${
-              row.offset ? '-translate-x-14' : 'translate-x-0'
-            }`}
-          >
-            {[...Array(4)].map((_, i) => (
-              <UniformEye key={i} mousePos={mousePos} />
-            ))}
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-// --- MAIN LOGIN PAGE ---
-export default function Login({ onLogin, onSwitchToSignup, lang: externalLang, setLang: externalSetLang }) {
-  // Internal language state fallback if external prop is not supplied
-  const [internalLang, setInternalLang] = useState('en');
-  const currentLang = externalLang || internalLang;
-
-  const handleLangChange = (newLang) => {
-    if (externalSetLang) {
-      externalSetLang(newLang);
-    } else {
-      setInternalLang(newLang);
-    }
-  };
-
-  const t = TRANSLATIONS[currentLang] || TRANSLATIONS.en;
-
+export default function Login({ onLogin, onGoToSignup }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (onLogin) onLogin({ email, password });
+    onLogin();
   };
 
   return (
-    <div className="min-h-screen bg-[#f4f5f8] text-slate-800 font-sans p-4 md:p-8 flex items-center justify-center select-none">
-      
-      {/* MAIN CONTAINER */}
-      <div className="w-full max-w-4xl bg-slate-200/50 rounded-[2.5rem] p-3 shadow-[0_20px_50px_rgba(0,0,0,0.04)] border border-white/80 flex flex-col md:flex-row overflow-hidden min-h-[580px]">
+    <div className="min-h-screen bg-[#eceff4] flex items-center justify-center p-4 sm:p-6 font-sans">
+      {/* Dynamic Moving Gradient Styles */}
+      <style>{`
+        @keyframes moveProminentGradient {
+          0% { background-position: 0% 50%; }
+          50% { background-position: 100% 50%; }
+          100% { background-position: 0% 50%; }
+        }
+        @keyframes floatGlowLarge {
+          0%, 100% { transform: translate(0px, 0px) scale(1); opacity: 0.7; }
+          50% { transform: translate(35px, -35px) scale(1.3); opacity: 1; }
+        }
+        .vibrant-hero-bg {
+          background: linear-gradient(-45deg, #0d1424, #1e293b, #b45309, #2563eb, #0f172a);
+          background-size: 350% 350%;
+          animation: moveProminentGradient 6s ease infinite;
+        }
+        .prominent-glow-1 {
+          animation: floatGlowLarge 5s ease-in-out infinite;
+        }
+        .prominent-glow-2 {
+          animation: floatGlowLarge 7s ease-in-out infinite reverse;
+        }
+      `}</style>
+
+      <div className="bg-white rounded-[32px] p-3 sm:p-4 shadow-xl max-w-4xl w-full flex flex-col md:flex-row gap-6 border border-gray-200/60">
         
-        {/* LEFT PANEL: FULL PATTERN TRACKING EYE WALLPAPER */}
-        <EyePatternWallpaperPanel />
-
-        {/* RIGHT PANEL: FORM AREA */}
-        <div className="w-full md:w-7/12 bg-white rounded-[2rem] p-8 md:p-10 flex flex-col justify-between relative shadow-sm">
+        {/* Left Side: Animated Hero Panel */}
+        <div className="vibrant-hero-bg w-full md:w-1/2 text-white rounded-[24px] p-8 sm:p-10 flex flex-col justify-start relative overflow-hidden min-h-[380px] md:min-h-[460px]">
           
-          {/* Top Bar Language Selector */}
-          <div className="flex justify-end items-center">
-            <div className="flex items-center bg-slate-50 border border-slate-100 rounded-2xl p-1 text-xs font-semibold">
-              <FiGlobe className="ml-2 mr-1 text-slate-400" />
-              <button 
-                type="button"
-                onClick={() => handleLangChange('en')} 
-                className={`px-2.5 py-1 rounded-xl transition ${currentLang === 'en' ? 'bg-slate-900 text-white' : 'text-slate-500 hover:text-slate-900'}`}
-              >
-                EN
-              </button>
-              <button 
-                type="button"
-                onClick={() => handleLangChange('hi')} 
-                className={`px-2.5 py-1 rounded-xl transition ${currentLang === 'hi' ? 'bg-slate-900 text-white' : 'text-slate-500 hover:text-slate-900'}`}
-              >
-                हिंदी
-              </button>
-              <button 
-                type="button"
-                onClick={() => handleLangChange('kn')} 
-                className={`px-2.5 py-1 rounded-xl transition ${currentLang === 'kn' ? 'bg-slate-900 text-white' : 'text-slate-500 hover:text-slate-900'}`}
-              >
-                ಕನ್ನಡ
-              </button>
-            </div>
-          </div>
+          <div className="prominent-glow-1 absolute -bottom-10 -left-10 w-72 h-72 bg-amber-500/45 rounded-full blur-3xl pointer-events-none" />
+          <div className="prominent-glow-2 absolute top-0 -right-10 w-64 h-64 bg-blue-500/35 rounded-full blur-3xl pointer-events-none" />
 
-          {/* Header Title */}
-          <div className="my-4">
-            <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight text-center md:text-left">
-              {t.title}
+          <div className="relative z-10 pt-2">
+            <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight leading-tight text-white mb-4">
+              Early detection <br />for preserving vision.
             </h1>
-            <p className="text-xs text-slate-400 font-medium mt-1 text-center md:text-left">
-              {t.subtitle}
+            <p className="text-slate-200 text-sm sm:text-base font-medium max-w-xs drop-shadow-sm">
+              AI-powered retinal screening & diagnostic biomarker analytics.
             </p>
           </div>
+        </div>
 
-          {/* Social SSO Buttons */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
-            <button 
-              type="button"
-              className="flex items-center justify-center gap-2 border border-slate-200 rounded-2xl py-2.5 px-4 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition shadow-sm"
-            >
-              <FcGoogle className="text-base" /> {t.googleSso}
-            </button>
-            <button 
-              type="button"
-              className="flex items-center justify-center gap-2 border border-slate-200 rounded-2xl py-2.5 px-4 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition shadow-sm"
-            >
-              <FaHospitalUser className="text-base text-sky-600" /> {t.hospitalPortal}
-            </button>
+        {/* Right Side: Form Panel */}
+        <div className="w-full md:w-1/2 p-4 sm:p-8 flex flex-col justify-center">
+          
+          {/* Brand Header with Custom Eye Icon */}
+          <div className="flex items-center gap-3.5 mb-6">
+            <div className="w-11 h-11 bg-[#fef6e4] rounded-[16px] flex items-center justify-center flex-shrink-0 border border-[#fde4b8] shadow-sm">
+              <svg 
+                className="w-6 h-6 text-[#b44300]" 
+                viewBox="0 0 24 24" 
+                fill="none" 
+                stroke="currentColor" 
+                strokeWidth="2.6" 
+                strokeLinecap="round" 
+                strokeLinejoin="round"
+              >
+                <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7z" />
+                <circle cx="12" cy="12" r="3" strokeWidth="2.6" />
+              </svg>
+            </div>
+            <div>
+              <span className="text-2xl font-extrabold text-[#0d1424] tracking-tight block leading-none">
+                Retina Rescue
+              </span>
+              <span className="text-[10px] font-black uppercase tracking-[0.2em] text-amber-600 block mt-1.5">
+                Personal Health Portal
+              </span>
+            </div>
           </div>
 
-          {/* Divider */}
-          <div className="relative flex items-center justify-center my-2">
-            <div className="border-t border-slate-100 w-full" />
-            <span className="bg-white px-3 text-[11px] font-bold text-slate-400 uppercase tracking-widest absolute">
-              — {t.or} —
-            </span>
-          </div>
+          <h2 className="text-xl font-extrabold text-[#0d1424] mb-1">Welcome Back</h2>
+          <p className="text-xs text-slate-500 font-medium mb-6">Sign in to access your clinical dashboard & reports.</p>
 
-          {/* Main Login Form */}
-          <form onSubmit={handleSubmit} className="space-y-4 mt-2">
+          <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-xs font-bold text-slate-600 mb-1 uppercase tracking-wider">
-                {t.emailLabel}
+              <label className="block text-[10px] font-extrabold uppercase tracking-wider text-slate-400 mb-1.5">
+                Email address
               </label>
-              <div className="relative flex items-center">
-                <FiMail className="absolute left-4 text-slate-400 text-base" />
-                <input
-                  type="email"
-                  required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder={t.emailPlaceholder}
-                  className="w-full bg-slate-50 border border-slate-100 rounded-2xl pl-11 pr-4 py-3 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-600/50 focus:bg-white transition"
-                />
-              </div>
+              <input
+                type="email"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="doctor@retinarescue.com"
+                className="w-full px-4 py-3 rounded-xl border border-slate-200/80 text-xs font-semibold text-[#0d1424] bg-slate-50/70 focus:bg-white focus:outline-none focus:border-[#0d1424] focus:ring-1 focus:ring-[#0d1424] transition-all"
+              />
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-600 mb-1 uppercase tracking-wider">
-                {t.passwordLabel}
+              <label className="block text-[10px] font-extrabold uppercase tracking-wider text-slate-400 mb-1.5">
+                Password
               </label>
-              <div className="relative flex items-center">
-                <FiLock className="absolute left-4 text-slate-400 text-base" />
-                <input
-                  type={showPassword ? 'text' : 'password'}
-                  required
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="••••••••"
-                  className="w-full bg-slate-50 border border-slate-100 rounded-2xl pl-11 pr-11 py-3 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-600/50 focus:bg-white transition"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-4 text-slate-400 hover:text-slate-600 transition text-base"
-                >
-                  {showPassword ? <FiEyeOff /> : <FiEye />}
-                </button>
-              </div>
+              <input
+                type="password"
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="••••••••"
+                className="w-full px-4 py-3 rounded-xl border border-slate-200/80 text-xs font-semibold text-[#0d1424] bg-slate-50/70 focus:bg-white focus:outline-none focus:border-[#0d1424] focus:ring-1 focus:ring-[#0d1424] transition-all"
+              />
             </div>
 
-            {/* Controls */}
-            <div className="flex items-center justify-between text-xs pt-1">
-              <label className="flex items-center gap-2 cursor-pointer text-slate-500 font-medium">
-                <input 
-                  type="checkbox" 
-                  className="rounded-lg border-slate-200 text-slate-900 focus:ring-blue-600 accent-slate-900" 
-                />
-                {t.rememberMe}
-              </label>
-              <button type="button" className="text-blue-700 hover:text-blue-800 font-bold">
-                {t.forgotPassword}
-              </button>
-            </div>
-
-            {/* Submit Button */}
             <button
               type="submit"
-              className="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-3.5 rounded-2xl shadow-lg transition flex items-center justify-center gap-2 text-xs uppercase tracking-wider active:scale-[0.99] mt-2"
+              className="w-full py-3.5 px-4 bg-[#0d1424] hover:bg-[#1a2744] text-white font-bold text-xs uppercase tracking-wider rounded-xl transition-all shadow-md active:scale-[0.99] mt-2 flex items-center justify-center gap-2 cursor-pointer"
             >
-              {t.loginBtn} <FiArrowRight className="text-base" />
+              <span>Sign In</span>
+              <span className="text-base">→</span>
             </button>
           </form>
 
-          {/* Switch Link */}
-          <div className="mt-6 text-center text-xs text-slate-400 font-medium">
-            {t.noAccount}{' '}
+          <p className="text-xs text-center text-slate-500 font-medium mt-6">
+            Don't have an account?{' '}
             <button
               type="button"
-              onClick={onSwitchToSignup}
-              className="text-slate-900 font-extrabold hover:underline ml-1"
+              onClick={onGoToSignup}
+              className="font-bold text-[#0d1424] hover:underline cursor-pointer"
             >
-              {t.signUp}
+              Sign Up
             </button>
-          </div>
-
+          </p>
         </div>
 
       </div>
