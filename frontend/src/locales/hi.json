@@ -15,5 +15,6 @@
   "aiView": "एआई हीटमैप",
   "processAllBtn": "क्रमिक एआई मूल्यांकन चलाएं",
   "detailedReportBtn": "विस्तृत रिपोर्ट देखें",
-  "logout": "लॉग आउट"
+  "logout": "लॉग आउट",
+  "welcomePatient": "स्वागत है, {{name}}"
 }

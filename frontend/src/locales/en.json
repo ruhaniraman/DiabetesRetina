@@ -15,5 +15,6 @@
   "aiView": "AI Heatmap",
   "processAllBtn": "Run Sequential AI Assessment",
   "detailedReportBtn": "DETAILED REPORT",
-  "logout": "Log Out"
+  "logout": "Log Out",
+  "welcomePatient": "Welcome, {{name}}"
 }

@@ -15,5 +15,6 @@
   "aiView": "ಎಐ ಹೀಟ್‌ಮ್ಯಾಪ್",
   "processAllBtn": "ಅನುಕ್ರಮ ಎಐ ಮೌಲ್ಯಮಾಪನ",
   "detailedReportBtn": "ವಿವರವಾದ ವರದಿ ವೀಕ್ಷಿಸಿ",
-  "logout": "ಲಾಗ್ ಔಟ್"
+  "logout": "ಲಾಗ್ ಔಟ್",
+  "welcomePatient": "ಸ್ವಾಗತ, {{name}}"
 }
