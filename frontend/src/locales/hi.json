@@ -1,0 +1,19 @@
+{
+  "portalSub": "रेटीना रेस्क्यू • व्यक्तिगत रेटिना स्वास्थ्य पोर्टल",
+  "title": "रेटीना रेस्क्यू",
+  "recordsTitle": "मेरा स्वास्थ्य रिकॉर्ड",
+  "vitalsTitle": "आँख के महत्वपूर्ण संकेत एवं आधार रेखा",
+  "upperBp": "ऊपरी रक्तचाप",
+  "lowerBp": "निचला रक्तचाप",
+  "hba1c": "HbA1c का स्तर",
+  "indicatorLabel": "प्रमुख निष्कर्ष",
+  "maculaLabel": "केन्द्र दृष्टि",
+  "dualCardTitle": "द्विपक्षीय रेटिना परीक्षा (OS / OD)",
+  "leftEyeLabel": "बायां नेत्र (OS)",
+  "rightEyeLabel": "दायां नेत्र (OD)",
+  "rawView": "मानक",
+  "aiView": "एआई हीटमैप",
+  "processAllBtn": "क्रमिक एआई मूल्यांकन चलाएं",
+  "detailedReportBtn": "विस्तृत रिपोर्ट देखें",
+  "logout": "लॉग आउट"
+}

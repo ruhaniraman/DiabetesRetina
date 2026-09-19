@@ -1,93 +1,97 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { 
   FiEye, FiUploadCloud, FiGlobe, 
   FiAlertTriangle, FiLogOut, FiRefreshCw, 
   FiPlay, FiArrowRight 
 } from 'react-icons/fi';
 
-const TRANSLATIONS = {
-  en: {
-    portalSub: "RETINARESCUE • PERSONAL RETINAL HEALTH PORTAL",
-    title: "Retina Rescue",
-    overallRiskTitle: "Overall Assessment: Stage 2 - Moderate Risk",
-    overallRiskDesc: "Moderate signs detected in Left Eye (OS). Right Eye (OD) is clear. Keep blood sugar controlled and schedule a consultation.",
-    dualCardTitle: "Bilateral Retinal Examination (OS / OD)",
-    leftEyeLabel: "Left Eye (OS)",
-    rightEyeLabel: "Right Eye (OD)",
-    rawView: "Standard",
-    aiView: "AI Heatmap",
-    replaceBtn: "Replace Photo",
-    processAllBtn: "Run Sequential AI Assessment",
-    processingLeft: "Processing Left Eye Pipeline...",
-    processingRight: "Processing Right Eye Pipeline...",
-    queued: "Queued for Processing",
-    recordsTitle: "My Health Record",
-    assignedDoctorLabel: "YOUR EYE SPECIALIST",
-    indicatorLabel: "KEY FINDINGS",
-    indicatorVal: "Minor Spots (OS)",
-    maculaLabel: "CENTER VISION",
-    maculaVal: "Clear & Healthy",
-    recentScans: "PREVIOUS EYE RECORDS",
-    detailedReportBtn: "DETAILED REPORT",
-    logout: "Log Out"
-  },
-  hi: {
-    portalSub: "रेटीना रेस्क्यू • व्यक्तिगत आंख स्वास्थ्य पोर्टल",
-    title: "रेटीना रेस्क्यू",
-    overallRiskTitle: "समग्र मूल्यांकन: चरण 2 - मध्यम जोखिम",
-    overallRiskDesc: "बाईं आंख (OS) में मध्यम लक्षण पाए गए हैं। दाहिनी आंख (OD) सामान्य है। अपने ब्लड शुगर को नियंत्रित रखें।",
-    dualCardTitle: "द्विपक्षीय रेटिना जांच (OS / OD)",
-    leftEyeLabel: "बाईं आंख (OS)",
-    rightEyeLabel: "दाहिनी आंख (OD)",
-    rawView: "सामान्य",
-    aiView: "एआई विश्लेषण",
-    replaceBtn: "तस्वीर बदलें",
-    processAllBtn: "एआई जांच शुरू करें",
-    processingLeft: "बाईं आंख की जांच जारी है...",
-    processingRight: "दाहिनी आंख की जांच जारी है...",
-    queued: "कतार में",
-    recordsTitle: "मेरा स्वास्थ्य रिकॉर्ड",
-    assignedDoctorLabel: "आपके नेत्र विशेषज्ञ",
-    indicatorLabel: "मुख्य निष्कर्ष",
-    indicatorVal: "छोटे धब्बे (OS)",
-    maculaLabel: "केंद्र दृष्टि",
-    maculaVal: "स्पष्ट और स्वस्थ",
-    recentScans: "पुराने आंख के रिकॉर्ड",
-    detailedReportBtn: "विस्तृत रिपोर्ट",
-    logout: "लॉग आउट"
-  },
-  kn: {
-    portalSub: "ರೆಟಿನಾ ರೆಸ್ಕ್ಯೂ • ವೈಯಕ್ತಿಕ ಕಣ್ಣಿನ ಆರೋಗ್ಯ ಪೋರ್ಟಲ್",
-    title: "ರೆಟಿನಾ ರೆಸ್ಕ್ಯೂ",
-    overallRiskTitle: "ಒಟ್ಟಾರೆ ತಪಾಸಣೆ: ಹಂತ 2 - ಮಧ್ಯಮ ಅಪಾಯ",
-    overallRiskDesc: "ಎಡ ಕಣ್ಣಿನಲ್ಲಿ (OS) ಸಣ್ಣ ಪ್ರಮಾಣದ ಲಕ್ಷಣಗಳು ಕಂಡುಬಂದಿವೆ. ಬಲ ಕಣ್ಣು (OD) ಸಾಮಾನ್ಯವಾಗಿದೆ. ರಕ್ತದ ಸಕ್ಕರೆ ಮಟ್ಟವನ್ನು ನಿಯಂತ್ರಣದಲ್ಲಿಟ್ಟುಕೊಳ್ಳಿ.",
-    dualCardTitle: "ಎರಡೂ ಕಣ್ಣುಗಳ ತಪಾಸಣೆ (OS / OD)",
-    leftEyeLabel: "ಎಡ ಕಣ್ಣು (OS)",
-    rightEyeLabel: "ಬಲ ಕಣ್ಣು (OD)",
-    rawView: "ಸಾಮಾನ್ಯ",
-    aiView: "ಎಐ ತಪಾಸಣೆ",
-    replaceBtn: "ಚಿತ್ರ ಬದಲಾಯಿಸಿ",
-    processAllBtn: "ಎಐ ತಪಾಸಣೆ ಪ್ರಾರಂಭಿಸಿ",
-    processingLeft: "ಎಡ ಕಣ್ಣಿನ ತಪಾಸಣೆ ನಡೆಯುತ್ತಿದೆ...",
-    processingRight: "ಬಲ ಕಣ್ಣಿನ ತಪಾಸಣೆ ನಡೆಯುತ್ತಿದೆ...",
-    queued: "ಸರತಿಯಲ್ಲಿದೆ",
-    recordsTitle: "ನನ್ನ ಆರೋಗ್ಯ ದಾಖಲೆ",
-    assignedDoctorLabel: "ನಿಮ್ಮ ಕಣ್ಣಿನ ತಜ್ಞರು",
-    indicatorLabel: "ಪ್ರಮುಖ ಅಂಶಗಳು",
-    indicatorVal: "ಸಣ್ಣ ಕಲೆಗಳು (OS)",
-    maculaLabel: "ಕೇಂದ್ರ ದೃಷ್ಟಿ",
-    maculaVal: "ಸ್ಪಷ್ಟವಾಗಿದೆ",
-    recentScans: "ಹಿಂದಿನ ಕಣ್ಣಿನ ವರದಿಗಳು",
-    detailedReportBtn: "ವಿವರವಾದ ವರದಿ",
-    logout: "ನಿರ್ಗಮಿಸಿ"
-  }
+// Default Source Text (English)
+const DEFAULT_TEXTS = {
+  portalSub: "RETINARESCUE • PERSONAL RETINAL HEALTH PORTAL",
+  title: "Retina Rescue",
+  overallRiskTitle: "Overall Assessment: Stage 2 - Moderate Risk",
+  overallRiskDesc: "Moderate signs detected in Left Eye (OS). Right Eye (OD) is clear. Keep blood sugar controlled and schedule a consultation.",
+  dualCardTitle: "Bilateral Retinal Examination (OS / OD)",
+  leftEyeLabel: "Left Eye (OS)",
+  rightEyeLabel: "Right Eye (OD)",
+  rawView: "Standard",
+  aiView: "AI Heatmap",
+  replaceBtn: "Replace Photo",
+  processAllBtn: "Run Sequential AI Assessment",
+  processingLeft: "Processing Left Eye Pipeline...",
+  processingRight: "Processing Right Eye Pipeline...",
+  queued: "Queued for Processing",
+  recordsTitle: "My Health Record",
+  patientName: "Jane Doe",
+  patientMeta: "54 Yrs • Female • DOB: 12 May 1972",
+  bloodGroup: "Blood Group: A+",
+  assignedDoctorLabel: "YOUR EYE SPECIALIST",
+  vitalsTitle: "OCULAR VITALS & BASELINE",
+  upperBp: "Upper BP",
+  lowerBp: "Lower BP",
+  hba1c: "HbA1c Level",
+  indicatorLabel: "KEY FINDINGS",
+  indicatorVal: "Minor Spots (OS)",
+  maculaLabel: "CENTER VISION",
+  maculaVal: "Clear & Healthy",
+  recentScans: "DIAGNOSTIC IMAGING LOG",
+  octScan: "OCT Retinal Scan",
+  fundusScan: "Fundus Photography",
+  bothEyes: "OU (Both Eyes)",
+  leftEyeOnly: "OS (Left Eye)",
+  statusMild: "Mild Concern",
+  statusNormal: "Normal",
+  detailedReportBtn: "DETAILED REPORT",
+  logout: "Log Out"
 };
+
+// In-Memory Translation Cache to reduce API calls
+const translationCache = {};
+
+/**
+ * Dynamic Real-Time Google Translation Service
+ * Replace GOOGLE_API_KEY or target API endpoint with your backend proxy URL (e.g., /api/translate)
+ */
+async function translateText(text, targetLang, apiKey = "") {
+  if (targetLang === 'en' || !text) return text;
+  
+  const cacheKey = `${targetLang}:${text}`;
+  if (translationCache[cacheKey]) {
+    return translationCache[cacheKey];
+  }
+
+  try {
+    // Standard Google Cloud Translation REST API Call
+    // If calling via backend proxy, change URL to: `/api/translate`
+    const response = await fetch(`https://translation.googleapis.com/language/translate/v2?key=${apiKey}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        q: text,
+        target: targetLang,
+        format: 'text'
+      })
+    });
+
+    if (!response.ok) throw new Error('Translation API request failed');
+    
+    const data = await response.json();
+    const translatedText = data?.data?.translations?.[0]?.translatedText || text;
+    
+    translationCache[cacheKey] = translatedText;
+    return translatedText;
+  } catch (error) {
+    console.warn("Real-time translation failed, falling back to source text:", error);
+    return text; // Fallback to original English text
+  }
+}
 
 export default function Dashboard({ user, onLogout, onViewDetailedReport, lang: externalLang, setLang: externalSetLang }) {
   const [internalLang, setInternalLang] = useState('en');
   const currentLang = externalLang || internalLang;
-  const t = TRANSLATIONS[currentLang] || TRANSLATIONS.en;
 
+  const [t, setT] = useState(DEFAULT_TEXTS);
+  const [isTranslating, setIsTranslating] = useState(false);
   const [isProcessingPipeline, setIsProcessingPipeline] = useState(false);
 
   // Left Eye (OS) and Right Eye (OD) States
@@ -106,6 +110,33 @@ export default function Dashboard({ user, onLogout, onViewDetailedReport, lang: 
     accuracy: '98.1%',
     showAi: false
   });
+
+  // Handle Dynamic Real-Time Translation on Language Change
+  const updateTranslations = useCallback(async (targetLang) => {
+    if (targetLang === 'en') {
+      setT(DEFAULT_TEXTS);
+      return;
+    }
+
+    setIsTranslating(true);
+    const translatedObject = {};
+
+    // Translate all keys concurrently
+    const keys = Object.keys(DEFAULT_TEXTS);
+    const promises = keys.map(key => translateText(DEFAULT_TEXTS[key], targetLang));
+
+    const results = await Promise.all(promises);
+    keys.forEach((key, index) => {
+      translatedObject[key] = results[index];
+    });
+
+    setT(translatedObject);
+    setIsTranslating(false);
+  }, []);
+
+  useEffect(() => {
+    updateTranslations(currentLang);
+  }, [currentLang, updateTranslations]);
 
   const handleLangChange = (newLang) => {
     if (externalSetLang) externalSetLang(newLang);
@@ -153,9 +184,9 @@ export default function Dashboard({ user, onLogout, onViewDetailedReport, lang: 
           </div>
 
           <div className="flex items-center gap-2.5 self-start sm:self-auto">
-            {/* Language Switcher */}
+            {/* Real-time Language Switcher */}
             <div className="flex items-center bg-white border border-slate-200/80 rounded-2xl p-1 shadow-sm text-xs font-semibold">
-              <FiGlobe className="ml-2.5 mr-1 text-slate-400" />
+              <FiGlobe className={`ml-2.5 mr-1 text-slate-400 ${isTranslating ? 'animate-spin text-amber-600' : ''}`} />
               <button 
                 type="button"
                 onClick={() => handleLangChange('en')} 
@@ -208,7 +239,7 @@ export default function Dashboard({ user, onLogout, onViewDetailedReport, lang: 
               </div>
             </div>
 
-            {/* DUAL RETINAL SCAN CONTAINER (OS & OD SIDE BY SIDE) */}
+            {/* DUAL RETINAL SCAN CONTAINER */}
             <div className="bg-white border border-slate-100 rounded-[2.5rem] p-6 shadow-sm space-y-4">
               
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
@@ -363,8 +394,6 @@ export default function Dashboard({ user, onLogout, onViewDetailedReport, lang: 
 
             {/* DIAGNOSTIC TELEMETRY CARDS */}
             <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3.5">
-              
-              {/* Quality Gate Card */}
               <div className="bg-white border border-slate-100 rounded-[1.5rem] p-4 shadow-sm flex flex-col justify-between">
                 <div>
                   <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block mb-1.5">
@@ -380,7 +409,6 @@ export default function Dashboard({ user, onLogout, onViewDetailedReport, lang: 
                 </p>
               </div>
 
-              {/* Confidence Score Card */}
               <div className="bg-white border border-slate-100 rounded-[1.5rem] p-4 shadow-sm flex flex-col justify-between">
                 <div>
                   <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block mb-1.5">
@@ -396,7 +424,6 @@ export default function Dashboard({ user, onLogout, onViewDetailedReport, lang: 
                 </p>
               </div>
 
-              {/* MCDO Epistemic Card */}
               <div className="bg-white border border-slate-100 rounded-[1.5rem] p-4 shadow-sm flex flex-col justify-between">
                 <div>
                   <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block mb-1.5">
@@ -412,7 +439,6 @@ export default function Dashboard({ user, onLogout, onViewDetailedReport, lang: 
                 </p>
               </div>
 
-              {/* OOD Detector Card */}
               <div className="bg-white border border-slate-100 rounded-[1.5rem] p-4 shadow-sm flex flex-col justify-between">
                 <div>
                   <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block mb-1.5">
@@ -427,24 +453,39 @@ export default function Dashboard({ user, onLogout, onViewDetailedReport, lang: 
                   Real fundus verified
                 </p>
               </div>
-
             </div>
 
           </div>
 
           {/* RIGHT SIDEBAR: MY HEALTH RECORD CARD */}
-          <div className="w-full lg:w-80 bg-white rounded-[2.5rem] p-6 border border-slate-100 flex flex-col justify-between shrink-0 shadow-sm">
+          <div className="w-full lg:w-96 bg-white rounded-[2.5rem] p-6 border border-slate-100 flex flex-col justify-between shrink-0 shadow-sm space-y-5">
             
-            <div className="space-y-6">
+            <div className="space-y-5">
               
-              {/* Header */}
-              <div className="flex items-center justify-between">
-                <h2 className="text-lg font-black text-slate-900">{t.recordsTitle}</h2>
-                <span className="text-[10px] font-extrabold text-slate-400">#PT-2026</span>
+              {/* Header & Patient Identification */}
+              <div className="pb-4 border-b border-slate-100">
+                <div className="flex items-center justify-between mb-2">
+                  <h2 className="text-lg font-black text-slate-900">{t.recordsTitle}</h2>
+                  <span className="px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-700 text-[10px] font-extrabold border border-slate-200">
+                    #PT-2026
+                  </span>
+                </div>
+
+                <div className="bg-slate-50/80 p-3 rounded-2xl border border-slate-100">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-extrabold text-slate-900">{t.patientName}</span>
+                    <span className="text-[10px] font-extrabold text-amber-700 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200/60">
+                      {t.bloodGroup}
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-slate-500 font-semibold mt-1">
+                    {t.patientMeta}
+                  </p>
+                </div>
               </div>
 
               {/* Doctor Info */}
-              <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100 flex items-center gap-3">
+              <div className="bg-slate-50 p-3.5 rounded-2xl border border-slate-100 flex items-center gap-3">
                 <div className="w-10 h-10 rounded-2xl bg-blue-100 text-blue-900 font-extrabold flex items-center justify-center text-sm shrink-0">
                   AV
                 </div>
@@ -455,31 +496,74 @@ export default function Dashboard({ user, onLogout, onViewDetailedReport, lang: 
                 </div>
               </div>
 
-              {/* Key Findings Grid */}
-              <div className="grid grid-cols-2 gap-3">
-                <div className="bg-[#fef9ee] p-3.5 rounded-2xl border border-amber-100/60">
-                  <span className="text-[9px] uppercase font-bold text-amber-700 block">{t.indicatorLabel}</span>
-                  <p className="text-xs font-extrabold text-amber-900 mt-1">{t.indicatorVal}</p>
-                </div>
-                <div className="bg-[#f0fdf4] p-3.5 rounded-2xl border border-emerald-100/60">
-                  <span className="text-[9px] uppercase font-bold text-emerald-700 block">{t.maculaLabel}</span>
-                  <p className="text-xs font-extrabold text-emerald-900 mt-1">{t.maculaVal}</p>
+              {/* Ocular Baseline & Vitals Grid (Upper BP, Lower BP, HbA1c) */}
+              <div>
+                <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block mb-2">
+                  {t.vitalsTitle}
+                </span>
+                <div className="grid grid-cols-3 gap-2 bg-slate-50 p-2 rounded-2xl border border-slate-100 text-center">
+                  <div className="bg-white p-2 rounded-xl border border-slate-100">
+                    <span className="text-[9px] font-extrabold text-slate-400 block">{t.upperBp}</span>
+                    <span className="text-xs font-black text-slate-900 block mt-0.5">120 mmHg</span>
+                    <span className="text-[9px] font-semibold text-emerald-600">Normal</span>
+                  </div>
+                  <div className="bg-white p-2 rounded-xl border border-slate-100">
+                    <span className="text-[9px] font-extrabold text-slate-400 block">{t.lowerBp}</span>
+                    <span className="text-xs font-black text-slate-900 block mt-0.5">80 mmHg</span>
+                    <span className="text-[9px] font-semibold text-emerald-600">Normal</span>
+                  </div>
+                  <div className="bg-white p-2 rounded-xl border border-slate-100">
+                    <span className="text-[9px] font-extrabold text-slate-400 block">{t.hba1c}</span>
+                    <span className="text-xs font-black text-slate-900 block mt-0.5">5.8%</span>
+                    <span className="text-[9px] font-semibold text-emerald-600">Optimal</span>
+                  </div>
                 </div>
               </div>
 
-              {/* Timeline Records */}
+              {/* Key Findings Grid */}
+              <div className="grid grid-cols-2 gap-2.5">
+                <div className="bg-[#fef9ee] p-3 rounded-2xl border border-amber-100/60">
+                  <span className="text-[9px] uppercase font-bold text-amber-700 block">{t.indicatorLabel}</span>
+                  <p className="text-xs font-extrabold text-amber-900 mt-0.5">{t.indicatorVal}</p>
+                </div>
+                <div className="bg-[#f0fdf4] p-3 rounded-2xl border border-emerald-100/60">
+                  <span className="text-[9px] uppercase font-bold text-emerald-700 block">{t.maculaLabel}</span>
+                  <p className="text-xs font-extrabold text-emerald-900 mt-0.5">{t.maculaVal}</p>
+                </div>
+              </div>
+
+              {/* Diagnostic Imaging Log */}
               <div>
-                <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block mb-3">
+                <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block mb-2.5">
                   {t.recentScans}
                 </span>
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="bg-[#0b1329] text-white p-4 rounded-2xl text-center text-xs font-bold cursor-pointer hover:opacity-90 transition shadow-sm">
-                    SCAN 01
-                    <span className="block text-[9px] text-slate-400 font-normal mt-0.5">Nov 24</span>
+                <div className="space-y-2">
+                  <div className="p-3 rounded-2xl bg-slate-50 border border-slate-100 flex items-center justify-between hover:bg-slate-100/80 transition cursor-pointer">
+                    <div>
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-xs font-bold text-slate-900">{t.octScan}</span>
+                      </div>
+                      <span className="text-[10px] text-slate-400 font-semibold block mt-0.5">
+                        Nov 24 • {t.leftEyeOnly}
+                      </span>
+                    </div>
+                    <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 border border-amber-200">
+                      {t.statusMild}
+                    </span>
                   </div>
-                  <div className="bg-[#0b1329] text-white p-4 rounded-2xl text-center text-xs font-bold cursor-pointer hover:opacity-90 transition shadow-sm">
-                    SCAN 02
-                    <span className="block text-[9px] text-slate-400 font-normal mt-0.5">Oct 28</span>
+
+                  <div className="p-3 rounded-2xl bg-slate-50 border border-slate-100 flex items-center justify-between hover:bg-slate-100/80 transition cursor-pointer">
+                    <div>
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-xs font-bold text-slate-900">{t.fundusScan}</span>
+                      </div>
+                      <span className="text-[10px] text-slate-400 font-semibold block mt-0.5">
+                        Oct 28 • {t.bothEyes}
+                      </span>
+                    </div>
+                    <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200">
+                      {t.statusNormal}
+                    </span>
                   </div>
                 </div>
               </div>
@@ -489,7 +573,7 @@ export default function Dashboard({ user, onLogout, onViewDetailedReport, lang: 
             {/* Detailed Report Navigation Action */}
             <button 
               onClick={onViewDetailedReport}
-              className="w-full mt-6 bg-slate-900 hover:bg-slate-800 text-white font-bold py-4 rounded-2xl shadow-md transition flex items-center justify-center gap-2 text-xs uppercase tracking-wider active:scale-[0.99] cursor-pointer"
+              className="w-full mt-4 bg-slate-900 hover:bg-slate-800 text-white font-bold py-3.5 rounded-2xl shadow-md transition flex items-center justify-center gap-2 text-xs uppercase tracking-wider active:scale-[0.99] cursor-pointer"
             >
               <span>{t.detailedReportBtn}</span>
               <FiArrowRight className="text-base" />
