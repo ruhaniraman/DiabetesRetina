@@ -1,0 +1,19 @@
+{
+  "portalSub": "RETINARESCUE • PERSONAL RETINAL HEALTH PORTAL",
+  "title": "Retina Rescue",
+  "recordsTitle": "My Health Record",
+  "vitalsTitle": "OCULAR VITALS & BASELINE",
+  "upperBp": "Upper BP",
+  "lowerBp": "Lower BP",
+  "hba1c": "HbA1c Level",
+  "indicatorLabel": "KEY FINDINGS",
+  "maculaLabel": "CENTER VISION",
+  "dualCardTitle": "Bilateral Retinal Examination (OS / OD)",
+  "leftEyeLabel": "Left Eye (OS)",
+  "rightEyeLabel": "Right Eye (OD)",
+  "rawView": "Standard",
+  "aiView": "AI Heatmap",
+  "processAllBtn": "Run Sequential AI Assessment",
+  "detailedReportBtn": "DETAILED REPORT",
+  "logout": "Log Out"
+}
