@@ -5,11 +5,10 @@ import {
   FiAlertTriangle, FiLogOut, FiRefreshCw, 
   FiPlay, FiArrowRight, FiUser, FiCalendar,
   FiCheckCircle, FiShield, FiActivity,
-  FiZap, FiMaximize2
+  FiZap, FiMaximize2, FiX, FiAlertCircle
 } from 'react-icons/fi';
 import Logo from '../components/Logo';
 
-// Helper function to translate dynamic clinical descriptions via FastAPI
 async function translateDynamicText(text, targetLang) {
   if (targetLang === 'en' || !text) return text;
   try {
@@ -39,6 +38,19 @@ export default function Dashboard({ onLogout, onViewDetailedReport, onScheduleCo
   const [leftEye, setLeftEye] = useState({ stage: 'Stage 2 - Moderate', accuracy: '96.4%', status: 'completed' });
   const [rightEye, setRightEye] = useState({ stage: 'Stage 0 - Clear', accuracy: '98.1%', status: 'completed' });
 
+  // Upload states & Quality Validation states
+  const [leftImage, setLeftImage] = useState(null);
+  const [rightImage, setRightImage] = useState(null);
+  
+  const [leftQualityStatus, setLeftQualityStatus] = useState(null); // 'accepted', 'rejected'
+  const [rightQualityStatus, setRightQualityStatus] = useState(null);
+  const [leftVerdict, setLeftVerdict] = useState(null); // 'accept', 'enhance', 'reject'
+  const [rightVerdict, setRightVerdict] = useState(null);
+  const [leftRejectReason, setLeftRejectReason] = useState('');
+  const [rightRejectReason, setRightRejectReason] = useState('');
+
+  const [fullscreenImage, setFullscreenImage] = useState(null);
+
   useEffect(() => {
     let isMounted = true;
     translateDynamicText(rawClinicalNote, i18n.language).then(translated => {
@@ -51,20 +63,87 @@ export default function Dashboard({ onLogout, onViewDetailedReport, onScheduleCo
     i18n.changeLanguage(lang);
   };
 
-  const runSequentialPipeline = () => {
+  const verifyImageQuality = async (file, setQualityStatus, setVerdict, setRejectReason) => {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    try {
+      const res = await fetch('http://localhost:5000/api/stage1-quality', {
+        method: 'POST',
+        body: formData
+      });
+      
+      if (!res.ok) throw new Error('Stage 1 Quality Service failed');
+      
+      const data = await res.json();
+      
+      if (data.verdict === 'reject') {
+        setQualityStatus('rejected');
+        setVerdict('reject');
+        setRejectReason(data.reason);
+      } else {
+        setQualityStatus('accepted');
+        setVerdict(data.verdict); // 'accept' or 'enhance'
+        setRejectReason('');
+      }
+    } catch (err) {
+      console.warn("Backend quality check error, defaulting to accepted:", err);
+      setQualityStatus('accepted');
+      setVerdict('accept');
+      setRejectReason('');
+    }
+  };
+
+  const handleLeftFileUpload = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const imageUrl = URL.createObjectURL(file);
+      setLeftImage(imageUrl);
+      verifyImageQuality(file, setLeftQualityStatus, setLeftVerdict, setLeftRejectReason);
+    }
+  };
+
+  const handleRightFileUpload = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const imageUrl = URL.createObjectURL(file);
+      setRightImage(imageUrl);
+      verifyImageQuality(file, setRightQualityStatus, setRightVerdict, setRightRejectReason);
+    }
+  };
+
+  const runSequentialPipeline = async () => {
     if (isProcessingPipeline) return;
     setIsProcessingPipeline(true);
     setLeftEye(prev => ({ ...prev, status: 'processing' }));
     setRightEye(prev => ({ ...prev, status: 'queued' }));
 
-    setTimeout(() => {
-      setLeftEye(prev => ({ ...prev, status: 'completed' }));
-      setRightEye(prev => ({ ...prev, status: 'processing' }));
+    try {
+      const response = await fetch('http://localhost:5000/api/simulation');
+      if (!response.ok) throw new Error('Simulation data unavailable');
+      
+      const metrics = await response.json();
+      const captureDelay = (metrics.avgWaitCapture || 1) * 500;
+      const computeDelay = (metrics.avgWaitCompute || 1) * 500;
+
       setTimeout(() => {
+        setLeftEye(prev => ({ ...prev, status: 'completed', waitTime: metrics.avgWaitCapture }));
+        setRightEye(prev => ({ ...prev, status: 'processing' }));
+        
+        setTimeout(() => {
+          setRightEye(prev => ({ ...prev, status: 'completed', waitTime: metrics.avgWaitCompute }));
+          setIsProcessingPipeline(false);
+        }, computeDelay);
+      }, captureDelay);
+
+    } catch (err) {
+      console.error(err);
+      setTimeout(() => {
+        setLeftEye(prev => ({ ...prev, status: 'completed' }));
         setRightEye(prev => ({ ...prev, status: 'completed' }));
         setIsProcessingPipeline(false);
       }, 2000);
-    }, 2000);
+    }
   };
 
   return (
@@ -73,10 +152,7 @@ export default function Dashboard({ onLogout, onViewDetailedReport, onScheduleCo
         
         {/* ================= 1. HEADER BAR ================= */}
         <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 py-1 px-1">
-          
-          {/* Logo & Larger Aligned Greeting */}
           <div className="flex items-center gap-4">
-            {/* Clickable Logo -> Redirects to Sign In */}
             <button 
               onClick={onLogout}
               title="Return to Sign In"
@@ -84,7 +160,6 @@ export default function Dashboard({ onLogout, onViewDetailedReport, onScheduleCo
             >
               <Logo />
             </button>
-
             <div className="flex items-center">
               <h1 className="text-2xl sm:text-3xl lg:text-4xl font-['Outfit',sans-serif] font-bold text-slate-900 tracking-tight leading-none">
                 Welcome, {patientName}
@@ -92,9 +167,7 @@ export default function Dashboard({ onLogout, onViewDetailedReport, onScheduleCo
             </div>
           </div>
 
-          {/* Header Actions */}
           <div className="flex items-center gap-2.5 self-start sm:self-auto">
-            {/* Language Switcher */}
             <div className="flex items-center bg-white border border-slate-200/90 rounded-xl p-1 text-xs font-semibold shadow-2xs">
               <FiGlobe className="ml-2 mr-1.5 text-slate-400" />
               <button 
@@ -120,7 +193,6 @@ export default function Dashboard({ onLogout, onViewDetailedReport, onScheduleCo
               </button>
             </div>
 
-            {/* Logout Button */}
             <button 
               onClick={onLogout}
               title="Logout"
@@ -133,9 +205,7 @@ export default function Dashboard({ onLogout, onViewDetailedReport, onScheduleCo
 
         {/* ================= 2. RISK ASSESSMENT BANNER ================= */}
         <div className="relative overflow-hidden bg-gradient-to-r from-amber-500/10 via-amber-500/5 to-white bg-white border border-amber-200/90 border-l-4 border-l-amber-500 rounded-2xl p-5 md:p-6 shadow-xs">
-          
           <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-5 relative z-10">
-            
             <div className="flex items-start gap-4">
               <div className="relative shrink-0 mt-0.5">
                 <div className="absolute -inset-1 rounded-xl bg-amber-500/20 animate-pulse"></div>
@@ -152,8 +222,6 @@ export default function Dashboard({ onLogout, onViewDetailedReport, onScheduleCo
                   <span className="px-2.5 py-0.5 rounded-md text-[10px] font-bold bg-amber-100/90 text-amber-900 border border-amber-200">
                     Moderate Progression
                   </span>
-                  <span className="text-xs text-slate-400 hidden sm:inline">•</span>
-                  <span className="text-xs text-slate-500 font-medium hidden sm:inline">AI Bilateral Screening</span>
                 </div>
 
                 <h2 className="text-base md:text-lg font-bold text-slate-900 tracking-tight">
@@ -163,20 +231,6 @@ export default function Dashboard({ onLogout, onViewDetailedReport, onScheduleCo
                 <p className="text-xs md:text-sm text-slate-600 leading-relaxed max-w-3xl font-medium">
                   {translatedClinicalNote}
                 </p>
-
-                <div className="pt-1 flex flex-wrap gap-2 text-slate-700">
-                  <div className="flex items-center gap-1.5 text-[11px] font-semibold bg-slate-100/90 border border-slate-200/80 px-2.5 py-1 rounded-lg">
-                    <FiCheckCircle className="text-amber-600" />
-                    <span>Left Eye (OS): Moderate Signs</span>
-                  </div>
-                  <div className="flex items-center gap-1.5 text-[11px] font-semibold bg-slate-100/90 border border-slate-200/80 px-2.5 py-1 rounded-lg">
-                    <FiCheckCircle className="text-emerald-600" />
-                    <span>Right Eye (OD): Clear</span>
-                  </div>
-                  <div className="flex items-center gap-1.5 text-[11px] font-semibold bg-amber-100/60 border border-amber-200/80 px-2.5 py-1 rounded-lg text-amber-900">
-                    <span>Monitor Blood Sugar</span>
-                  </div>
-                </div>
               </div>
             </div>
 
@@ -190,10 +244,7 @@ export default function Dashboard({ onLogout, onViewDetailedReport, onScheduleCo
                 <FiArrowRight className="text-sm transition-transform group-hover:translate-x-1" />
               </button>
             </div>
-
           </div>
-
-          <div className="absolute -right-10 -bottom-10 w-40 h-40 bg-amber-500/5 rounded-full blur-2xl pointer-events-none"></div>
         </div>
 
         {/* ================= 3. MAIN DASHBOARD CONTENT GRID ================= */}
@@ -202,7 +253,6 @@ export default function Dashboard({ onLogout, onViewDetailedReport, onScheduleCo
           {/* ------------ LEFT MAIN PANEL: RETINAL EXAM ------------ */}
           <div className="flex-1 bg-white border border-slate-200/90 rounded-2xl p-5 sm:p-6 shadow-xs flex flex-col justify-between space-y-6">
             
-            {/* Section Header */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-100">
               <div>
                 <div className="flex items-center gap-2">
@@ -214,7 +264,7 @@ export default function Dashboard({ onLogout, onViewDetailedReport, onScheduleCo
                   </h3>
                 </div>
                 <p className="text-xs text-slate-500 font-medium mt-1">
-                  {t('dualCardSub', 'Oculus Sinister (Left Eye) & Oculus Dexter (Right Eye)')}
+                  {t('stage1Sub', 'Stage 1 Quality Assessment & Stage 2-4 AI Pipeline')}
                 </p>
               </div>
 
@@ -247,10 +297,17 @@ export default function Dashboard({ onLogout, onViewDetailedReport, onScheduleCo
               {/* ---------- LEFT EYE VIEWPORT ---------- */}
               <div className="bg-slate-50/80 border border-slate-200/80 rounded-2xl p-4 flex flex-col justify-between space-y-4 hover:border-slate-300 transition">
                 
-                {/* Header Info */}
                 <div className="flex items-center justify-between">
                   <div>
-                    <span className="text-xs font-bold text-slate-900 block">{t('leftEyeLabel', 'Left Eye (OS)')}</span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-bold text-slate-900 block">{t('leftEyeLabel', 'Left Eye (OS)')}</span>
+                      {/* BLUE AREA: "Image Enhanced" Tag */}
+                      {leftVerdict === 'enhance' && (
+                        <span className="px-2 py-0.5 bg-indigo-100 text-indigo-800 border border-indigo-200 rounded-md text-[10px] font-extrabold uppercase tracking-wide">
+                          Image Enhanced
+                        </span>
+                      )}
+                    </div>
                     <span className="text-[10px] text-slate-400 font-medium">Bilateral Scan A</span>
                   </div>
                   <span className="text-[11px] font-bold text-amber-900 bg-amber-100/90 px-2.5 py-1 rounded-lg border border-amber-200">
@@ -259,54 +316,91 @@ export default function Dashboard({ onLogout, onViewDetailedReport, onScheduleCo
                 </div>
 
                 {/* Fundus Diagnostic HUD Box */}
-                <div className="relative bg-[#0b1329] rounded-xl p-5 min-h-[230px] flex flex-col items-center justify-center text-center border border-slate-800 shadow-inner group overflow-hidden">
+                <div className="relative bg-[#0b1329] rounded-xl p-3 min-h-[380px] flex flex-col items-center justify-center text-center border border-slate-800 shadow-inner group overflow-hidden">
                   
-                  {/* Subtle Grid Reticle Effect */}
                   <div className="absolute inset-0 bg-[radial-gradient(#1e293b_1px,transparent_1px)] [background-size:16px_16px] opacity-40 pointer-events-none"></div>
-                  
-                  {/* Status Overlay Tag */}
-                  <div className="absolute top-3 left-3 flex items-center gap-1.5 px-2 py-0.5 rounded bg-slate-900/80 border border-slate-700/80 text-[10px] text-slate-300 font-medium backdrop-blur-xs">
-                    <span className="w-1.5 h-1.5 rounded-full bg-amber-400"></span>
-                    <span>ANALYZED</span>
-                  </div>
 
-                  <div className="absolute top-3 right-3 text-slate-500 hover:text-slate-300 transition cursor-pointer">
-                    <FiMaximize2 className="text-xs" />
-                  </div>
+                  <label className="absolute inset-0 z-20 cursor-pointer flex flex-col items-center justify-center">
+                    <input 
+                      type="file" 
+                      accept="image/*" 
+                      className="hidden" 
+                      onChange={handleLeftFileUpload} 
+                    />
+                  </label>
 
-                  {/* Icon & Details */}
-                  <div className="relative z-10 flex flex-col items-center">
-                    <div className="w-14 h-14 rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400 text-2xl mb-3 backdrop-blur-xs group-hover:scale-105 transition">
-                      <FiEye />
+                  {leftImage ? (
+                    <div className="absolute inset-0 z-10 flex items-center justify-center p-2">
+                      <img src={leftImage} alt="Left Eye Scan" className="w-full h-full object-contain rounded-xl" />
+                      <button 
+                        type="button"
+                        onClick={(e) => { e.stopPropagation(); setFullscreenImage(leftImage); }}
+                        className="absolute top-3 right-3 z-30 p-2 bg-slate-900/80 hover:bg-slate-900 text-white rounded-lg backdrop-blur-xs transition shadow-md cursor-pointer"
+                        title="View Fullscreen"
+                      >
+                        <FiMaximize2 className="text-sm" />
+                      </button>
                     </div>
-                    
-                    <span className="text-white font-semibold text-xs tracking-wide">
-                      {t('originalFundus', 'Original Fundus Image')}
-                    </span>
-
-                    {/* Accuracy Badge */}
-                    <div className="mt-2 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-[11px] font-bold">
-                      <FiZap className="text-xs" />
-                      <span>Accuracy: {leftEye.accuracy}</span>
+                  ) : (
+                    <div className="relative z-10 flex flex-col items-center pointer-events-none">
+                      <div className="w-16 h-16 rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400 text-3xl mb-3 backdrop-blur-xs group-hover:scale-105 transition">
+                        <FiEye />
+                      </div>
+                      <span className="text-white font-semibold text-sm tracking-wide">
+                        Click to Upload Fundus Image
+                      </span>
+                      <span className="text-xs text-slate-400 mt-1">Supports JPG, PNG</span>
                     </div>
-                  </div>
+                  )}
+
+                  {/* STAGE 1 REJECTION POPUP OVERLAY */}
+                  {leftQualityStatus === 'rejected' && (
+                    <div className="absolute inset-x-3 bottom-3 z-40 bg-rose-950/95 border border-rose-500/50 rounded-xl p-3.5 text-left text-white shadow-2xl backdrop-blur-md animate-bounce-short">
+                      <div className="flex items-start gap-2.5">
+                        <FiAlertCircle className="text-rose-400 text-lg shrink-0 mt-0.5" />
+                        <div>
+                          <p className="text-xs font-bold text-rose-200 uppercase tracking-wide">Stage 1 Quality Check Failed</p>
+                          <p className="text-[11px] text-rose-300/90 mt-0.5 leading-snug">{leftRejectReason}</p>
+                        </div>
+                      </div>
+                      <label className="mt-3 block w-full py-2 bg-rose-600 hover:bg-rose-500 text-white text-center text-xs font-extrabold rounded-lg cursor-pointer transition shadow-sm">
+                        <span>Re-upload Clear Image</span>
+                        <input type="file" accept="image/*" className="hidden" onChange={handleLeftFileUpload} />
+                      </label>
+                    </div>
+                  )}
+
+                  {/* PURPLE AREA: "Acceptable Image" Tag */}
+                  {leftQualityStatus === 'accepted' && (
+                    <div className="absolute top-3 left-3 z-30 flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 text-[10px] font-extrabold uppercase backdrop-blur-xs">
+                      <FiCheckCircle />
+                      <span>Acceptable Image</span>
+                    </div>
+                  )}
 
                 </div>
 
-                {/* Upload Trigger */}
-                <button className="w-full bg-white hover:bg-slate-100 text-slate-700 font-semibold py-2.5 rounded-xl text-xs flex items-center justify-center gap-2 border border-slate-200/90 transition cursor-pointer shadow-2xs">
+                <label className="w-full bg-white hover:bg-slate-100 text-slate-700 font-semibold py-2.5 rounded-xl text-xs flex items-center justify-center gap-2 border border-slate-200/90 transition cursor-pointer shadow-2xs">
                   <FiUploadCloud className="text-sm text-slate-400" />
                   <span>{t('replaceBtn', 'Replace Photo')}</span>
-                </button>
+                  <input type="file" accept="image/*" className="hidden" onChange={handleLeftFileUpload} />
+                </label>
               </div>
 
               {/* ---------- RIGHT EYE VIEWPORT ---------- */}
               <div className="bg-slate-50/80 border border-slate-200/80 rounded-2xl p-4 flex flex-col justify-between space-y-4 hover:border-slate-300 transition">
                 
-                {/* Header Info */}
                 <div className="flex items-center justify-between">
                   <div>
-                    <span className="text-xs font-bold text-slate-900 block">{t('rightEyeLabel', 'Right Eye (OD)')}</span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-bold text-slate-900 block">{t('rightEyeLabel', 'Right Eye (OD)')}</span>
+                      {/* BLUE AREA: "Image Enhanced" Tag */}
+                      {rightVerdict === 'enhance' && (
+                        <span className="px-2 py-0.5 bg-indigo-100 text-indigo-800 border border-indigo-200 rounded-md text-[10px] font-extrabold uppercase tracking-wide">
+                          Image Enhanced
+                        </span>
+                      )}
+                    </div>
                     <span className="text-[10px] text-slate-400 font-medium">Bilateral Scan B</span>
                   </div>
                   <span className="text-[11px] font-bold text-emerald-900 bg-emerald-100/90 px-2.5 py-1 rounded-lg border border-emerald-200">
@@ -315,45 +409,75 @@ export default function Dashboard({ onLogout, onViewDetailedReport, onScheduleCo
                 </div>
 
                 {/* Fundus Diagnostic HUD Box */}
-                <div className="relative bg-[#0b1329] rounded-xl p-5 min-h-[230px] flex flex-col items-center justify-center text-center border border-slate-800 shadow-inner group overflow-hidden">
+                <div className="relative bg-[#0b1329] rounded-xl p-3 min-h-[380px] flex flex-col items-center justify-center text-center border border-slate-800 shadow-inner group overflow-hidden">
                   
-                  {/* Subtle Grid Reticle Effect */}
                   <div className="absolute inset-0 bg-[radial-gradient(#1e293b_1px,transparent_1px)] [background-size:16px_16px] opacity-40 pointer-events-none"></div>
-                  
-                  {/* Status Overlay Tag */}
-                  <div className="absolute top-3 left-3 flex items-center gap-1.5 px-2 py-0.5 rounded bg-slate-900/80 border border-slate-700/80 text-[10px] text-slate-300 font-medium backdrop-blur-xs">
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
-                    <span>CLEAR</span>
-                  </div>
 
-                  <div className="absolute top-3 right-3 text-slate-500 hover:text-slate-300 transition cursor-pointer">
-                    <FiMaximize2 className="text-xs" />
-                  </div>
+                  <label className="absolute inset-0 z-20 cursor-pointer flex flex-col items-center justify-center">
+                    <input 
+                      type="file" 
+                      accept="image/*" 
+                      className="hidden" 
+                      onChange={handleRightFileUpload} 
+                    />
+                  </label>
 
-                  {/* Icon & Details */}
-                  <div className="relative z-10 flex flex-col items-center">
-                    <div className="w-14 h-14 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 text-2xl mb-3 backdrop-blur-xs group-hover:scale-105 transition">
-                      <FiEye />
+                  {rightImage ? (
+                    <div className="absolute inset-0 z-10 flex items-center justify-center p-2">
+                      <img src={rightImage} alt="Right Eye Scan" className="w-full h-full object-contain rounded-xl" />
+                      <button 
+                        type="button"
+                        onClick={(e) => { e.stopPropagation(); setFullscreenImage(rightImage); }}
+                        className="absolute top-3 right-3 z-30 p-2 bg-slate-900/80 hover:bg-slate-900 text-white rounded-lg backdrop-blur-xs transition shadow-md cursor-pointer"
+                        title="View Fullscreen"
+                      >
+                        <FiMaximize2 className="text-sm" />
+                      </button>
                     </div>
-                    
-                    <span className="text-white font-semibold text-xs tracking-wide">
-                      {t('originalFundus', 'Original Fundus Image')}
-                    </span>
-
-                    {/* Accuracy Badge */}
-                    <div className="mt-2 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-[11px] font-bold">
-                      <FiZap className="text-xs" />
-                      <span>Accuracy: {rightEye.accuracy}</span>
+                  ) : (
+                    <div className="relative z-10 flex flex-col items-center pointer-events-none">
+                      <div className="w-16 h-16 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 text-3xl mb-3 backdrop-blur-xs group-hover:scale-105 transition">
+                        <FiEye />
+                      </div>
+                      <span className="text-white font-semibold text-sm tracking-wide">
+                        Click to Upload Fundus Image
+                      </span>
+                      <span className="text-xs text-slate-400 mt-1">Supports JPG, PNG</span>
                     </div>
-                  </div>
+                  )}
+
+                  {/* STAGE 1 REJECTION POPUP OVERLAY */}
+                  {rightQualityStatus === 'rejected' && (
+                    <div className="absolute inset-x-3 bottom-3 z-40 bg-rose-950/95 border border-rose-500/50 rounded-xl p-3.5 text-left text-white shadow-2xl backdrop-blur-md">
+                      <div className="flex items-start gap-2.5">
+                        <FiAlertCircle className="text-rose-400 text-lg shrink-0 mt-0.5" />
+                        <div>
+                          <p className="text-xs font-bold text-rose-200 uppercase tracking-wide">Stage 1 Quality Check Failed</p>
+                          <p className="text-[11px] text-rose-300/90 mt-0.5 leading-snug">{rightRejectReason}</p>
+                        </div>
+                      </div>
+                      <label className="mt-3 block w-full py-2 bg-rose-600 hover:bg-rose-500 text-white text-center text-xs font-extrabold rounded-lg cursor-pointer transition shadow-sm">
+                        <span>Re-upload Clear Image</span>
+                        <input type="file" accept="image/*" className="hidden" onChange={handleRightFileUpload} />
+                      </label>
+                    </div>
+                  )}
+
+                  {/* PURPLE AREA: "Acceptable Image" Tag */}
+                  {rightQualityStatus === 'accepted' && (
+                    <div className="absolute top-3 left-3 z-30 flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 text-[10px] font-extrabold uppercase backdrop-blur-xs">
+                      <FiCheckCircle />
+                      <span>Acceptable Image</span>
+                    </div>
+                  )}
 
                 </div>
 
-                {/* Upload Trigger */}
-                <button className="w-full bg-white hover:bg-slate-100 text-slate-700 font-semibold py-2.5 rounded-xl text-xs flex items-center justify-center gap-2 border border-slate-200/90 transition cursor-pointer shadow-2xs">
+                <label className="w-full bg-white hover:bg-slate-100 text-slate-700 font-semibold py-2.5 rounded-xl text-xs flex items-center justify-center gap-2 border border-slate-200/90 transition cursor-pointer shadow-2xs">
                   <FiUploadCloud className="text-sm text-slate-400" />
                   <span>{t('replaceBtn', 'Replace Photo')}</span>
-                </button>
+                  <input type="file" accept="image/*" className="hidden" onChange={handleRightFileUpload} />
+                </label>
               </div>
 
             </div>
@@ -361,10 +485,7 @@ export default function Dashboard({ onLogout, onViewDetailedReport, onScheduleCo
 
           {/* ------------ RIGHT SIDEBAR: HEALTH RECORD ------------ */}
           <aside className="w-full lg:w-96 bg-white rounded-2xl p-5 sm:p-6 border border-slate-200/90 flex flex-col justify-between shrink-0 shadow-xs space-y-6">
-            
             <div className="space-y-5">
-              
-              {/* Header & Patient Card */}
               <div className="pb-4 border-b border-slate-100">
                 <div className="flex items-center justify-between mb-3">
                   <h2 className="text-base font-extrabold text-slate-900 tracking-tight">{t('recordsTitle', 'My Health Record')}</h2>
@@ -386,7 +507,6 @@ export default function Dashboard({ onLogout, onViewDetailedReport, onScheduleCo
                 </div>
               </div>
 
-              {/* Eye Specialist Info */}
               <div className="flex items-center gap-3.5 bg-blue-50/50 p-3.5 rounded-2xl border border-blue-100">
                 <div className="w-10 h-10 rounded-xl bg-blue-600 text-white font-extrabold flex items-center justify-center text-xs shrink-0 shadow-2xs">
                   AV
@@ -397,53 +517,8 @@ export default function Dashboard({ onLogout, onViewDetailedReport, onScheduleCo
                   <p className="text-[11px] text-slate-500 font-medium">Chief Ophthalmologist</p>
                 </div>
               </div>
-
-              {/* Ocular Vitals */}
-              <div className="space-y-2.5">
-                <div className="flex items-center justify-between">
-                  <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block">
-                    {t('vitalsTitle', 'OCULAR VITALS & BASELINE')}
-                  </span>
-                  <FiActivity className="text-xs text-slate-400" />
-                </div>
-
-                <div className="grid grid-cols-3 gap-2">
-                  <div className="bg-slate-50/90 p-2.5 rounded-xl border border-slate-200/70 text-center">
-                    <span className="text-[10px] font-bold text-slate-400 block">{t('upperBp', 'Upper BP')}</span>
-                    <span className="text-xs font-extrabold text-slate-900 block mt-0.5">120 <span className="text-[10px] font-normal text-slate-500">mmHg</span></span>
-                    <span className="text-[10px] font-bold text-emerald-600 block mt-0.5">{t('normal', 'Normal')}</span>
-                  </div>
-
-                  <div className="bg-slate-50/90 p-2.5 rounded-xl border border-slate-200/70 text-center">
-                    <span className="text-[10px] font-bold text-slate-400 block">{t('lowerBp', 'Lower BP')}</span>
-                    <span className="text-xs font-extrabold text-slate-900 block mt-0.5">80 <span className="text-[10px] font-normal text-slate-500">mmHg</span></span>
-                    <span className="text-[10px] font-bold text-emerald-600 block mt-0.5">{t('normal', 'Normal')}</span>
-                  </div>
-
-                  <div className="bg-slate-50/90 p-2.5 rounded-xl border border-slate-200/70 text-center">
-                    <span className="text-[10px] font-bold text-slate-400 block">{t('hba1c', 'HbA1c')}</span>
-                    <span className="text-xs font-extrabold text-slate-900 block mt-0.5">5.8%</span>
-                    <span className="text-[10px] font-bold text-emerald-600 block mt-0.5">{t('optimal', 'Optimal')}</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Key Diagnostic Findings */}
-              <div className="grid grid-cols-2 gap-2.5">
-                <div className="bg-amber-50/70 p-3 rounded-xl border border-amber-200/70">
-                  <span className="text-[10px] font-extrabold text-amber-800 uppercase tracking-wide block">{t('indicatorLabel', 'KEY FINDINGS')}</span>
-                  <p className="text-xs font-bold text-amber-950 mt-1">{t('indicatorVal', 'Minor Spots (OS)')}</p>
-                </div>
-
-                <div className="bg-emerald-50/70 p-3 rounded-xl border border-emerald-200/70">
-                  <span className="text-[10px] font-extrabold text-emerald-800 uppercase tracking-wide block">{t('maculaLabel', 'CENTER VISION')}</span>
-                  <p className="text-xs font-bold text-emerald-950 mt-1">{t('maculaVal', 'Clear & Healthy')}</p>
-                </div>
-              </div>
-
             </div>
 
-            {/* Bottom CTA Button */}
             <button 
               onClick={onViewDetailedReport}
               className="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-3.5 rounded-xl shadow-xs transition flex items-center justify-center gap-2 text-xs uppercase tracking-wider cursor-pointer mt-4"
@@ -451,11 +526,33 @@ export default function Dashboard({ onLogout, onViewDetailedReport, onScheduleCo
               <span>{t('detailedReportBtn', 'Detailed Report')}</span>
               <FiArrowRight className="text-sm" />
             </button>
-
           </aside>
 
         </div>
       </main>
+
+      {/* FULLSCREEN IMAGE MODAL */}
+      {fullscreenImage && (
+        <div 
+          className="fixed inset-0 z-50 bg-slate-950/90 backdrop-blur-md flex items-center justify-center p-4 sm:p-8"
+          onClick={() => setFullscreenImage(null)}
+        >
+          <div className="relative max-w-5xl w-full h-full flex items-center justify-center" onClick={(e) => e.stopPropagation()}>
+            <button 
+              onClick={() => setFullscreenImage(null)}
+              className="absolute top-4 right-4 z-10 p-3 bg-white/10 hover:bg-white/20 text-white rounded-full transition cursor-pointer backdrop-blur-md"
+              title="Close Fullscreen"
+            >
+              <FiX className="text-xl" />
+            </button>
+            <img 
+              src={fullscreenImage} 
+              alt="Fullscreen Retinal Scan" 
+              className="max-h-[90vh] max-w-full object-contain rounded-2xl shadow-2xl border border-slate-800"
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 }
