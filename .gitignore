@@ -32,3 +32,12 @@ octave-workspace
 
 # Datasets (too large for Git, kept local only)
 data/
+
+# Large trained models and workspaces
+*.mat
+
+# Generated output folders and images
+results/
+*.png
+*.jpg
+*.jpeg
