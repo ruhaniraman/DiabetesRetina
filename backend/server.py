@@ -5,6 +5,8 @@ from pydantic import BaseModel
 import argostranslate.package
 import argostranslate.translate
 import uvicorn
+import json
+import os
 
 # Request Schema
 class TranslationRequest(BaseModel):
@@ -70,6 +72,20 @@ async def translate_dynamic(payload: TranslationRequest):
     except Exception as e:
         print(f"Translation Error: {e}")
         return {"translatedText": text}
+
+@app.get("/api/simulation")
+async def get_simulation_data():
+    file_path = "pipeline_results.json"
+    
+    if not os.path.exists(file_path):
+        raise HTTPException(status_code=404, detail="Simulation data not found.")
+        
+    try:
+        with open(file_path, "r") as f:
+            data = json.load(f)
+        return data
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 if __name__ == "__main__":
     uvicorn.run("server:app", host="0.0.0.0", port=5000, reload=True)
