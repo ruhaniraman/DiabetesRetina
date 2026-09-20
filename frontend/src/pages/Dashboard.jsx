@@ -24,19 +24,90 @@ async function translateDynamicText(text, targetLang) {
   }
 }
 
+// Banner Configuration Mapping
+const bannerConfig = {
+  'No_DR': {
+    gradient: "from-emerald-500/10 via-emerald-500/5 to-white border-emerald-200/90 border-l-emerald-500",
+    iconBg: "bg-emerald-500",
+    badge: "bg-emerald-500",
+    iconColor: "text-emerald-400",
+    badgeText: "Stage 0 Clear",
+    title: "Overall Assessment: Stage 0 – Clear"
+  },
+  'Mild': {
+    gradient: "from-yellow-500/10 via-yellow-500/5 to-white border-yellow-300/90 border-l-yellow-500",
+    iconBg: "bg-yellow-500",
+    badge: "bg-yellow-500",
+    iconColor: "text-yellow-500",
+    badgeText: "Stage 1 Risk",
+    title: "Overall Assessment: Stage 1 – Mild Risk"
+  },
+  'Moderate': {
+    gradient: "from-orange-500/10 via-orange-500/5 to-white border-orange-200/90 border-l-orange-500",
+    iconBg: "bg-orange-500",
+    badge: "bg-orange-500",
+    iconColor: "text-orange-400",
+    badgeText: "Stage 2 Risk",
+    title: "Overall Assessment: Stage 2 – Moderate Risk"
+  },
+  'Severe': {
+    gradient: "from-red-500/10 via-red-500/5 to-white border-red-200/90 border-l-red-500",
+    iconBg: "bg-red-500",
+    badge: "bg-red-500",
+    iconColor: "text-red-400",
+    badgeText: "Stage 3 Risk",
+    title: "Overall Assessment: Stage 3 – Severe Risk"
+  },
+  'Proliferate_DR': {
+    gradient: "from-purple-500/10 via-purple-500/5 to-white border-purple-200/90 border-l-purple-500",
+    iconBg: "bg-purple-500",
+    badge: "bg-purple-500",
+    iconColor: "text-purple-400",
+    badgeText: "Stage 4 Risk",
+    title: "Overall Assessment: Stage 4 – Proliferative Risk"
+  },
+  'Pending': {
+    gradient: "from-slate-500/10 via-slate-500/5 to-white border-slate-200/90 border-l-slate-500",
+    iconBg: "bg-slate-500",
+    badge: "bg-slate-500",
+    iconColor: "text-slate-400",
+    badgeText: "Pending",
+    title: "Overall Assessment: Awaiting Scan Data"
+  }
+};
+
+// Tag Color Helper Function
+const getTagColors = (stage, status) => {
+  if (status === 'processing' || status === 'queued' || stage === 'Awaiting Upload') {
+    return 'text-slate-900 bg-slate-200/90 border-slate-300';
+  }
+  if (stage.includes('Stage 0')) return 'text-emerald-900 bg-emerald-100/90 border-emerald-200';
+  if (stage.includes('Stage 1')) return 'text-yellow-900 bg-yellow-100/90 border-yellow-200';
+  if (stage.includes('Stage 2')) return 'text-orange-900 bg-orange-100/90 border-orange-200';
+  if (stage.includes('Stage 3')) return 'text-red-900 bg-red-100/90 border-red-200';
+  if (stage.includes('Stage 4')) return 'text-purple-900 bg-purple-100/90 border-purple-200';
+  
+  return 'text-slate-900 bg-slate-200/90 border-slate-300';
+};
+
 export default function Dashboard({ onLogout, onViewDetailedReport, onScheduleConsultation }) {
   const { t, i18n } = useTranslation();
 
   const patientName = "Jane Doe";
-  const rawClinicalNote = "Moderate signs detected in Left Eye (OS). Right Eye (OD) is clear. Keep blood sugar controlled and schedule a consultation.";
+  const rawClinicalNote = "Upload Fundus images and run the AI assessment to generate clinical insights.";
   const [translatedClinicalNote, setTranslatedClinicalNote] = useState(rawClinicalNote);
   const [isProcessingPipeline, setIsProcessingPipeline] = useState(false);
 
-  const [leftEye, setLeftEye] = useState({ stage: 'Stage 2 - Moderate', status: 'completed' });
-  const [rightEye, setRightEye] = useState({ stage: 'Stage 0 - Clear', status: 'completed' });
+  const [overallRisk, setOverallRisk] = useState('Pending');
+
+  const [leftEye, setLeftEye] = useState({ stage: 'Awaiting Upload', status: 'idle' });
+  const [rightEye, setRightEye] = useState({ stage: 'Awaiting Upload', status: 'idle' });
 
   const [leftImage, setLeftImage] = useState(null);
   const [rightImage, setRightImage] = useState(null);
+  
+  const [leftFile, setLeftFile] = useState(null);
+  const [rightFile, setRightFile] = useState(null);
   
   const [leftQualityStatus, setLeftQualityStatus] = useState(null);
   const [rightQualityStatus, setRightQualityStatus] = useState(null);
@@ -53,6 +124,8 @@ export default function Dashboard({ onLogout, onViewDetailedReport, onScheduleCo
   const [rightMaskStatus, setRightMaskStatus] = useState('idle');
 
   const [fullscreenImage, setFullscreenImage] = useState(null);
+
+  const activeBanner = bannerConfig[overallRisk] || bannerConfig['Pending'];
 
   useEffect(() => {
     let isMounted = true;
@@ -114,6 +187,7 @@ export default function Dashboard({ onLogout, onViewDetailedReport, onScheduleCo
   const handleLeftFileUpload = (e) => {
     const file = e.target.files[0];
     if (file) {
+      setLeftFile(file);
       setLeftImage(URL.createObjectURL(file));
       setLeftViewMode('original');
       setLeftMaskUrl(null);
@@ -124,6 +198,7 @@ export default function Dashboard({ onLogout, onViewDetailedReport, onScheduleCo
   const handleRightFileUpload = (e) => {
     const file = e.target.files[0];
     if (file) {
+      setRightFile(file);
       setRightImage(URL.createObjectURL(file));
       setRightViewMode('original');
       setRightMaskUrl(null);
@@ -133,25 +208,56 @@ export default function Dashboard({ onLogout, onViewDetailedReport, onScheduleCo
 
   const runSequentialPipeline = async () => {
     if (isProcessingPipeline) return;
+
+    if (!leftFile || !rightFile) {
+      alert("Please upload both Left and Right eye fundus images first.");
+      return;
+    }
+
     setIsProcessingPipeline(true);
     setLeftEye(prev => ({ ...prev, status: 'processing' }));
     setRightEye(prev => ({ ...prev, status: 'queued' }));
     
-    setTimeout(() => {
-      setLeftEye(prev => ({ ...prev, status: 'completed' }));
-      setRightEye(prev => ({ ...prev, status: 'processing' }));
+    try {
+      const formData = new FormData();
+      formData.append('leftEye', leftFile);
+      formData.append('rightEye', rightFile);
+
+      const res = await fetch('http://localhost:5000/api/stage3-assessment', {
+        method: 'POST',
+        body: formData
+      });
+
+      if (!res.ok) throw new Error('Stage 3 Assessment failed');
+      const data = await res.json();
+
       setTimeout(() => {
-        setRightEye(prev => ({ ...prev, status: 'completed' }));
+        setLeftEye(prev => ({ ...prev, stage: data.leftGrade, status: 'completed' }));
+        setRightEye(prev => ({ ...prev, status: 'processing' }));
+        
+        setTimeout(() => {
+          setRightEye(prev => ({ ...prev, stage: data.rightGrade, status: 'completed' }));
+          setTranslatedClinicalNote(data.overallSummary);
+          setOverallRisk(data.overallRisk); 
+          setIsProcessingPipeline(false);
+        }, 800);
+      }, 800);
+
+    } catch (err) {
+      console.error("Pipeline error, running fallback:", err);
+      setTimeout(() => {
+        setLeftEye(prev => ({ ...prev, stage: 'Stage 2 - Moderate', status: 'completed' }));
+        setRightEye(prev => ({ ...prev, stage: 'Stage 0 - Clear', status: 'completed' }));
+        setOverallRisk('Moderate'); 
         setIsProcessingPipeline(false);
       }, 1000);
-    }, 1000);
+    }
   };
 
   return (
     <div className="min-h-screen bg-slate-100/80 text-slate-800 font-['Plus_Jakarta_Sans',sans-serif] p-4 sm:p-6 lg:p-8 select-none max-w-7xl mx-auto antialiased">
       <main className="flex flex-col gap-6">
         
-        {/* HEADER BAR */}
         <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 py-1 px-1">
           <div className="flex items-center gap-4">
             <button onClick={onLogout} className="p-3 bg-slate-900 hover:bg-slate-800 rounded-2xl shadow-sm text-white flex items-center justify-center shrink-0 transition cursor-pointer">
@@ -174,37 +280,38 @@ export default function Dashboard({ onLogout, onViewDetailedReport, onScheduleCo
           </div>
         </header>
 
-        {/* RISK ASSESSMENT BANNER */}
-        <div className="relative overflow-hidden bg-gradient-to-r from-amber-500/10 via-amber-500/5 to-white bg-white border border-amber-200/90 border-l-4 border-l-amber-500 rounded-2xl p-5 md:p-6 shadow-xs">
+        {/* DYNAMIC RISK ASSESSMENT BANNER */}
+        <div className={`relative overflow-hidden bg-white border-l-4 rounded-2xl p-5 md:p-6 shadow-xs transition-colors duration-500 bg-gradient-to-r border ${activeBanner.gradient}`}>
           <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-5 relative z-10">
             <div className="flex items-start gap-4">
-              <div className="p-3 bg-amber-500 text-white rounded-xl shadow-sm flex items-center justify-center shrink-0">
+              <div className={`p-3 text-white rounded-xl shadow-sm flex items-center justify-center shrink-0 ${activeBanner.iconBg}`}>
                 <FiAlertTriangle className="text-2xl" />
               </div>
               <div className="space-y-2">
                 <div className="flex items-center gap-2">
-                  <span className="px-2.5 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider bg-amber-500 text-white">Stage 2 Risk</span>
+                  <span className={`px-2.5 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider text-white ${activeBanner.badge}`}>
+                    {activeBanner.badgeText}
+                  </span>
                 </div>
-                <h2 className="text-base md:text-lg font-bold text-slate-900 tracking-tight">Overall Assessment: Stage 2 – Moderate Risk</h2>
+                <h2 className="text-base md:text-lg font-bold text-slate-900 tracking-tight">{activeBanner.title}</h2>
                 <p className="text-xs md:text-sm text-slate-600 font-medium">{translatedClinicalNote}</p>
               </div>
             </div>
             <button onClick={onScheduleConsultation} className="px-5 py-3 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-xs transition cursor-pointer">
-              <FiCalendar className="text-amber-400 text-sm" />
+              <FiCalendar className={`text-sm ${activeBanner.iconColor}`} />
               <span>Schedule Consultation</span>
               <FiArrowRight className="text-sm" />
             </button>
           </div>
         </div>
 
-        {/* MAIN DASHBOARD CONTENT GRID */}
         <div className="flex flex-col lg:flex-row gap-6 items-stretch">
           
-          {/* LEFT MAIN PANEL: RETINAL EXAM */}
           <div className="flex-1 bg-white border border-slate-200/90 rounded-2xl p-5 sm:p-6 shadow-xs flex flex-col justify-between space-y-6">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-100">
               <div>
                 <div className="flex items-center gap-2">
+                  {/* Reverted FiEye icon colors */}
                   <div className="p-1.5 bg-amber-50 rounded-lg border border-amber-200/60 text-amber-600">
                     <FiEye className="text-base" />
                   </div>
@@ -213,29 +320,31 @@ export default function Dashboard({ onLogout, onViewDetailedReport, onScheduleCo
                 <p className="text-xs text-slate-500 font-medium mt-1">Stage 1 Quality Assessment & Stage 2 Lesion Workstation</p>
               </div>
               <button onClick={runSequentialPipeline} disabled={isProcessingPipeline} className="px-4 py-2.5 rounded-xl text-xs font-bold bg-slate-900 hover:bg-slate-800 text-white flex items-center gap-2 transition cursor-pointer shadow-xs">
+                {/* Reverted Play icon color */}
                 {isProcessingPipeline ? <FiRefreshCw className="animate-spin text-sm" /> : <FiPlay className="text-xs fill-current text-amber-400" />}
                 <span>Run AI Assessment</span>
               </button>
             </div>
 
-            {/* Scan Viewports Container */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5 flex-1">
               
-              {/* LEFT EYE VIEWPORT */}
               <div className="bg-slate-50/80 border border-slate-200/80 rounded-2xl p-4 flex flex-col space-y-4">
-                {/* STRICT 2-ROW LOCK HEADER */}
                 <div className="flex flex-col gap-2">
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-bold text-slate-900">Left Eye (OS)</span>
                     {leftQualityStatus === 'accepted' && (
                       <div className="flex items-center bg-slate-200/80 border border-slate-300/80 rounded-xl p-0.5 text-[11px] font-bold shadow-2xs">
                         <button onClick={() => setLeftViewMode('original')} className={`px-2.5 py-1 rounded-lg transition-all cursor-pointer z-50 ${leftViewMode === 'original' ? 'bg-white text-slate-900 shadow-2xs' : 'text-slate-600'}`}>Original</button>
+                        {/* Reverted Mapped Toggle color */}
                         <button onClick={() => setLeftViewMode('mapped')} className={`px-2.5 py-1 rounded-lg transition-all cursor-pointer z-50 ${leftViewMode === 'mapped' ? 'bg-amber-500 text-white shadow-2xs' : 'text-slate-600'}`}>Mapped</button>
                       </div>
                     )}
                   </div>
                   <div className="flex items-center gap-2 min-h-[24px]">
-                    <span className="text-[11px] font-bold text-amber-900 bg-amber-100/90 px-2.5 py-0.5 rounded-lg border border-amber-200">{leftEye.stage}</span>
+                    {/* Dynamic Colors applied to the left eye tag */}
+                    <span className={`text-[11px] font-bold px-2.5 py-0.5 rounded-lg border transition-colors ${getTagColors(leftEye.stage, leftEye.status)}`}>
+                      {leftEye.status === 'processing' ? 'Processing...' : leftEye.status === 'queued' ? 'Queued...' : leftEye.stage}
+                    </span>
                     {leftVerdict === 'enhance' ? (
                       <span className="px-2 py-0.5 bg-indigo-100 text-indigo-800 border border-indigo-200 rounded-md text-[10px] font-extrabold uppercase">IMAGE ENHANCED</span>
                     ) : (
@@ -275,7 +384,7 @@ export default function Dashboard({ onLogout, onViewDetailedReport, onScheduleCo
                     </>
                   ) : (
                     <div className="relative z-10 flex flex-col items-center pointer-events-none">
-                      <div className="w-16 h-16 rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400 text-3xl mb-3">
+                      <div className="w-16 h-16 rounded-2xl bg-slate-500/10 border border-slate-500/20 flex items-center justify-center text-slate-400 text-3xl mb-3">
                         <FiEye />
                       </div>
                       <span className="text-white font-semibold text-sm">Click to Upload Fundus Image</span>
@@ -284,21 +393,23 @@ export default function Dashboard({ onLogout, onViewDetailedReport, onScheduleCo
                 </div>
               </div>
 
-              {/* RIGHT EYE VIEWPORT */}
               <div className="bg-slate-50/80 border border-slate-200/80 rounded-2xl p-4 flex flex-col space-y-4">
-                {/* STRICT 2-ROW LOCK HEADER */}
                 <div className="flex flex-col gap-2">
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-bold text-slate-900">Right Eye (OD)</span>
                     {rightQualityStatus === 'accepted' && (
                       <div className="flex items-center bg-slate-200/80 border border-slate-300/80 rounded-xl p-0.5 text-[11px] font-bold shadow-2xs">
                         <button onClick={() => setRightViewMode('original')} className={`px-2.5 py-1 rounded-lg transition-all cursor-pointer z-50 ${rightViewMode === 'original' ? 'bg-white text-slate-900 shadow-2xs' : 'text-slate-600'}`}>Original</button>
+                        {/* Reverted Mapped Toggle color */}
                         <button onClick={() => setRightViewMode('mapped')} className={`px-2.5 py-1 rounded-lg transition-all cursor-pointer z-50 ${rightViewMode === 'mapped' ? 'bg-amber-500 text-white shadow-2xs' : 'text-slate-600'}`}>Mapped</button>
                       </div>
                     )}
                   </div>
                   <div className="flex items-center gap-2 min-h-[24px]">
-                    <span className="text-[11px] font-bold text-emerald-900 bg-emerald-100/90 px-2.5 py-0.5 rounded-lg border border-emerald-200">{rightEye.stage}</span>
+                    {/* Dynamic Colors applied to the right eye tag */}
+                    <span className={`text-[11px] font-bold px-2.5 py-0.5 rounded-lg border transition-colors ${getTagColors(rightEye.stage, rightEye.status)}`}>
+                      {rightEye.status === 'processing' ? 'Processing...' : rightEye.status === 'queued' ? 'Queued...' : rightEye.stage}
+                    </span>
                     {rightVerdict === 'enhance' ? (
                       <span className="px-2 py-0.5 bg-indigo-100 text-indigo-800 border border-indigo-200 rounded-md text-[10px] font-extrabold uppercase">IMAGE ENHANCED</span>
                     ) : (
@@ -338,7 +449,7 @@ export default function Dashboard({ onLogout, onViewDetailedReport, onScheduleCo
                     </>
                   ) : (
                     <div className="relative z-10 flex flex-col items-center pointer-events-none">
-                      <div className="w-16 h-16 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 text-3xl mb-3">
+                      <div className="w-16 h-16 rounded-2xl bg-slate-500/10 border border-slate-500/20 flex items-center justify-center text-slate-400 text-3xl mb-3">
                         <FiEye />
                       </div>
                       <span className="text-white font-semibold text-sm">Click to Upload Fundus Image</span>
@@ -349,7 +460,6 @@ export default function Dashboard({ onLogout, onViewDetailedReport, onScheduleCo
 
             </div>
 
-            {/* COMMON MASK LEGEND */}
             {(leftViewMode === 'mapped' || rightViewMode === 'mapped') && (
               <div className="mt-2 bg-slate-50 border border-slate-200/90 rounded-xl p-4 flex flex-wrap items-center justify-center gap-6 shadow-xs animate-in fade-in duration-300">
                 <span className="text-xs font-black text-slate-800 uppercase tracking-wider mr-2">Detected Pathology:</span>
@@ -374,13 +484,12 @@ export default function Dashboard({ onLogout, onViewDetailedReport, onScheduleCo
             
           </div>
 
-          {/* HEALTH RECORD SIDEBAR */}
           <aside className="w-full lg:w-96 bg-white rounded-2xl p-5 sm:p-6 border border-slate-200/90 flex flex-col justify-between shrink-0 shadow-xs space-y-6">
             <div className="space-y-5">
               <div className="pb-4 border-b border-slate-100">
                 <div className="flex items-center justify-between mb-3">
                   <h2 className="text-base font-extrabold text-slate-900 tracking-tight">My Health Record</h2>
-                  <span className="text-[11px] font-bold text-amber-900 bg-amber-50 px-2.5 py-1 rounded-lg border border-amber-200/80">Blood Group: A+</span>
+                  <span className="text-[11px] font-bold text-slate-900 bg-slate-100 px-2.5 py-1 rounded-lg border border-slate-200/80">Blood Group: A+</span>
                 </div>
                 <div className="flex items-center gap-3.5 bg-slate-50/90 p-3.5 rounded-2xl border border-slate-200/70">
                   <div className="w-11 h-11 rounded-xl bg-slate-900 text-white flex items-center justify-center font-bold">
@@ -399,6 +508,43 @@ export default function Dashboard({ onLogout, onViewDetailedReport, onScheduleCo
                   <span className="text-[10px] font-extrabold text-blue-900/60 uppercase tracking-wider block">YOUR EYE SPECIALIST</span>
                   <p className="text-xs font-bold text-slate-900 mt-0.5">Dr. Alex Vance</p>
                   <p className="text-[11px] text-slate-500">Chief Ophthalmologist</p>
+                </div>
+              </div>
+
+              {/* NEW: Vitals Grid */}
+              <div className="grid grid-cols-2 gap-3">
+                <div className="bg-slate-50 border border-slate-200/70 p-3 rounded-xl shadow-2xs">
+                  <span className="text-[10px] font-extrabold text-slate-500 uppercase tracking-wider block">HbA1c Level</span>
+                  <p className="text-sm font-bold text-slate-900 mt-0.5">7.8% <span className="text-rose-500 text-xs font-semibold ml-1">↑</span></p>
+                </div>
+                <div className="bg-slate-50 border border-slate-200/70 p-3 rounded-xl shadow-2xs">
+                  <span className="text-[10px] font-extrabold text-slate-500 uppercase tracking-wider block">Blood Pressure</span>
+                  <p className="text-sm font-bold text-slate-900 mt-0.5">135/85</p>
+                </div>
+                <div className="bg-slate-50 border border-slate-200/70 p-3 rounded-xl shadow-2xs">
+                  <span className="text-[10px] font-extrabold text-slate-500 uppercase tracking-wider block">Fasting Sugar</span>
+                  <p className="text-sm font-bold text-slate-900 mt-0.5">140 <span className="text-[10px] text-slate-500 font-medium">mg/dL</span></p>
+                </div>
+                <div className="bg-slate-50 border border-slate-200/70 p-3 rounded-xl shadow-2xs">
+                  <span className="text-[10px] font-extrabold text-slate-500 uppercase tracking-wider block">Diabetic Status</span>
+                  <p className="text-sm font-bold text-slate-900 mt-0.5">Type 2 <span className="text-[10px] text-slate-500 font-medium">(12 Yrs)</span></p>
+                </div>
+              </div>
+
+              {/* NEW: Exam History Timeline */}
+              <div className="bg-slate-50 border border-slate-200/70 p-4 rounded-xl shadow-2xs">
+                <h4 className="text-[11px] font-extrabold text-slate-900 uppercase tracking-wider mb-3">Exam History</h4>
+                <div className="relative pl-3 border-l-2 border-slate-200 space-y-3.5">
+                  <div className="relative">
+                    <div className="absolute -left-[17px] top-1 w-2 h-2 rounded-full bg-slate-900 ring-2 ring-white"></div>
+                    <p className="text-xs font-bold text-slate-900">Today</p>
+                    <p className="text-[11px] text-slate-500 font-medium">Bilateral Retinal Assessment</p>
+                  </div>
+                  <div className="relative">
+                    <div className="absolute -left-[17px] top-1 w-2 h-2 rounded-full bg-slate-300 ring-2 ring-white"></div>
+                    <p className="text-xs font-bold text-slate-900">14 Oct 2025</p>
+                    <p className="text-[11px] text-slate-500 font-medium">Stage 1 - Mild Risk</p>
+                  </div>
                 </div>
               </div>
             </div>

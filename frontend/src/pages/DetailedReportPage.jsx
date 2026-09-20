@@ -1,18 +1,12 @@
 import React, { useState } from 'react';
 import { 
-  FiArrowLeft, FiActivity, FiShield, 
-  FiLayers, FiCheckCircle, FiEye 
+  FiArrowLeft, FiShield, 
+  FiLayers, FiCheckCircle, FiEye, FiFileText, FiAlertTriangle
 } from 'react-icons/fi';
 
-export default function DetailedReportPage({ patientData, onBack }) {
+export default function DetailedReportPage({ patientData = {}, onBack }) {
   const [selectedEye, setSelectedEye] = useState('OS');
   const [viewMode, setViewMode] = useState('overlay');
-
-  const diabetesYrs = parseInt(patientData.diabetesDuration || '0', 10);
-  const sysBP = parseInt(patientData.systolicBP || '0', 10);
-  const diaBP = parseInt(patientData.diastolicBP || '0', 10);
-
-  const isHighRiskSystemic = diabetesYrs >= 10 || sysBP >= 135 || diaBP >= 85;
 
   return (
     <div className="min-h-screen bg-[#f1f3f7] text-slate-800 font-sans p-3 md:p-6 select-none max-w-7xl mx-auto space-y-6">
@@ -42,61 +36,49 @@ export default function DetailedReportPage({ patientData, onBack }) {
         </button>
       </div>
 
-      {/* Biomarker Summary Banner */}
-      <div className="bg-white border border-slate-100 rounded-[2.5rem] p-6 shadow-sm space-y-4">
-        <div className="flex items-center justify-between border-b border-slate-100 pb-4">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-amber-100 text-amber-800 flex items-center justify-center text-lg">
-              <FiActivity />
+      {/* NEW: Triage Style Diagnostic Banner */}
+      <div className="bg-gradient-to-br from-[#fdfbf7] to-[#fdf9f1] border border-amber-200/60 rounded-[2rem] p-6 md:p-8 shadow-sm space-y-6 relative overflow-hidden">
+        
+        {/* Top Header Flex */}
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 relative z-10">
+          
+          {/* Left Side: Priority & Title */}
+          <div className="space-y-2 flex-1">
+            <div className="flex items-center gap-3">
+              <span className="bg-[#f59e0b] text-white font-black text-[9px] uppercase tracking-wider px-2.5 py-0.5 rounded-full shadow-sm">
+                Priority: High
+              </span>
+              <span className="text-[9px] font-mono font-bold text-slate-400 uppercase tracking-widest">
+                RULE_3_PATHOLOGY_THRESHOLD_MET
+              </span>
             </div>
-            <div>
-              <h2 className="text-sm font-extrabold text-slate-900">Patient Biomarker Calibration Summary</h2>
-              <p className="text-[11px] text-slate-400 font-medium">Systemic data integrated with deep-learning lesion detection</p>
-            </div>
-          </div>
-          <span className="bg-slate-100 text-slate-700 font-extrabold text-[10px] px-3 py-1 rounded-full uppercase">
-            ID: {patientData.fullName.replace(/\s+/g, '-').toUpperCase()}
-          </span>
-        </div>
-
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          <div className="bg-slate-50 p-3.5 rounded-2xl border border-slate-100">
-            <span className="text-[10px] font-extrabold text-slate-400 uppercase block">Patient Name</span>
-            <p className="text-xs font-extrabold text-slate-900 mt-1">{patientData.fullName}</p>
+            <h2 className="text-2xl md:text-3xl font-black text-[#b45309] tracking-tight uppercase">
+              Human Doctor Review Required
+            </h2>
+            <p className="text-xs font-medium text-slate-600">
+              Safety Engine intercepted moderate pathological features. Automated triage bypassed.
+            </p>
           </div>
 
-          <div className="bg-slate-50 p-3.5 rounded-2xl border border-slate-100">
-            <span className="text-[10px] font-extrabold text-slate-400 uppercase block">Age Calibration</span>
-            <p className="text-xs font-extrabold text-slate-900 mt-1">{patientData.age} Years Old</p>
-          </div>
-
-          <div className={`p-3.5 rounded-2xl border ${sysBP >= 135 ? 'bg-amber-50 border-amber-200 text-amber-950' : 'bg-slate-50 border-slate-100'}`}>
-            <span className="text-[10px] font-extrabold uppercase block opacity-70">Blood Pressure</span>
-            <p className="text-xs font-extrabold mt-1">{patientData.systolicBP} / {patientData.diastolicBP} mmHg</p>
-          </div>
-
-          <div className={`p-3.5 rounded-2xl border ${diabetesYrs >= 10 ? 'bg-amber-50 border-amber-200 text-amber-950' : 'bg-slate-50 border-slate-100'}`}>
-            <span className="text-[10px] font-extrabold uppercase block opacity-70">Diabetes History</span>
-            <p className="text-xs font-extrabold mt-1">{patientData.diabetesDuration} Years Duration</p>
+          {/* Right Side: Severity Score */}
+          <div className="md:border-l-2 border-amber-100 md:pl-8 text-left md:text-right flex flex-col justify-center min-w-[220px]">
+            <span className="text-[9px] font-mono font-bold text-slate-400 uppercase tracking-widest mb-1 block">
+              Assessed DR Severity
+            </span>
+            <span className="text-xl md:text-2xl font-black text-[#f59e0b]">
+              Stage 2 — Moderate DR
+            </span>
           </div>
         </div>
 
-        <div className="bg-[#0b1329] text-white p-4 rounded-2xl text-xs space-y-1.5 border border-slate-800">
-          <div className="flex items-center gap-2 text-amber-400 font-extrabold">
-            <FiShield />
-            <span>AI + Systemic Risk Correlation Engine</span>
+        {/* Bottom Side: Rationale Box */}
+        <div className="relative z-10 pt-2">
+          <h3 className="text-[10px] font-mono font-bold text-slate-500 uppercase tracking-widest mb-2 ml-1">
+            Clinical Evidence & Decision Rationale:
+          </h3>
+          <div className="bg-white border border-amber-100/50 rounded-2xl p-5 text-xs font-medium text-slate-700 leading-relaxed shadow-sm">
+            DR prediction cannot be automatically actioned — doctor review is required. The following issue(s) were detected: Moderate non-proliferative diabetic retinopathy detected in the Left Eye (OS). The neural network identified temporal microaneurysms and superior macular exudates with &gt;94% certainty. Due to the presence of exudates near the macula, there is an elevated risk of localized edema requiring specialist evaluation.
           </div>
-          <p className="text-[11px] text-slate-300 font-medium leading-relaxed">
-            {isHighRiskSystemic ? (
-              <>
-                <strong className="text-amber-300">Elevated Microvascular Risk Multiplier:</strong> Due to a diabetes duration of <strong>{patientData.diabetesDuration} years</strong> and blood pressure at <strong>{patientData.systolicBP}/{patientData.diastolicBP} mmHg</strong>, subtle microaneurysms detected in the left eye have a higher probability of progressing into hard exudates and macular edema.
-              </>
-            ) : (
-              <>
-                <strong>Standard Systemic Baseline:</strong> Patient blood pressure and diabetes duration indicate a controlled systemic profile. Detected retinal lesions are currently localized and under low progression threat.
-              </>
-            )}
-          </p>
         </div>
       </div>
 
