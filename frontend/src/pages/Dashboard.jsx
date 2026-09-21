@@ -4,6 +4,7 @@ import { FiEye, FiGlobe, FiAlertTriangle, FiLogOut, FiRefreshCw, FiPlay, FiArrow
 import Logo from '../components/Logo';
 import EyePanel from '../components/EyePanel';
 import Disclaimer from '../components/Disclaimer';
+import ExamHistory from '../components/ExamHistory';
 import { useTranslatedText } from '../hooks/useTranslatedText';
 import { bannerConfig, getTagColors } from '../utils/drStyles';
 import { calcAge, formatDob } from '../utils/patient';
@@ -43,7 +44,7 @@ function runHint(session) {
 
 const dash = (value, suffix = '') => (value === '' || value == null ? '—' : `${value}${suffix}`);
 
-export default function Dashboard({ user, patient, session, onEditPatient, onViewDetailedReport, onLogout }) {
+export default function Dashboard({ user, patient, session, history, onEditPatient, onViewDetailedReport, onLogout }) {
   const { t, i18n } = useTranslation();
   const lang = i18n.resolvedLanguage || 'en';
   const [fullscreenImage, setFullscreenImage] = useState(null);
@@ -118,6 +119,12 @@ export default function Dashboard({ user, patient, session, onEditPatient, onVie
             </div>
           </div>
         </div>
+
+        {assessment && assessment.saved === false && (
+          <div role="status" className="bg-amber-50 border border-amber-200 text-amber-900 rounded-2xl px-5 py-3 text-xs font-semibold">
+            This result could not be saved to your exam history. It is still shown here, but it will be gone when you leave this session.
+          </div>
+        )}
 
         {error && (
           <div role="alert" className="bg-rose-50 border border-rose-200 text-rose-800 rounded-2xl px-5 py-4 text-sm font-semibold">
@@ -229,18 +236,7 @@ export default function Dashboard({ user, patient, session, onEditPatient, onVie
                 <Vital label="Diabetes Duration" value={dash(patient.diabetesDuration)} unit={patient.diabetesDuration ? 'Yrs' : ''} />
               </div>
 
-              <div className="bg-slate-50 border border-slate-200/70 p-4 rounded-xl shadow-2xs">
-                <h4 className="text-[11px] font-extrabold text-slate-900 uppercase tracking-wider mb-3">Exam History</h4>
-                {assessment ? (
-                  <div className="relative pl-3 border-l-2 border-slate-200">
-                    <div className="absolute -left-[5px] top-1 w-2 h-2 rounded-full bg-slate-900 ring-2 ring-white"></div>
-                    <p className="text-xs font-bold text-slate-900">This session</p>
-                    <p className="text-[11px] text-slate-500 font-medium">Bilateral Retinal Assessment · {activeBanner.badgeText}</p>
-                  </div>
-                ) : (
-                  <p className="text-[11px] text-slate-500 font-medium">No exams recorded yet.</p>
-                )}
-              </div>
+              <ExamHistory history={history} />
             </div>
 
             <button

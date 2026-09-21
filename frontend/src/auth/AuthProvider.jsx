@@ -36,7 +36,7 @@ export default function AuthProvider({ children }) {
 
   const endSession = useCallback(() => {
     clearToken();
-    sessionStorage.clear(); // patient details must not outlive the session
+    sessionStorage.clear(); // drop anything left over from older versions; health data now lives on the server
     setUser(null);
     setStatus('anonymous');
   }, []);

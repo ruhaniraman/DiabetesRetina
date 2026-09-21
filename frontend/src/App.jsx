@@ -4,6 +4,7 @@ import AuthProvider from './auth/AuthProvider';
 import { useAuth } from './auth/useAuth';
 import { useScanSession } from './hooks/useScanSession';
 import { usePatientProfile } from './hooks/usePatientProfile';
+import { useExamHistory } from './hooks/useExamHistory';
 
 import Login from './pages/Login';
 import Signup from './pages/Signup';
@@ -80,24 +81,27 @@ function RequireAuth() {
   return <AppShell />;
 }
 
-// Holds the state that must survive moving between pages (uploads, results, patient profile).
+// Holds the state that must survive moving between pages (uploads, results, profile, exam history).
 // It only mounts while signed in, so signing out discards all of it.
 function AppShell() {
   const { user } = useAuth();
   const session = useScanSession();
-  const [patient, setPatient] = usePatientProfile(user);
-  return <Outlet context={{ user, session, patient, setPatient }} />;
+  const profile = usePatientProfile(user);
+  const history = useExamHistory(session.assessment);
+  if (profile.status === 'loading') return <FullScreenMessage>Loading your profile…</FullScreenMessage>;
+  return <Outlet context={{ user, session, profile, history }} />;
 }
 
 function DashboardRoute() {
-  const { user, session, patient } = useOutletContext();
+  const { user, session, profile, history } = useOutletContext();
   const { signOut } = useAuth();
   const navigate = useNavigate();
   return (
     <Dashboard
       user={user}
-      patient={patient}
+      patient={profile.patient}
       session={session}
+      history={history}
       onEditPatient={() => navigate('/patient-details')}
       onViewDetailedReport={() => navigate('/report')}
       onLogout={signOut}
@@ -106,23 +110,29 @@ function DashboardRoute() {
 }
 
 function PatientRoute() {
-  const { patient, setPatient } = useOutletContext();
+  const { profile, history } = useOutletContext();
   const navigate = useNavigate();
   return (
     <PatientDetailsPage
-      initialData={patient}
-      onSubmit={(data) => {
-        setPatient(data);
+      initialData={profile.patient}
+      onSubmit={async (data) => {
+        await profile.save(data);
         navigate('/');
       }}
+      onErase={async () => {
+        await profile.eraseAll();
+        history.clear();
+        navigate('/');
+      }}
+      onCancel={() => navigate('/')}
     />
   );
 }
 
 function ReportRoute() {
-  const { patient, session } = useOutletContext();
+  const { profile, session } = useOutletContext();
   const navigate = useNavigate();
-  return <DetailedReportPage patient={patient} session={session} onBack={() => navigate('/')} />;
+  return <DetailedReportPage patient={profile.patient} session={session} onBack={() => navigate('/')} />;
 }
 
 export default function App() {

@@ -15,7 +15,7 @@ export const setToken = (token) => localStorage.setItem(TOKEN_KEY, token);
 export const clearToken = () => localStorage.removeItem(TOKEN_KEY);
 
 /* ---- Core request helper ---- */
-async function request(path, { method = 'GET', body, auth = false } = {}) {
+export async function request(path, { method = 'GET', body, auth = false } = {}) {
   const headers = { 'Content-Type': 'application/json' };
   if (auth && getToken()) headers.Authorization = `Bearer ${getToken()}`;
 

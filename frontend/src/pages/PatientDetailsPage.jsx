@@ -20,8 +20,11 @@ function Field({ id, label, icon: Icon, children }) {
   );
 }
 
-export default function PatientDetailsPage({ initialData, onSubmit }) {
+/** onSubmit(profile) and onErase() are async and throw on failure; this page shows the message. */
+export default function PatientDetailsPage({ initialData, onSubmit, onErase, onCancel }) {
   const [form, setForm] = useState(initialData);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState('');
   const today = new Date().toISOString().slice(0, 10);
 
   const bind = (name) => ({
@@ -30,9 +33,35 @@ export default function PatientDetailsPage({ initialData, onSubmit }) {
     onChange: (e) => setForm((f) => ({ ...f, [name]: e.target.value })),
   });
 
-  const handleSubmit = (e) => {
+  const describe = (err) => {
+    const fieldErrors = Object.values(err.data?.errors || {});
+    return fieldErrors.length ? `${err.message} ${fieldErrors.join(' ')}` : err.message;
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    onSubmit({ ...form, fullName: form.fullName.trim() });
+    if (saving) return;
+    setSaving(true);
+    setError('');
+    try {
+      await onSubmit({ ...form, fullName: form.fullName.trim() });
+    } catch (err) {
+      setError(describe(err));
+      setSaving(false);
+    }
+  };
+
+  const handleErase = async () => {
+    const sure = window.confirm(
+      'Permanently delete your saved profile and ALL of your exam history from the server? This cannot be undone.',
+    );
+    if (!sure) return;
+    setError('');
+    try {
+      await onErase();
+    } catch (err) {
+      setError(describe(err));
+    }
   };
 
   const withIcon = `${inputClass} pl-10`;
@@ -52,10 +81,15 @@ export default function PatientDetailsPage({ initialData, onSubmit }) {
         </div>
 
         <p className="text-xs text-slate-500 font-medium mb-6">
-          Enter your clinical baseline details. They are shown on your dashboard and kept only for this browser session.
+          Your details are stored encrypted on the server so they are here next time you sign in, alongside your exam results.
+          Retinal photos are never stored. You can delete everything at any time from this page.
         </p>
 
         <form onSubmit={handleSubmit} className="space-y-4">
+          {error && (
+            <div role="alert" className="px-4 py-3 rounded-xl border bg-red-50 border-red-200 text-red-700 text-xs font-semibold">{error}</div>
+          )}
+
           <Field id="patient-fullName" label="Full Name" icon={FiUser}>
             <input type="text" required minLength={2} autoComplete="name" placeholder="Full name" className={withIcon} {...bind('fullName')} />
           </Field>
@@ -104,12 +138,31 @@ export default function PatientDetailsPage({ initialData, onSubmit }) {
 
           <button
             type="submit"
-            className="w-full mt-6 bg-slate-900 hover:bg-slate-800 text-white font-bold py-4 rounded-2xl shadow-md transition flex items-center justify-center gap-2 text-xs uppercase tracking-wider cursor-pointer active:scale-[0.99]"
+            disabled={saving}
+            className="w-full mt-6 bg-slate-900 hover:bg-slate-800 disabled:opacity-60 disabled:cursor-not-allowed text-white font-bold py-4 rounded-2xl shadow-md transition flex items-center justify-center gap-2 text-xs uppercase tracking-wider cursor-pointer active:scale-[0.99]"
           >
-            <span>Save Profile & Open Dashboard</span>
-            <FiArrowRight className="text-base" />
+            <span>{saving ? 'Saving…' : 'Save Profile & Open Dashboard'}</span>
+            {!saving && <FiArrowRight className="text-base" />}
+          </button>
+
+          <button type="button" onClick={onCancel} className="w-full text-xs font-bold text-slate-500 hover:text-slate-900 cursor-pointer">
+            Cancel
           </button>
         </form>
+
+        <div className="mt-8 pt-6 border-t border-slate-100">
+          <h2 className="text-[11px] font-extrabold text-slate-900 uppercase tracking-wider mb-1">Your data</h2>
+          <p className="text-[11px] text-slate-500 font-medium mb-3">
+            Removes your saved profile and every saved exam from the server. Your account stays.
+          </p>
+          <button
+            type="button"
+            onClick={handleErase}
+            className="px-4 py-2.5 rounded-xl border border-rose-200 text-rose-700 hover:bg-rose-50 text-xs font-bold transition cursor-pointer"
+          >
+            Delete my health data
+          </button>
+        </div>
       </div>
     </div>
   );

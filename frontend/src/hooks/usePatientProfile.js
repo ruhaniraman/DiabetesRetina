@@ -1,32 +1,43 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
+import { deleteAllHealthData, getProfile, saveProfile } from '../api/patient';
 import { emptyPatient } from '../utils/patient';
 
-const KEY = 'retina_rescue_patient';
-
 /**
- * The patient's clinical profile, kept in sessionStorage so a page refresh doesn't lose it.
- * sessionStorage (not localStorage) on purpose: health data is wiped when the tab closes, and
- * AuthProvider clears it on sign-out. There is no server-side profile store yet.
+ * The signed-in user's clinical profile, stored server-side (encrypted at rest).
+ *
+ * status: 'loading' | 'ready' | 'error'. On 'error' the profile shows as empty; `save` still works and
+ * surfaces its own error to the form, so a temporary outage never blocks the rest of the app.
  */
 export function usePatientProfile(user) {
-  const [patient, setPatientState] = useState(() => {
-    try {
-      const saved = JSON.parse(sessionStorage.getItem(KEY));
-      if (saved && typeof saved === 'object') return { ...emptyPatient, ...saved };
-    } catch {
-      /* unreadable or unavailable storage: start empty */
-    }
-    return { ...emptyPatient, fullName: user?.fullName || '' };
-  });
+  const blank = { ...emptyPatient, fullName: user?.fullName || '' };
+  const [state, setState] = useState({ status: 'loading', patient: blank });
 
-  const setPatient = useCallback((next) => {
-    setPatientState(next);
-    try {
-      sessionStorage.setItem(KEY, JSON.stringify(next));
-    } catch {
-      /* storage full or blocked: the in-memory copy still works */
-    }
+  useEffect(() => {
+    let cancelled = false;
+    getProfile()
+      .then(({ profile }) => {
+        if (!cancelled) setState({ status: 'ready', patient: profile ? { ...emptyPatient, ...profile } : blank });
+      })
+      .catch(() => {
+        if (!cancelled) setState((s) => ({ ...s, status: 'error' }));
+      });
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- load once per signed-in user
+  }, [user?.id]);
+
+  // Throws on failure (the form shows the message); state only changes once the server has accepted it.
+  const save = useCallback(async (next) => {
+    const { profile } = await saveProfile(next);
+    setState({ status: 'ready', patient: { ...emptyPatient, ...profile } });
   }, []);
 
-  return [patient, setPatient];
+  // Erases the profile and exam history on the server. The caller refreshes anything that shows exams.
+  const eraseAll = useCallback(async () => {
+    await deleteAllHealthData();
+    setState({ status: 'ready', patient: { ...emptyPatient, fullName: user?.fullName || '' } });
+  }, [user?.fullName]);
+
+  return { patient: state.patient, status: state.status, save, eraseAll };
 }
