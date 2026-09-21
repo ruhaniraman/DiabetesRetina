@@ -40,7 +40,8 @@ cp .env.example .env        # set JWT_SECRET (see the file for a generator comma
 npm install
 npm run dev
 ```
-With `GMAIL_USER` / `GMAIL_APP_PASSWORD` unset, verification codes are printed in this terminal instead of emailed.
+With `GMAIL_USER` / `GMAIL_APP_PASSWORD` unset, verification and password-reset codes are printed in this terminal
+instead of emailed. That is for development only; see [Email setup](#email-setup) to send real mail.
 
 **2. ML backend**
 ```bash
@@ -63,15 +64,38 @@ Override the API addresses with `frontend/.env.local` (see `frontend/.env.exampl
 
 ## Using it
 
-1. Create an account and verify your email, then sign in.
+1. Create an account and verify your email, then sign in. Forgot your password? Use **Forgot password?** on the sign-in page:
+   you'll get a 6-digit code by email, choose a new password, and every existing session is signed out.
 2. Optionally complete the patient profile (edit icon in "My Health Record"). It is kept only for the browser session.
 3. Upload a fundus photo for each eye. Each is quality-checked; rejected images must be replaced.
 4. **Run AI Assessment**, then open **Detailed Report** for per-eye grades, lesion candidates and the Grad-CAM heatmap.
 
+## Email setup
+
+Sign-up verification and password reset both send a 6-digit code by email through a Gmail account.
+
+1. In the Google account that will *send* the mail, turn on 2-Step Verification.
+2. Create an App Password at <https://myaccount.google.com/apppasswords> (a 16-character code; not your normal password).
+3. Put it in `auth-server/.env` (never commit that file):
+   ```
+   GMAIL_USER=your.address@gmail.com
+   GMAIL_APP_PASSWORD=xxxx xxxx xxxx xxxx
+   ```
+4. Check it works, then restart the auth-server:
+   ```bash
+   cd auth-server
+   npm run check-email             # logs in to Gmail, sends nothing
+   npm run check-email -- --send   # also emails a test message to GMAIL_USER
+   ```
+The server prints which mode it is in at startup. With `NODE_ENV=production` it refuses to start unless Gmail is configured.
+Gmail limits how much a personal account may send (about 500 messages/day), so use a transactional email provider
+(e.g. SES, Postmark) if you expect real traffic.
+
 ## Tests
 
 ```bash
-cd frontend && npm run lint && npm test
+cd frontend    && npm run lint && npm test
+cd auth-server && npm test        # starts the real server on a temporary database
 cd backend  && pip install -r requirements-dev.txt && python -m pytest
 ```
 The MATLAB tests live in `stage4_explainability/**/test_*.m`; they need the APTOS dataset under `data/` (git-ignored).

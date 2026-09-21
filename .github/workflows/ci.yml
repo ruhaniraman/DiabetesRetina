@@ -52,4 +52,4 @@ jobs:
           cache: npm
           cache-dependency-path: auth-server/package-lock.json
       - run: npm ci
-      - run: node --check index.js && node --check db.js && node --check mailer.js
+      - run: npm test
