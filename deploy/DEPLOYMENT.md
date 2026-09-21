@@ -106,7 +106,7 @@ Test HTTPS quality at <https://www.ssllabs.com/ssltest/> and headers at <https:/
 
 ## Before you go live
 These are not code problems, and no configuration substitutes for them:
-1. **Clinical validation.** The model has not been validated for clinical use in this repo. It must not be the sole basis for any decision.
+1. **Clinical validation.** `validation/REPORT.md` is a technical validation on one public dataset (92.4% sensitivity, 89.8% specificity on held-out images; it also documents the model's misses, including 2 of 44 proliferative cases). It is not clinical validation: the model has not been tested on your cameras or patients, and it must not be the sole basis for any decision.
 2. **Regulation.** Software that grades disease from medical images is typically regulated as a medical device (e.g. FDA, EU MDR, India's CDSCO). Check what applies before offering it to patients.
 3. **Privacy law and consent.** You will hold health data. Publish a privacy notice, obtain consent, define retention, and get a legal review for your jurisdiction (HIPAA, GDPR, India's DPDP Act, ...).
 4. **Operations.** Monitoring/alerting, log retention without personal data, patching, and an incident plan.

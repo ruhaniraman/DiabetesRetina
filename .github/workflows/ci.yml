@@ -38,6 +38,7 @@ jobs:
       # MATLAB is not available in CI; the tests run with DISABLE_MATLAB and a stubbed auth dependency.
       - run: pip install -r requirements-dev.txt
       - run: python -m pytest -q
+      - run: python -m pytest ../validation -q   # statistics behind the validation report
 
   auth-server:
     runs-on: ubuntu-latest

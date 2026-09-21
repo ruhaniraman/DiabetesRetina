@@ -110,6 +110,15 @@ The server prints which mode it is in at startup. With `NODE_ENV=production` it 
 Gmail limits how much a personal account may send (about 500 messages/day), so use a transactional email provider
 (e.g. SES, Postmark) if you expect real traffic.
 
+## Model validation
+
+`validation/REPORT.md` is a held-out evaluation of the Stage 3 model (sensitivity, specificity, AUC, kappa with confidence
+intervals, threshold behaviour, a data-leakage audit, and a plain statement of what it does *not* show). It found and fixed two
+problems in the app: the wrong image preprocessing, and a decision rule that ignored the model's tuned referral threshold.
+Headline: on 548 unseen images the referral decision flags 92.4% of referable patients at 89.8% specificity; the exact stage is
+much less reliable (78% correct). This is an internal technical validation, **not** clinical validation. Reproduce it with
+`validation/README.md`.
+
 ## Deploying to production
 
 `deploy/DEPLOYMENT.md` is the step-by-step guide: HTTPS through Caddy (`deploy/Caddyfile`, automatic certificates,
@@ -123,6 +132,7 @@ With `NODE_ENV=production` / `APP_ENV=production` the servers refuse to start on
 cd frontend    && npm run lint && npm test
 cd auth-server && npm test        # starts the real server on a temporary database
 cd backend  && pip install -r requirements-dev.txt && python -m pytest
+python -m pytest validation       # statistics behind the validation report (numpy only)
 ```
 The MATLAB tests live in `stage4_explainability/**/test_*.m`; they need the APTOS dataset under `data/` (git-ignored).
 CI (`.github/workflows/ci.yml`) runs the frontend, backend and auth-server checks that don't need MATLAB.
