@@ -12,7 +12,7 @@ frontend/       React + Vite web app (port 5173)
 auth-server/    Node/Express: sign-up, email verification, login, sessions (port 4000, SQLite via node:sqlite)
 backend/        Python/FastAPI: image analysis API (port 5000)
    ├─ Stage 1  image quality check           OpenCV
-   ├─ Stage 2  lesion candidate mapping      OpenCV (heuristic; NOT the neural network)
+   ├─ Stage 2  lesion overlay (EXPERIMENTAL, off by default: validation/LESIONS.md shows it does not detect lesions)
    ├─ Stage 3  bilateral DR grading          MATLAB Engine → trained network (stage_3/)
    └─ Stage 4  Grad-CAM explainability       MATLAB Engine → stage4_explainability/
 stage1_quality/ stage2_structure/ stage_3/ stage4_explainability/ stage5_simulink/ utils/   MATLAB source
@@ -119,6 +119,17 @@ Headline: on 548 unseen images the referral decision flags 92.4% of referable pa
 much less reliable (78% correct). This is an internal technical validation, **not** clinical validation. Reproduce it with
 `validation/README.md`.
 
+## Clinical wording review
+
+The app tells users things like "referral is recommended" and "no referral flagged". **None of that wording has been reviewed by a
+clinician.** `docs/CLINICAL_REVIEW.md` is a review packet, generated from the real code and validation data: every message the tool can
+show (web app, API summaries, PDF report), the model's measured performance and failure modes, what was changed and why, and a list
+of questions for the reviewer, with a sign-off table. Wording lives in three files (`backend/clinical_text.py`,
+`frontend/src/clinicalText.js`, `stage4_explainability/report/formatReportText.m`), and tests fail if risky phrasing (reassurance,
+"required", clinical timings) creeps in or if the packet goes out of date. Regenerate it with
+`python docs/tools/build_clinical_review.py` (and `python docs/tools/export_stage4_text.py` after editing the MATLAB text).
+Machine-translated (Hindi/Kannada) summaries are labelled as such and have not been reviewed either.
+
 ## Deploying to production
 
 `deploy/DEPLOYMENT.md` is the step-by-step guide: HTTPS through Caddy (`deploy/Caddyfile`, automatic certificates,
@@ -139,7 +150,7 @@ CI (`.github/workflows/ci.yml`) runs the frontend, backend and auth-server check
 
 ## Notes and limitations
 
-- Stage 2 lesion counts come from classic image processing and are unverified candidates, not neural-network findings.
+- The Stage 2 lesion overlay is disabled by default: it paints about 2.7% of every retina (healthy or not) and misses annotated lesions (`validation/LESIONS.md`).
 - Exam history keeps grades and summaries only; there is no image storage, so a past exam cannot be re-opened visually.
 - Health data has one owner (the account). There is no clinician/patient sharing model or audit log yet.
 - The model files (`*.mat`) are large binaries tracked directly in git. Consider Git LFS.
