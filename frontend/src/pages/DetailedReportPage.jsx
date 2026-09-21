@@ -64,9 +64,9 @@ export default function DetailedReportPage({ patient, session, onBack }) {
   const referable = assessment ? (assessment.referable ?? ['Moderate', 'Severe', 'Proliferate_DR'].includes(overall)) : false;
   let triage;
   if (!assessment) triage = { ...TRIAGE.none, basis: basisText(null) };
-  else if (referable) triage = { ...TRIAGE.referral, basis: basisText(thresholdPercent) };
-  else if (overall === 'No_DR') triage = { ...TRIAGE.noReferral, basis: basisText(thresholdPercent) };
-  else triage = { ...TRIAGE.followUp, basis: basisText(thresholdPercent) };
+  else if (referable) triage = { ...TRIAGE.referral, basis: basisText(thresholdPercent, assessment?.referralThresholdSource) };
+  else if (overall === 'No_DR') triage = { ...TRIAGE.noReferral, basis: basisText(thresholdPercent, assessment?.referralThresholdSource) };
+  else triage = { ...TRIAGE.followUp, basis: basisText(thresholdPercent, assessment?.referralThresholdSource) };
 
   const candidateCount = (s) => (s.mask.counts ? Object.values(s.mask.counts).reduce((a, b) => a + b, 0) : null);
 

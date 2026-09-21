@@ -60,6 +60,35 @@ IS_PROD = os.getenv("APP_ENV", "development").lower() == "production"
 # (it paints about 2.7% of every retina, healthy or not, and misses the annotated lesions on real ground truth).
 LESION_OVERLAY_ENABLED = os.getenv("ENABLE_LESION_OVERLAY", "").lower() in ("1", "true", "yes")
 
+# A site may replace the model's referral threshold with one it calibrated on its own graded images
+# (calibration/README.md). Changing it changes the balance between missed disease and false referrals, so it needs a clinical
+# lead's sign-off. The range is limited on purpose: below 0.02 nearly everything is flagged, above 0.60 real disease is missed.
+THRESHOLD_MIN, THRESHOLD_MAX = 0.02, 0.60
+
+
+def parse_threshold_override(value):
+    """REFERRAL_THRESHOLD -> a float in [THRESHOLD_MIN, THRESHOLD_MAX], or None when unset. Raises ValueError with a clear message."""
+    if value is None or str(value).strip() == "":
+        return None
+    try:
+        t = float(str(value).strip())
+    except ValueError:
+        raise ValueError(f"{value!r} is not a number (use a value such as 0.15)") from None
+    if not (THRESHOLD_MIN <= t <= THRESHOLD_MAX):
+        raise ValueError(f"{t} is outside the accepted range {THRESHOLD_MIN} to {THRESHOLD_MAX}")
+    return t
+
+
+try:
+    REFERRAL_THRESHOLD_OVERRIDE = parse_threshold_override(os.getenv("REFERRAL_THRESHOLD"))
+except ValueError as _exc:
+    raise SystemExit(f"Invalid REFERRAL_THRESHOLD: {_exc}")
+if REFERRAL_THRESHOLD_OVERRIDE is not None:
+    logging.getLogger("retina-rescue").warning(
+        "Using a SITE-SET referral threshold of %.2f instead of the model's own. It must be backed by a calibration report and clinical sign-off.",
+        REFERRAL_THRESHOLD_OVERRIDE,
+    )
+
 
 def production_problems(env) -> list[str]:
     """Reasons this configuration is unsafe to run in production (empty list means acceptable)."""
@@ -445,10 +474,14 @@ def grade_eyes(left_img: np.ndarray, right_img: np.ndarray) -> dict:
         overall, left, right, left_conf, right_conf, left_ref, right_ref, threshold = matlab_service.call(
             "assessBilateralFromFiles", str(left_path), str(right_path), nargout=8
         )
+    site_set = REFERRAL_THRESHOLD_OVERRIDE is not None
     return {
         "overall": str(overall), "left": str(left), "right": str(right),
         "left_conf": float(left_conf), "right_conf": float(right_conf),
-        "left_ref": float(left_ref), "right_ref": float(right_ref), "threshold": float(threshold),
+        "left_ref": float(left_ref), "right_ref": float(right_ref),
+        # The threshold actually applied: the site's calibrated value if one is set, otherwise the model's own.
+        "threshold": REFERRAL_THRESHOLD_OVERRIDE if site_set else float(threshold),
+        "threshold_source": "site" if site_set else "model",
     }
 
 
@@ -505,6 +538,7 @@ async def run_stage3_assessment(
         "rightReferable": d["right_flagged"],
         "referable": d["referable"],
         "referralThreshold": d["threshold"],
+        "referralThresholdSource": d.get("threshold_source", "model"),
         "escalated": d["escalated"],
         "overallRisk": d["overall"],
         "overallSummary": build_summary(d["overall"], d["left"], d["right"], decision=d),
@@ -587,7 +621,7 @@ async def get_simulation_data():
 
 @app.get("/api/health")
 async def health():
-    return {"ok": True, "matlab": matlab_service.status, "lesionOverlay": LESION_OVERLAY_ENABLED}
+    return {"ok": True, "matlab": matlab_service.status, "lesionOverlay": LESION_OVERLAY_ENABLED, "referralThresholdOverride": REFERRAL_THRESHOLD_OVERRIDE}
 
 
 if __name__ == "__main__":

@@ -39,6 +39,7 @@ jobs:
       - run: pip install -r requirements-dev.txt
       - run: python -m pytest -q
       - run: python -m pytest ../validation -q   # statistics behind the validation report
+      - run: python -m pytest ../calibration -q  # site threshold-calibration tool (synthetic data)
 
   auth-server:
     runs-on: ubuntu-latest

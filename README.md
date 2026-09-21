@@ -121,6 +121,14 @@ the camera and population. `validation/QUALITY.md` covers the Stage 1 photo-qual
 rejected good full-resolution photos and claimed to "enhance" images it never touched. This is an internal technical validation, **not** clinical
 validation. Reproduce it with `validation/README.md`.
 
+## Calibrating the threshold for a clinic
+
+The referral threshold (0.20) was tuned on APTOS and over-refers on other data (IDRiD: 46% specificity). `calibration/` is a tool that
+takes a clinic's own clinician-graded photographs, runs the model, and reports what each sensitivity target would cost, with confidence
+intervals, an honest hold-out estimate, and predictive values at the clinic's prevalence. It recommends a threshold only when told a target,
+and the target is a clinical decision. The result is applied with `REFERRAL_THRESHOLD` in `backend/.env`. See `calibration/README.md`;
+`calibration/example/` is a real run on IDRiD. This is evidence, not approval.
+
 ## Clinical wording review
 
 The app tells users things like "referral is recommended" and "no referral flagged". **None of that wording has been reviewed by a
@@ -146,6 +154,7 @@ cd frontend    && npm run lint && npm test
 cd auth-server && npm test        # starts the real server on a temporary database
 cd backend  && pip install -r requirements-dev.txt && python -m pytest
 python -m pytest validation       # statistics behind the validation report (numpy only)
+python -m pytest calibration      # site threshold-calibration tool (numpy only)
 ```
 The MATLAB tests live in `stage4_explainability/**/test_*.m`; they need the APTOS dataset under `data/` (git-ignored).
 CI (`.github/workflows/ci.yml`) runs the frontend, backend and auth-server checks that don't need MATLAB.

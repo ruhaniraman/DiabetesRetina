@@ -52,8 +52,10 @@ export const TRIAGE = {
   },
 };
 
-export const basisText = (thresholdPercent) =>
-  thresholdPercent ? `Basis: referral score compared with a ${thresholdPercent} threshold` : 'Basis: model grade';
+export const basisText = (thresholdPercent, source) =>
+  thresholdPercent
+    ? `Basis: referral score compared with a ${thresholdPercent} threshold${source === 'site' ? ' set by this site' : ''}`
+    : 'Basis: model grade';
 
 export const REPORT_LABELS = {
   eyebrow: 'RETINARESCUE • SCREENING REPORT',

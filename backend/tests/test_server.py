@@ -137,7 +137,7 @@ def test_translation_rejects_unknown_language(client):
 def raw(overall, left, right, left_conf, right_conf, left_ref, right_ref, threshold=0.2):
     """What grade_eyes returns (the raw network output)."""
     return {"overall": overall, "left": left, "right": right, "left_conf": left_conf, "right_conf": right_conf,
-            "left_ref": left_ref, "right_ref": right_ref, "threshold": threshold}
+            "left_ref": left_ref, "right_ref": right_ref, "threshold": threshold, "threshold_source": "model"}
 
 
 def two_images():
@@ -346,3 +346,46 @@ def test_the_overlay_default_is_off_when_the_variable_is_unset():
     code = "import server; print(server.LESION_OVERLAY_ENABLED)"
     r = subprocess.run([sys.executable, "-c", code], cwd=os.path.dirname(server.__file__), env=env, capture_output=True, text=True, timeout=120)
     assert r.stdout.strip().endswith("False"), r.stderr[-300:]
+
+
+# --- site-calibrated referral threshold (calibration/README.md) ----------------------------------------------
+@pytest.mark.parametrize("value, expected", [(None, None), ("", None), ("  ", None), ("0.15", 0.15), (" 0.3 ", 0.3), ("0.02", 0.02), ("0.6", 0.6)])
+def test_threshold_override_parsing_accepts_sensible_values(value, expected):
+    assert server.parse_threshold_override(value) == expected
+
+
+@pytest.mark.parametrize("value", ["abc", "0.01", "0.61", "1", "-0.2", "0,2", "nan"])
+def test_threshold_override_parsing_refuses_unsafe_or_garbled_values(value):
+    with pytest.raises(ValueError):
+        server.parse_threshold_override(value)
+
+
+def test_an_invalid_override_stops_the_server_with_a_clear_message():
+    r = _run_python("import server", REFERRAL_THRESHOLD="0.9")
+    assert r.returncode != 0 and "Invalid REFERRAL_THRESHOLD" in r.stderr and "outside the accepted range" in r.stderr
+
+
+def test_without_an_override_the_models_own_threshold_is_used(monkeypatch):
+    monkeypatch.setattr(server, "REFERRAL_THRESHOLD_OVERRIDE", None)
+    monkeypatch.setattr(server.matlab_service, "call", lambda *a, **k: ("Mild", "Mild", "No_DR", 0.9, 0.9, 0.15, 0.02, 0.2))
+    g = server.grade_eyes(fake_fundus(), fake_fundus())
+    assert g["threshold"] == 0.2 and g["threshold_source"] == "model"
+
+
+def test_a_site_threshold_replaces_the_model_threshold_and_changes_who_is_flagged(client, monkeypatch):
+    call = lambda *a, **k: ("Mild", "Mild", "No_DR", 0.9, 0.9, 0.15, 0.02, 0.2)      # left referral score 0.15
+    monkeypatch.setattr(server.matlab_service, "call", call)
+    monkeypatch.setattr(server, "REFERRAL_THRESHOLD_OVERRIDE", None)
+    default = client.post("/api/stage3-assessment", files=two_images()).json()
+    assert default["referable"] is False and default["referralThreshold"] == 0.2 and default["referralThresholdSource"] == "model"
+
+    monkeypatch.setattr(server, "REFERRAL_THRESHOLD_OVERRIDE", 0.10)                 # a more sensitive site setting
+    site = client.post("/api/stage3-assessment", files=two_images()).json()
+    assert site["referable"] is True and site["leftReferable"] is True
+    assert site["referralThreshold"] == 0.10 and site["referralThresholdSource"] == "site"
+    assert site["escalated"] is True and "10%" in site["overallSummary"]             # the text states the threshold that was applied
+
+
+def test_health_reports_the_override(client, monkeypatch):
+    monkeypatch.setattr(server, "REFERRAL_THRESHOLD_OVERRIDE", 0.12)
+    assert client.get("/api/health").json()["referralThresholdOverride"] == 0.12

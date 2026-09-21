@@ -55,6 +55,8 @@ SERVICE_KEY=<same as auth-server>
 HOST=127.0.0.1
 ```
 `APP_ENV=production` is set by the systemd unit.
+Optional: `REFERRAL_THRESHOLD=<0.02-0.60>` overrides the model's 0.20 referral threshold. Set it only from a written clinical decision
+based on a site calibration (`calibration/README.md`); the app then reports that the threshold came from the site.
 
 **Both services refuse to start** if a secret is missing, short or still a placeholder; if two secrets are reused;
 if the origin is not `https://` or points at localhost; or (backend) if it would bind to a public address.
