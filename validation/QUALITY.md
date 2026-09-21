@@ -40,9 +40,9 @@ That is the safe direction for a screening tool, but it means a poor photo produ
 
 **2. On natural images the new gate is quiet.** It rejects **0.1%** of APTOS and **1.0%** of IDRiD photographs and warns on 1.6% and 5.4% (the previous gate flagged 14.3% of APTOS and rejected 10.1% of IDRiD).
 
-**3. Natural photo quality explains little of the classifier's errors.** No measure predicts a wrong referral decision well (AUC 0.52-0.64 on APTOS, 0.52-0.58 on IDRiD; 0.5 is no information). Errors come mostly from ambiguous disease and from differences between datasets, not from photo quality. So the gate does **not** pretend to predict errors: it screens out clearly ungradable photos. In the natural data, images the gate warned about were not clearly worse (APTOS: 11.8% wrong when warned vs 7.6% accepted, 17 images).
+**3. Natural photo quality explains little of the classifier's errors.** No measure predicts a wrong referral decision well (AUC 0.52-0.64 on APTOS, 0.50-0.64 on IDRiD; 0.5 is no information; the best single predictor, the fine-detail ratio on IDRiD, reaches 0.64). Errors come mostly from ambiguous disease and from differences between datasets, not from photo quality. So the gate does **not** pretend to predict errors: it screens out clearly ungradable photos. In the natural data, images the gate warned about were not clearly worse (APTOS: 11.8% wrong when warned vs 7.6% accepted, 17 images; IDRiD: 14.3% vs 24.2%).
 
-**4. Heavy JPEG compression is not a practical risk, so the gate does not check for it.** Compressing *after* shrinking to 224 px looked catastrophic (specificity 5%) and the gate could not see it. But an upload is compressed at full size first. Applied at full resolution to 120 IDRiD photographs, JPEG quality 20 changed the referral decision for only 7% of images (quality 60: 5%).
+**4. Heavy JPEG compression is not a practical risk, so the gate does not check for it.** Compressing *after* shrinking to 224 px looked catastrophic (specificity 5%) and the gate could not see it. But an upload is compressed at full size first. Applied at full resolution to 120 IDRiD photographs, JPEG quality 20 changed the referral decision for only 8% of images (quality 60: 5%).
 
 ## A larger finding: the classifier does not transfer to another dataset well
 
@@ -55,7 +55,7 @@ Not part of the gate, but discovered while validating it (`validation/external_i
 
 It still finds referable disease, but it calls more than half of the healthy IDRiD eyes referable (only 49% of healthy eyes recognised as healthy; Mild recognised 12% of the time). In a real clinic with low disease prevalence that would mean a very large number of false referrals. This is the concrete version of the warning in `REPORT.md`: **performance depends on the camera and population, and must be re-measured on your own images.**
 
-I tested one explanation: IDRiD photographs shrunk to 224 px have far less fine detail than APTOS's (median sharpness 0.21 vs 0.69), and blurred images are over-referred. Shrinking IDRiD in ways that restore that detail does raise specificity (to 72-76%), **but sensitivity falls from 94% to about 74% and AUC drops from 0.90 to about 0.84**. It moves the operating point rather than fixing discrimination, so the app's preprocessing was left unchanged. (IDRiD's official test subset alone gives 12% specificity on only 34 healthy eyes, a reminder of how noisy small sets are.)
+I tested one explanation: IDRiD photographs shrunk to 224 px have far less fine detail than APTOS's (median sharpness 0.21 vs 0.69), and blurred images are over-referred. Shrinking IDRiD in ways that restore that detail does raise specificity (to 72-76%), **but sensitivity falls from 94% to about 80% and AUC drops from 0.90 to about 0.87**. It moves the operating point rather than fixing discrimination, so the app's preprocessing was left unchanged. (IDRiD's own 103-image test subset gives only 12.8% specificity, on just 39 non-referable eyes, against 54.5% on its 413 training images: a reminder of how noisy small sets are.)
 
 ## The new gate (`backend/quality.py`)
 
@@ -76,6 +76,15 @@ enhanced or altered.** The thresholds are calibrated on APTOS and IDRiD only: on
 - Quality labels do not exist, so "would a clinician call this ungradable?" was not measured. The gate is validated against classifier behaviour, not clinical gradability.
 - It does not detect a wrong-eye or non-fundus image beyond "no retina found", nor a dilated/undilated pupil, media opacity, or artefacts such as eyelashes.
 - Degradations were synthetic. Real capture problems (motion blur, uneven illumination, partial occlusion) are not covered.
+
+## Correction (found while building the calibration tool)
+
+An earlier version of this analysis treated IDRiD image names as unique. **They are not**: IDRiD numbers its training and testing sets independently, so
+`IDRiD_001` is two different photographs. That collapsed 516 images into 413 in the parts of the analysis keyed by name. The headline results
+(IDRiD sensitivity 94.4%, specificity 46.1%, AUC 0.900) were computed by position and did not change. Corrected: the IDRiD error-by-verdict table,
+the IDRiD quality-versus-error AUCs (now 0.50-0.64), the downscale experiments (now all 516 images: sensitivity of the sharper variants about 80%, AUC
+about 0.87, previously about 74% and 0.84), the JPEG figures, and the IDRiD test-subset specificity (12.8% on 39 eyes, previously reported as 12% on 34).
+Every conclusion above stands. All IDs are now unique, and the calibration tool refuses duplicate names outright.
 
 ## Reproduce
 

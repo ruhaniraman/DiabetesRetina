@@ -34,31 +34,37 @@ def items():
     return out
 
 
+def unique_id(path, split):
+    """IDRiD numbers its training and testing images independently: IDRiD_001 exists in BOTH sets and is a different photograph."""
+    return f"{split}_{path.stem}"
+
+
 def main():
     data = items()
+    ids = [unique_id(p, s) for p, _, s in data]
     print(f"{len(data)} IDRiD grading images", flush=True)
     eng = matlab.engine.start_matlab()
     for rel in ["utils", "stage_3", "validation"]:
         eng.addpath(str(ROOT / rel), nargout=0)
 
     print("== variant: app (native resolution)", flush=True)
-    eng.predictFiles([str(p) for p, _, _ in data], [l for _, l, _ in data], (OUT / "idrid_app.csv").as_posix(), nargout=0)
+    eng.predictFiles([str(p) for p, _, _ in data], [l for _, l, _ in data], (OUT / "idrid_app.csv").as_posix(), ids, nargout=0)
 
     print("== variant: area (OpenCV area-averaged to 224 first)", flush=True)
     with tempfile.TemporaryDirectory(prefix="idrid224_") as tmp:
         paths = []
-        for p, _, _ in data:
+        for p, _, split in data:
             small = cv2.resize(cv2.imread(str(p)), (224, 224), interpolation=cv2.INTER_AREA)
-            q = Path(tmp) / f"{p.stem}.png"
+            q = Path(tmp) / f"{unique_id(p, split)}.png"
             cv2.imwrite(str(q), small)
             paths.append(str(q))
-        eng.predictFiles(paths, [l for _, l, _ in data], (OUT / "idrid_area.csv").as_posix(), nargout=0)
+        eng.predictFiles(paths, [l for _, l, _ in data], (OUT / "idrid_area.csv").as_posix(), ids, nargout=0)
     eng.quit()
 
     with open(OUT / "idrid_splits.csv", "w", newline="", encoding="utf-8") as fh:
         w = csv.writer(fh)
-        w.writerow(["id", "label", "split"])
-        w.writerows((p.stem, l, s) for p, l, s in data)
+        w.writerow(["id", "name", "label", "split"])
+        w.writerows((unique_id(p, s), p.stem, l, s) for p, l, s in data)
 
 
 if __name__ == "__main__":

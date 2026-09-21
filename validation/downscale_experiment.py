@@ -40,7 +40,7 @@ VARIANTS = {
 
 
 def main():
-    items = [(r["id"], r["label"], r["split"]) for r in csv.DictReader(open(RESULTS / "idrid_splits.csv", encoding="utf-8"))]
+    items = [(r["id"], r["name"], r["label"], r["split"]) for r in csv.DictReader(open(RESULTS / "idrid_splits.csv", encoding="utf-8"))]   # id is unique; name is the file name
     rng = np.random.default_rng(5)
     subset = set(rng.choice(len(items), size=JPEG_SUBSET, replace=False).tolist())
 
@@ -48,9 +48,10 @@ def main():
         tmp = Path(tmp)
         for name in list(VARIANTS) + ["subset_area", "subset_jpeg20_native", "subset_jpeg60_native"]:
             (tmp / name).mkdir()
-        for k, (image_id, label, split) in enumerate(items):
+        for k, (uid, name, label, split) in enumerate(items):
             folder = "a. Training Set" if split == "train" else "b. Testing Set"
-            native = cv2.imread(str(BASE / folder / f"{image_id}.jpg"))
+            native = cv2.imread(str(BASE / folder / f"{name}.jpg"))
+            image_id = uid
             for name, fn in VARIANTS.items():
                 cv2.imwrite(str(tmp / name / f"{image_id}.png"), fn(native))
             if k in subset:
@@ -66,7 +67,7 @@ def main():
             eng.addpath(str(ROOT / rel), nargout=0)
         for name in list(VARIANTS) + ["subset_area", "subset_jpeg20_native", "subset_jpeg60_native"]:
             files = sorted((tmp / name).glob("*.png"))
-            label_of = {i: l for i, l, _ in items}
+            label_of = {u: l for u, _, l, _ in items}
             eng.predictFiles([str(f) for f in files], [label_of[f.stem] for f in files], (RESULTS / f"idrid_variant_{name}.csv").as_posix(), nargout=0)
             print("done", name, flush=True)
         eng.quit()

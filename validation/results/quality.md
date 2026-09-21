@@ -26,7 +26,7 @@ Does the old gate's 'poor lighting' flag point at images the classifier gets wro
 | Data | Flagged | Referral decision wrong when flagged | when not flagged |
 |---|---|---|---|
 | APTOS | 145 of 1091 | 2.1% | 8.6% |
-| IDRiD | 80 of 516 | 41.2% | 28.2% |
+| IDRiD | 80 of 516 | 36.2% | 21.3% |
 
 ## 2. Do the quality measures predict where the classifier fails? (natural images)
 
@@ -34,18 +34,18 @@ AUC of each measure for spotting images whose referral decision is wrong (0.5 = 
 
 | Measure | APTOS val+test AUC (direction) | IDRiD AUC (direction) |
 |---|---|---|
-| brightness | 0.581 (lower = worse) | 0.537 (lower = worse) |
-| under_fraction | 0.563 (lower = worse) | 0.577 (higher = worse) |
-| over_fraction | 0.608 (lower = worse) | 0.526 (lower = worse) |
-| contrast | 0.642 (lower = worse) | 0.551 (lower = worse) |
-| range_p5_p95 | 0.617 (lower = worse) | 0.542 (lower = worse) |
-| lap_var | 0.627 (lower = worse) | 0.552 (lower = worse) |
-| lap_var_norm | 0.528 (higher = worse) | 0.529 (lower = worse) |
-| tenengrad_norm | 0.520 (higher = worse) | 0.568 (lower = worse) |
-| hf_ratio | 0.535 (higher = worse) | 0.567 (higher = worse) |
-| fov_fraction | 0.640 (higher = worse) | 0.517 (higher = worse) |
-| cur_lap_native | 0.543 (lower = worse) | 0.575 (lower = worse) |
-| cur_mean_native | 0.539 (higher = worse) | 0.530 (lower = worse) |
+| brightness | 0.581 (lower = worse) | 0.532 (lower = worse) |
+| under_fraction | 0.563 (lower = worse) | 0.560 (higher = worse) |
+| over_fraction | 0.608 (lower = worse) | 0.519 (lower = worse) |
+| contrast | 0.642 (lower = worse) | 0.535 (lower = worse) |
+| range_p5_p95 | 0.617 (lower = worse) | 0.530 (lower = worse) |
+| lap_var | 0.627 (lower = worse) | 0.503 (lower = worse) |
+| lap_var_norm | 0.528 (higher = worse) | 0.509 (higher = worse) |
+| tenengrad_norm | 0.520 (higher = worse) | 0.554 (lower = worse) |
+| hf_ratio | 0.535 (higher = worse) | 0.641 (higher = worse) |
+| fov_fraction | 0.640 (higher = worse) | 0.500 (lower = worse) |
+| cur_lap_native | 0.543 (lower = worse) | 0.555 (lower = worse) |
+| cur_mean_native | 0.539 (higher = worse) | 0.526 (lower = worse) |
 
 ## 3. Controlled degradations (150 held-out APTOS test images, 30 per grade)
 
@@ -93,8 +93,8 @@ Classifier errors, by what the gate said (natural images):
 | APTOS val+test | warn | 17 | 11.8% | 1 of 11 |
 | APTOS val+test | accept | 1073 | 7.6% | 23 of 434 |
 | IDRiD | reject | 5 | 20.0% | 1 of 4 |
-| IDRiD | warn | 28 | 25.0% | 0 of 16 |
-| IDRiD | accept | 483 | 30.6% | 19 of 266 |
+| IDRiD | warn | 28 | 14.3% | 0 of 20 |
+| IDRiD | accept | 483 | 24.2% | 17 of 299 |
 
 How the shipped gate treats each degradation (share of the 150 images per verdict), beside the damage to the classifier:
 
@@ -130,13 +130,13 @@ For scale, APTOS training images have median sharpness 0.69. Split rows separate
 
 | Shrink method | Median sharpness | Sensitivity | Specificity | AUC | Specificity, IDRiD train (413) | Specificity, IDRiD test (103) |
 |---|---|---|---|---|---|---|
-| app (MATLAB bicubic, what the app does) |  | 94.4% | 46.1% | 0.900 | 55.3% | 12.2% |
-| area | 0.21 | 91.9% | 48.7% | 0.874 | 57.9% | 12.8% |
-| lanczos | 0.87 | 74.3% | 71.7% | 0.836 | 76.3% | 53.8% |
-| linear_noAA | 0.77 | 75.2% | 72.3% | 0.840 | 77.6% | 51.3% |
-| nearest | 0.88 | 73.9% | 76.4% | 0.843 | 80.3% | 61.5% |
-| area_unsharp | 0.67 | 86.5% | 61.3% | 0.861 | 69.1% | 30.8% |
-| area_unsharp_strong | 1.32 | 80.2% | 69.1% | 0.854 | 75.7% | 43.6% |
+| app (MATLAB bicubic, what the app does) |  | 94.4% | 46.1% | 0.900 | 54.5% | 12.8% |
+| area | 0.21 | 94.4% | 48.7% | 0.901 | 57.8% | 12.8% |
+| lanczos | 0.87 | 79.9% | 71.5% | 0.863 | 76.0% | 53.8% |
+| linear_noAA | 0.77 | 80.8% | 72.0% | 0.868 | 77.3% | 51.3% |
+| nearest | 0.88 | 79.6% | 76.2% | 0.869 | 79.9% | 61.5% |
+| area_unsharp | 0.67 | 90.7% | 61.1% | 0.890 | 68.8% | 30.8% |
+| area_unsharp_strong | 1.32 | 85.4% | 68.9% | 0.882 | 75.3% | 43.6% |
 
 ## 6. Heavy JPEG compression at full resolution (120 IDRiD photographs)
 
@@ -144,6 +144,6 @@ Section 3 compressed *after* shrinking to 224 px, which is harsher than reality:
 
 | Version | Sensitivity | Specificity | AUC | Same referral decision as uncompressed |
 |---|---|---|---|---|
-| no extra compression | 88.9% | 44.7% | 0.829 | 100% |
-| JPEG quality 60 at full size | 88.9% | 36.2% | 0.818 | 95% |
-| JPEG quality 20 at full size | 92.1% | 48.9% | 0.819 | 93% |
+| no extra compression | 91.1% | 51.2% | 0.903 | 100% |
+| JPEG quality 60 at full size | 91.1% | 41.5% | 0.894 | 95% |
+| JPEG quality 20 at full size | 92.4% | 56.1% | 0.901 | 92% |

@@ -21,7 +21,7 @@ import quality  # noqa: E402
 
 
 def main():
-    items = [(r["id"], r["split"]) for r in csv.DictReader(open(dx.RESULTS / "idrid_splits.csv", encoding="utf-8"))]
+    items = [(r["name"], r["split"]) for r in csv.DictReader(open(dx.RESULTS / "idrid_splits.csv", encoding="utf-8"))]
     rng = np.random.default_rng(2)
     pick = [items[i] for i in rng.choice(len(items), size=100, replace=False)]
     acc = {name: {"lap_var_norm": [], "hf_ratio": []} for name in dx.VARIANTS}

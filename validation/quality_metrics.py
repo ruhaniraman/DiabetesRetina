@@ -55,7 +55,7 @@ def jobs():
     if idrid_labels.exists():
         for r in csv.DictReader(open(idrid_labels, encoding="utf-8")):
             folder = "a. Training Set" if r["split"] == "train" else "b. Testing Set"
-            out.append(("idrid", r["id"], r["label"], r["split"], IDRID / folder / f"{r['id']}.jpg"))
+            out.append(("idrid", r["id"], r["label"], r["split"], IDRID / folder / f"{r['name']}.jpg"))
     return out
 
 
