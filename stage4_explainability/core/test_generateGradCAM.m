@@ -10,7 +10,8 @@
 testImagePath = 'data/aptos2019/colored_images/Severe/0dc8d25b3f69.png';
 
 %% Load model
-S = load('stage_3/Stage3_Final_HighSensitivity_Model.mat');
+addpath(fullfile(fileparts(mfilename('fullpath')), '..')); setupStage4Paths();   % works from any current folder
+S = load(fullfile(projectRoot(), 'stage_3', 'Stage3_Final_HighSensitivity_Model.mat'));
 net = S.trainedNetWeighted;
 bestThreshold = S.stage3Results.threshold;
 classNames = net.Layers(end).Classes;

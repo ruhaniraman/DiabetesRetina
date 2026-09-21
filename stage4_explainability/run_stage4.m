@@ -26,8 +26,10 @@ function summaryTable = run_stage4(inputPath, outputDir)
 %     run_stage4('data/aptos2019/colored_images/Severe');
 %     run_stage4('data/aptos2019/colored_images');   % all 5 class folders
 
+addpath(fileparts(mfilename('fullpath'))); setupStage4Paths();   % works from any current folder
+
 if nargin < 2 || isempty(outputDir)
-    outputDir = 'stage4_explainability/results';
+    outputDir = fullfile(projectRoot(), 'stage4_explainability', 'results');
 end
 if ~exist(outputDir, 'dir')
     mkdir(outputDir);
@@ -35,7 +37,7 @@ end
 
 % ---- Load model ONCE, regardless of how many images follow ----
 fprintf('Loading Stage 3 model...\n');
-S = load('stage_3/Stage3_Final_HighSensitivity_Model.mat');
+S = load(fullfile(projectRoot(), 'stage_3', 'Stage3_Final_HighSensitivity_Model.mat'));
 net = S.trainedNetWeighted;
 bestThreshold = S.stage3Results.threshold;
 classNames = net.Layers(end).Classes;
