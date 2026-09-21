@@ -1,12 +1,13 @@
-import Database from 'better-sqlite3';
+// Uses Node's built-in SQLite (node:sqlite, Node 22.13+), so there is no native module to compile.
+import { DatabaseSync } from 'node:sqlite';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-// Creates server/retina-rescue.db on first run.
-const db = new Database(path.join(__dirname, 'retina-rescue.db'));
-db.pragma('journal_mode = WAL');
+// Creates auth-server/retina-rescue.db on first run. DB_PATH overrides it (e.g. for tests).
+const db = new DatabaseSync(process.env.DB_PATH || path.join(__dirname, 'retina-rescue.db'));
+db.exec('PRAGMA journal_mode = WAL');
 
 db.exec(`
   CREATE TABLE IF NOT EXISTS users (
@@ -22,5 +23,11 @@ db.exec(`
     created_at               INTEGER NOT NULL
   );
 `);
+
+// Migration for databases created before logout/revocation existed.
+const columns = db.prepare('PRAGMA table_info(users)').all().map((c) => c.name);
+if (!columns.includes('token_version')) {
+  db.exec('ALTER TABLE users ADD COLUMN token_version INTEGER NOT NULL DEFAULT 0');
+}
 
 export default db;

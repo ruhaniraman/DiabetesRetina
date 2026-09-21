@@ -2,6 +2,7 @@ import 'dotenv/config'; // must stay the first import
 import crypto from 'node:crypto';
 import express from 'express';
 import cors from 'cors';
+import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
@@ -44,7 +45,9 @@ function passwordError(pw) {
 }
 
 const publicUser = (u) => ({ id: u.id, fullName: u.full_name, email: u.email });
-const signToken = (userId) => jwt.sign({ sub: userId }, JWT_SECRET, { expiresIn: '7d' });
+// `sub` is a string (per the JWT spec); `v` lets logout revoke every token issued before it.
+const signToken = (user) =>
+  jwt.sign({ sub: String(user.id), v: user.token_version ?? 0 }, JWT_SECRET, { expiresIn: '7d' });
 
 const hashCode = (email, code) =>
   crypto.createHmac('sha256', JWT_SECRET).update(`${email}:${code}`).digest('hex');
@@ -78,9 +81,9 @@ function requireAuth(req, res, next) {
   if (!token) return res.status(401).json({ message: 'Not signed in.' });
 
   try {
-    const { sub } = jwt.verify(token, JWT_SECRET);
+    const { sub, v } = jwt.verify(token, JWT_SECRET);
     const user = db.prepare('SELECT * FROM users WHERE id = ? AND is_verified = 1').get(sub);
-    if (!user) return res.status(401).json({ message: 'Session expired. Please sign in again.' });
+    if (!user || (v ?? 0) !== user.token_version) return res.status(401).json({ message: 'Session expired. Please sign in again.' });
     req.user = user;
     next();
   } catch {
@@ -91,22 +94,30 @@ function requireAuth(req, res, next) {
 /* ------------------------------- App -------------------------------- */
 
 const app = express();
+app.disable('x-powered-by');
+app.use(helmet());
 app.use(cors({ origin: CLIENT_ORIGIN }));
 app.use(express.json({ limit: '10kb' }));
 
-const authLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  limit: 50,
-  standardHeaders: true,
-  legacyHeaders: false,
-  message: { message: 'Too many attempts. Please try again in a few minutes.' },
-});
+// One limiter per route so a burst on one endpoint doesn't lock users out of the others.
+const makeLimiter = (limit) =>
+  rateLimit({
+    windowMs: 15 * 60 * 1000,
+    limit,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: { message: 'Too many attempts. Please try again in a few minutes.' },
+  });
+const signupLimiter = makeLimiter(20);
+const verifyLimiter = makeLimiter(30);
+const resendLimiter = makeLimiter(20);
+const loginLimiter = makeLimiter(30);
 
 app.get('/api/health', (_req, res) => res.json({ ok: true }));
 
 /* ------------------------------ Sign up ----------------------------- */
 
-app.post('/api/auth/signup', authLimiter, async (req, res) => {
+app.post('/api/auth/signup', signupLimiter, async (req, res) => {
   const fullName = String(req.body?.fullName ?? '').trim();
   const email = normalizeEmail(req.body?.email);
   const password = String(req.body?.password ?? '');
@@ -131,7 +142,15 @@ app.post('/api/auth/signup', authLimiter, async (req, res) => {
     });
   }
 
-  // 2. New user, or an earlier sign-up that was never verified: (re)save details and send a code.
+  // 2. A pending (unverified) sign-up whose code is still valid must not be overwritten: otherwise
+  //    anyone could re-register the victim's email with their own password, and the victim would then
+  //    verify an account the attacker controls. Send them to the verify screen instead; the code that
+  //    was already emailed still works and "Resend code" is available.
+  if (existing && Date.now() < (existing.verification_expires_at || 0)) {
+    return res.status(201).json({ message: 'A verification code was already sent to this email.', email });
+  }
+
+  // 3. New user, or an earlier sign-up whose code expired: (re)save details and send a code.
   const passwordHash = await bcrypt.hash(password, 12);
   let user;
   if (existing) {
@@ -156,7 +175,7 @@ app.post('/api/auth/signup', authLimiter, async (req, res) => {
 
 /* --------------------------- Verify email --------------------------- */
 
-app.post('/api/auth/verify-email', authLimiter, (req, res) => {
+app.post('/api/auth/verify-email', verifyLimiter, (req, res) => {
   const email = normalizeEmail(req.body?.email);
   const code = String(req.body?.code ?? '').trim();
 
@@ -189,12 +208,12 @@ app.post('/api/auth/verify-email', authLimiter, (req, res) => {
       WHERE id = ?`
   ).run(user.id);
 
-  res.json({ token: signToken(user.id), user: publicUser(user) });
+  res.json({ token: signToken(user), user: publicUser(user) });
 });
 
 /* ---------------------------- Resend code --------------------------- */
 
-app.post('/api/auth/resend-code', authLimiter, async (req, res) => {
+app.post('/api/auth/resend-code', resendLimiter, async (req, res) => {
   const email = normalizeEmail(req.body?.email);
   const user = db.prepare('SELECT * FROM users WHERE email = ?').get(email);
 
@@ -220,7 +239,7 @@ app.post('/api/auth/resend-code', authLimiter, async (req, res) => {
 
 /* ------------------------------ Sign in ----------------------------- */
 
-app.post('/api/auth/login', authLimiter, async (req, res) => {
+app.post('/api/auth/login', loginLimiter, async (req, res) => {
   const email = normalizeEmail(req.body?.email);
   const password = String(req.body?.password ?? '');
 
@@ -252,13 +271,21 @@ app.post('/api/auth/login', authLimiter, async (req, res) => {
     });
   }
 
-  res.json({ token: signToken(user.id), user: publicUser(user) });
+  res.json({ token: signToken(user), user: publicUser(user) });
 });
 
 /* -------------------------- Current session ------------------------- */
 
 app.get('/api/auth/me', requireAuth, (req, res) => {
   res.json({ user: publicUser(req.user) });
+});
+
+/* ------------------------------ Sign out ---------------------------- */
+
+// Bumping token_version invalidates every token issued so far (all devices).
+app.post('/api/auth/logout', requireAuth, (req, res) => {
+  db.prepare('UPDATE users SET token_version = token_version + 1 WHERE id = ?').run(req.user.id);
+  res.json({ message: 'Signed out.' });
 });
 
 /* ----------------------------- Fallbacks ---------------------------- */
