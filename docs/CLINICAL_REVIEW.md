@@ -139,6 +139,9 @@ Source: `backend/quality.py`. A photo is **rejected** (the user is asked to reta
 | Very dark | reject | Image rejected: too dark for a reliable assessment. Please retake the photo with better illumination. |
 | Overexposed | reject | Image rejected: overexposed. Please retake the photo. |
 | Grainy or heavily compressed | reject | Image rejected: it looks grainy or heavily compressed. Please retake the photo or upload the original file. |
+| Not a colour retinal photograph (greyscale, or no retinal colour) | reject | Image rejected: this does not look like a colour retinal photograph. Please upload a colour fundus photograph. |
+| Only part of the retina in the picture | reject | Image rejected: only part of the retina is visible. Please retake the photo with the whole retina in the frame. |
+| Unusual colour balance | warn | Image has an unusual colour balance for a retinal photograph; results may be less reliable. Check that it is a fundus photograph. |
 | Slightly soft | warn | Image is slightly soft; results may be less reliable. |
 | Dark | warn | Image is dark; results may be less reliable. |
 | Very bright | warn | Image is very bright; results may be less reliable. |

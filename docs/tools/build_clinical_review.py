@@ -185,6 +185,9 @@ def build():
     labels = {
         "no_retina": ("No retina found", "reject"), "blur_reject": ("Very blurry", "reject"), "dark_reject": ("Very dark", "reject"),
         "bright_reject": ("Overexposed", "reject"), "noise_reject": ("Grainy or heavily compressed", "reject"),
+        "not_colour_reject": ("Not a colour retinal photograph (greyscale, or no retinal colour)", "reject"),
+        "partial_reject": ("Only part of the retina in the picture", "reject"),
+        "colour_warn": ("Unusual colour balance", "warn"),
         "blur_warn": ("Slightly soft", "warn"), "dark_warn": ("Dark", "warn"), "bright_warn": ("Very bright", "warn"),
         "accept": ("Passes", "accept"),
     }

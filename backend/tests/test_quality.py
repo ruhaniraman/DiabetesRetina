@@ -69,12 +69,84 @@ def test_any_reasonable_image_size_is_handled():
         assert verdict_of(cv2.resize(realistic_fundus(), (size, size)))["verdict"] in ("accept", "warn")
 
 
+# ----------------------------------------------------------------------------------- is it a whole colour fundus photograph?
+def _scene(kind):
+    rng = np.random.default_rng(0)
+    if kind == "text page":
+        img = np.full((600, 800, 3), 235, np.uint8)
+        for _ in range(300):
+            cv2.putText(img, "abc def", (int(rng.integers(0, 700)), int(rng.integers(20, 580))), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 0), 1)
+        return img
+    if kind == "grey disc on black":
+        img = np.zeros((600, 600, 3), np.uint8)
+        cv2.circle(img, (300, 300), 280, (170, 170, 170), -1)
+        return img
+    if kind == "blue disc on black":
+        img = np.zeros((600, 600, 3), np.uint8)
+        cv2.circle(img, (300, 300), 280, (200, 120, 60), -1)
+        return cv2.add(img, (rng.random((600, 600, 3)) * 20).astype(np.uint8))
+    if kind == "green scene":
+        img = cv2.GaussianBlur(rng.random((600, 800, 3)).astype(np.float32), (0, 0), 6)
+        img[..., 1] += 0.5                                              # green cast
+        return cv2.normalize(img, None, 40, 200, cv2.NORM_MINMAX).astype(np.uint8)
+    raise ValueError(kind)
+
+
+@pytest.mark.parametrize("kind", ["text page", "grey disc on black", "blue disc on black"])
+def test_a_picture_that_is_not_a_colour_retinal_photo_is_rejected(kind):
+    v = verdict_of(_scene(kind))
+    assert v["verdict"] == "reject" and "not_colour_reject" in v["reasons"]
+    assert "colour retinal photograph" in v["message"]
+
+
+def test_a_greyscale_copy_of_a_good_photo_is_rejected():
+    grey = cv2.cvtColor(cv2.cvtColor(realistic_fundus(), cv2.COLOR_BGR2GRAY), cv2.COLOR_GRAY2BGR)
+    assert "not_colour_reject" in verdict_of(grey)["reasons"]
+
+
+def test_a_photo_with_a_wrong_colour_cast_only_warns_because_a_few_real_photos_look_like_that():
+    v = verdict_of(_scene("green scene"))
+    assert "colour_warn" in v["reasons"] or v["verdict"] == "reject"          # never silently accepted
+    warm = verdict_of(realistic_fundus())
+    assert "colour_warn" not in warm["reasons"]
+
+
+@pytest.mark.parametrize("name, crop", [
+    ("left half", lambda f: f[:, : f.shape[1] // 2]),
+    ("right third", lambda f: f[:, -f.shape[1] // 3:]),
+    ("top half", lambda f: f[: f.shape[0] // 2]),
+])
+def test_only_part_of_the_retina_is_rejected(name, crop):
+    wide = cv2.resize(realistic_fundus(), (448, 448))
+    v = verdict_of(np.ascontiguousarray(crop(wide)))
+    assert v["verdict"] == "reject" and "partial_reject" in v["reasons"], name
+    assert "whole retina" in v["message"]
+
+
+def test_a_full_photo_is_not_taken_for_partial_at_any_proportion_seen_in_real_data():
+    base = realistic_fundus()
+    for w, h in ((224, 224), (285, 224), (224, 300)):        # 1.0, IDRiD-like 1.27 wide frame, tall frame with the retina inside
+        canvas = np.zeros((h, w, 3), np.uint8)
+        y, x = (h - 224) // 2, (w - 224) // 2
+        canvas[y:y + 224, x:x + 224] = base
+        assert "partial_reject" not in verdict_of(canvas)["reasons"], (w, h)
+
+
+def test_the_new_measures_do_not_depend_on_file_size():
+    small, large = realistic_fundus(224), cv2.resize(realistic_fundus(224), (1600, 1600))
+    a, b = quality.fundus_measures(small), quality.fundus_measures(large)
+    for k in a:
+        assert abs(a[k] - b[k]) < 0.05, k
+
+
 # ----------------------------------------------------------------------------------- decision logic
 def test_thresholds_are_ordered_so_warn_bands_sit_between_accept_and_reject():
     t = quality.THRESHOLDS
     assert t["blur_reject"] < t["blur_warn"]
     assert t["dark_reject"] < t["dark_warn"]
     assert t["bright_warn"] < t["bright_reject"]
+    assert t["colour_reject"] < t["colour_warn"]
+    assert t["aspect_min"] < 1.0 < t["aspect_max"]
 
 
 @pytest.mark.parametrize("change, expected", [
@@ -82,6 +154,8 @@ def test_thresholds_are_ordered_so_warn_bands_sit_between_accept_and_reject():
     ({"brightness": 0.09}, "dark_reject"), ({"brightness": 0.12}, "dark_warn"),
     ({"brightness": 0.75}, "bright_reject"), ({"brightness": 0.6}, "bright_warn"),
     ({"over_fraction": 0.2}, "bright_reject"), ({"hf_ratio": 0.6}, "noise_reject"),
+    ({"warm_share": 0.01}, "not_colour_reject"), ({"mean_saturation": 0.05}, "not_colour_reject"), ({"warm_share": 0.2}, "colour_warn"),
+    ({"retina_aspect": 0.4}, "partial_reject"), ({"retina_aspect": 1.8}, "partial_reject"),
 ])
 def test_each_threshold_triggers_its_reason(change, expected):
     assert expected in quality.reason_codes({**GOOD, **change})

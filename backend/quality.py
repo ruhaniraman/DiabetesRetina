@@ -6,6 +6,9 @@ what matters for grading: blur that vanishes when the photo is shrunk to 224 pix
 
 The team's MATLAB Stage 1 (stage1_quality/) worked the same way (green channel, retina mask, contrast-normalised blur);
 an earlier Python port dropped all of that. Thresholds are set in verdict() from the evidence in validation/QUALITY.md.
+
+Besides exposure and sharpness, the gate now checks that the upload is plausibly a whole colour fundus photograph (fundus_measures):
+a warm (red/orange) colour cast and a retina outline that is not cut off. It cannot prove an image is a fundus photograph.
 """
 import cv2
 import numpy as np
@@ -18,9 +21,37 @@ def model_view(img_bgr: np.ndarray) -> np.ndarray:
     return cv2.resize(img_bgr, (SIZE, SIZE), interpolation=cv2.INTER_AREA)
 
 
+def fundus_measures(img_bgr: np.ndarray) -> dict:
+    """Does this look like a whole colour fundus photograph? Measured on a small copy that keeps the photo's own proportions.
+
+    - retina_aspect: width / height of the retina's bounding box. Real photos: 0.75 to 1.24 (APTOS 0.75-1.0, IDRiD 1.18-1.24);
+      half a retina is about 0.4 and a top-half crop about 1.7.
+    - warm_share: share of retina pixels that are red/orange and saturated. Real photos: median 1.0, 1st percentile 0.6, lowest 0.06
+      (a handful of green/grey-toned APTOS photos); scenes, drawings, pages and greyscale images are 0.0 to 0.28.
+    - mean_saturation: greyscale and washed-out images are near 0 (real photos: at least 0.17).
+    """
+    h, w = img_bgr.shape[:2]
+    scale = 256 / max(h, w)
+    small = cv2.resize(img_bgr, (max(1, round(w * scale)), max(1, round(h * scale))), interpolation=cv2.INTER_AREA)
+    gray = cv2.cvtColor(small, cv2.COLOR_BGR2GRAY)
+    tissue = (cv2.GaussianBlur(gray, (0, 0), 2) > 15).astype(np.uint8)
+    tissue = cv2.morphologyEx(tissue, cv2.MORPH_CLOSE, cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (9, 9)))
+    n, labels, stats, _ = cv2.connectedComponentsWithStats(tissue)
+    if n < 2:
+        return {"retina_aspect": 0.0, "warm_share": 0.0, "mean_saturation": 0.0}
+    biggest = 1 + int(np.argmax(stats[1:, cv2.CC_STAT_AREA]))
+    region = labels == biggest
+    box_w, box_h = stats[biggest, cv2.CC_STAT_WIDTH], stats[biggest, cv2.CC_STAT_HEIGHT]
+    hsv = cv2.cvtColor(small, cv2.COLOR_BGR2HSV)
+    hue, sat = hsv[..., 0][region], hsv[..., 1][region]
+    warm = ((hue <= 25) | (hue >= 170)) & (sat > 60)
+    return {"retina_aspect": float(box_w / max(box_h, 1)), "warm_share": float(warm.mean()), "mean_saturation": float(sat.mean() / 255)}
+
+
 def measures(img_bgr: np.ndarray) -> dict:
     """All quality measures for one image (any size, BGR uint8). `no_retina` is 1 when no retina could be found."""
     view = model_view(img_bgr)
+    fundus = fundus_measures(img_bgr)
     gray = cv2.cvtColor(view, cv2.COLOR_BGR2GRAY)
     green = view[:, :, 1].astype(np.float32)
 
@@ -30,7 +61,7 @@ def measures(img_bgr: np.ndarray) -> dict:
     inner = cv2.erode(fov, cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (15, 15))).astype(bool)
     fov = fov.astype(bool)
     if fov.sum() < 500 or inner.sum() < 300:
-        return {"fov_fraction": float(fov.mean()), "no_retina": 1}
+        return {"fov_fraction": float(fov.mean()), "no_retina": 1, **fundus}
 
     g_fov, g_in = green[fov], green[inner]
     lap = cv2.Laplacian(green, cv2.CV_32F)
@@ -41,6 +72,7 @@ def measures(img_bgr: np.ndarray) -> dict:
     contrast = float(g_in.std())
     return {
         "no_retina": 0,
+        **fundus,
         "fov_fraction": float(fov.mean()),
         # exposure (green channel, retina only)
         "brightness": float(g_fov.mean() / 255),
@@ -72,6 +104,11 @@ THRESHOLDS = {
     "bright_warn": 0.55,
     "over_reject": 0.10,       # more than 10% of the retina saturated
     "noise_reject": 0.55,      # hf_ratio: fine-detail energy far above natural photographs (grain, compression noise)
+    "colour_reject": 0.03,     # warm_share below this: no red/orange retina colour at all (real photos: never below 0.06)
+    "grey_reject": 0.10,       # mean_saturation below this: greyscale or washed out (real photos: never below 0.17)
+    "colour_warn": 0.35,       # warm_share below this: unusual colour; 0.7% of real photos, and some non-fundus scenes (up to 0.28)
+    "aspect_min": 0.65,        # retina bounding box narrower/wider than this: only part of the retina is in the picture
+    "aspect_max": 1.45,        # (real photos: 0.75 to 1.24)
 }
 
 MESSAGES = {
@@ -80,13 +117,16 @@ MESSAGES = {
     "dark_reject": "Image rejected: too dark for a reliable assessment. Please retake the photo with better illumination.",
     "bright_reject": "Image rejected: overexposed. Please retake the photo.",
     "noise_reject": "Image rejected: it looks grainy or heavily compressed. Please retake the photo or upload the original file.",
+    "not_colour_reject": "Image rejected: this does not look like a colour retinal photograph. Please upload a colour fundus photograph.",
+    "partial_reject": "Image rejected: only part of the retina is visible. Please retake the photo with the whole retina in the frame.",
+    "colour_warn": "Image has an unusual colour balance for a retinal photograph; results may be less reliable. Check that it is a fundus photograph.",
     "blur_warn": "Image is slightly soft; results may be less reliable.",
     "dark_warn": "Image is dark; results may be less reliable.",
     "bright_warn": "Image is very bright; results may be less reliable.",
     "accept": "Quality check passed.",
 }
-_REJECT_ORDER = ("no_retina", "blur_reject", "dark_reject", "bright_reject", "noise_reject")
-_WARN_ORDER = ("blur_warn", "dark_warn", "bright_warn")
+_REJECT_ORDER = ("no_retina", "not_colour_reject", "partial_reject", "blur_reject", "dark_reject", "bright_reject", "noise_reject")
+_WARN_ORDER = ("colour_warn", "blur_warn", "dark_warn", "bright_warn")
 
 
 def reason_codes(m: dict) -> list[str]:
@@ -95,6 +135,10 @@ def reason_codes(m: dict) -> list[str]:
         return ["no_retina"]
     t = THRESHOLDS
     found = []
+    if m.get("warm_share", 1.0) < t["colour_reject"] or m.get("mean_saturation", 1.0) < t["grey_reject"]:
+        found.append("not_colour_reject")
+    if not t["aspect_min"] <= m.get("retina_aspect", 1.0) <= t["aspect_max"]:
+        found.append("partial_reject")
     if m["lap_var_norm"] < t["blur_reject"]:
         found.append("blur_reject")
     if m["brightness"] < t["dark_reject"]:
@@ -104,6 +148,8 @@ def reason_codes(m: dict) -> list[str]:
     if m["hf_ratio"] > t["noise_reject"]:
         found.append("noise_reject")
     if not found:                                    # warnings only matter when the image is not already rejected
+        if m.get("warm_share", 1.0) < t["colour_warn"]:
+            found.append("colour_warn")
         if m["lap_var_norm"] < t["blur_warn"]:
             found.append("blur_warn")
         if t["dark_reject"] <= m["brightness"] < t["dark_warn"]:

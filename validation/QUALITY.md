@@ -70,6 +70,25 @@ I tested one explanation: IDRiD photographs shrunk to 224 px have far less fine 
 Rejected photos get a specific message asking for a retake; warned photos are accepted with "results may be less reliable". **Nothing is ever
 enhanced or altered.** The thresholds are calibrated on APTOS and IDRiD only: on another camera they must be re-checked (`python validation/analyze_quality.py`).
 
+## Is it a fundus photograph at all? (added later)
+
+The gate above measured exposure and sharpness only. It **accepted** pictures that are not fundus photographs (a colour scene, a page of text) and pictures
+showing half a retina, and the classifier then graded them like any other image. Three checks were added (`fundus_measures` in `backend/quality.py`):
+
+| Check | Rule | Evidence |
+|---|---|---|
+| Not a colour retinal photograph | reject when the share of red/orange saturated pixels in the retina is below 0.03, or mean saturation below 0.10 | real photos: never below 0.06 and 0.17 |
+| Only part of the retina | reject when the retina's bounding box has width/height outside 0.65 to 1.45 | real photos: 0.75 to 1.24 (APTOS 0.75-1.0, IDRiD 1.18-1.24); half a retina is about 0.4 |
+| Unusual colour balance | warn when the red/orange share is below 0.35 | 0.85% of APTOS photos, none of IDRiD; scenes reach up to 0.28 |
+
+Result on every real photograph we have (4,178) and on non-fundus and partial pictures: `results/fundus_check.md`. In short: **no real photograph is rejected
+by the new rules** (31 of 3,662 APTOS photographs get the colour warning), every partial view cut from real photographs (240 of 240) is rejected, and
+eight of nine non-fundus pictures are rejected (one of them, random noise, by the older grain rule) and one portrait only gets the colour warning.
+
+Limits: these rules look at colour and outline. A picture with a warm cast and a round outline can pass; a quarter of a retina, or a zoomed-in crop with no
+black border, looks whole; the optic disc, macula and vessels are not detected. The non-fundus test set is a handful of pictures. A trained
+fundus/non-fundus detector would be the proper fix and needs a set of real non-fundus uploads to train and test on.
+
 ## Limits
 
 - Calibrated on two datasets (mostly one camera type in each). Other cameras, phone-based fundus adapters and different fields of view may need other thresholds.
