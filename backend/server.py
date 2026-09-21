@@ -45,6 +45,37 @@ AUTH_SERVER_URL = os.getenv("AUTH_SERVER_URL", "http://localhost:4000").rstrip("
 SERVICE_KEY = os.getenv("SERVICE_KEY", "")
 MAX_UPLOAD_BYTES = int(os.getenv("MAX_UPLOAD_MB", "15")) * 1024 * 1024
 MATLAB_ENABLED = os.getenv("DISABLE_MATLAB", "").lower() not in ("1", "true", "yes")
+IS_PROD = os.getenv("APP_ENV", "development").lower() == "production"
+
+
+def production_problems(env) -> list[str]:
+    """Reasons this configuration is unsafe to run in production (empty list means acceptable)."""
+    from urllib.parse import urlparse
+
+    problems = []
+    key = env.get("SERVICE_KEY", "")
+    if len(key) < 32 or key.lower().startswith(("replace-with", "changeme", "xxxx")):
+        problems.append("SERVICE_KEY must be a random string of at least 32 characters (same value as the auth-server).")
+
+    origins = [o.strip() for o in env.get("CLIENT_ORIGINS", "").split(",") if o.strip()]
+    if not origins or any(urlparse(o).scheme != "https" or (urlparse(o).hostname or "") in ("localhost", "127.0.0.1", "::1") for o in origins):
+        problems.append("CLIENT_ORIGINS must list only the public https:// address(es) of the web app.")
+
+    auth = urlparse(env.get("AUTH_SERVER_URL", ""))
+    if auth.scheme not in ("http", "https") or not auth.hostname:
+        problems.append("AUTH_SERVER_URL must be set (e.g. http://127.0.0.1:4000).")
+    elif auth.scheme == "http" and auth.hostname not in ("localhost", "127.0.0.1", "::1"):
+        problems.append("AUTH_SERVER_URL must use https:// unless the auth-server is on this machine (tokens would travel unencrypted).")
+
+    if env.get("HOST", "127.0.0.1") in ("0.0.0.0", "::") and env.get("ALLOW_PUBLIC_BIND", "").lower() not in ("1", "true", "yes"):
+        problems.append("HOST is a public bind address. Keep 127.0.0.1 behind the reverse proxy (or set ALLOW_PUBLIC_BIND=true deliberately).")
+    return problems
+
+
+if IS_PROD:
+    _problems = production_problems(os.environ)
+    if _problems:
+        raise SystemExit("Refusing to start in production:\n" + "\n".join(f"  - {p}" for p in _problems))
 
 TRANSLATION_TARGETS = ("hi", "kn")
 TRANSLATION_CACHE_SIZE = 1000
@@ -211,7 +242,24 @@ async def lifespan(_app: FastAPI):
         task.cancel()
 
 
-app = FastAPI(title="Retina Rescue Backend", lifespan=lifespan)
+# The interactive API docs describe every endpoint to anyone who asks, so they are development-only.
+app = FastAPI(
+    title="Retina Rescue Backend",
+    lifespan=lifespan,
+    docs_url=None if IS_PROD else "/docs",
+    redoc_url=None if IS_PROD else "/redoc",
+    openapi_url=None if IS_PROD else "/openapi.json",
+)
+
+
+@app.middleware("http")
+async def no_cache_headers(request, call_next):
+    """Responses carry health data (grades, image overlays): never let a browser or proxy cache them."""
+    response = await call_next(request)
+    response.headers.setdefault("Cache-Control", "no-store")
+    response.headers.setdefault("X-Content-Type-Options", "nosniff")
+    return response
+
 
 app.add_middleware(
     CORSMiddleware,

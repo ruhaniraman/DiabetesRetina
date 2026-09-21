@@ -189,3 +189,59 @@ def test_record_exam_sends_the_service_key_and_handles_failures(monkeypatch):
 
     FakeResp.status_code = 401
     assert asyncio.run(server.record_exam(1, {})) is None  # refused: reported as not saved, not raised
+
+
+# --- production hardening ------------------------------------------------------------------------------
+GOOD_PROD_ENV = {
+    "SERVICE_KEY": "s" * 40,
+    "CLIENT_ORIGINS": "https://retina.example.org",
+    "AUTH_SERVER_URL": "http://127.0.0.1:4000",
+    "HOST": "127.0.0.1",
+}
+
+
+def test_production_accepts_a_sound_configuration():
+    assert server.production_problems(GOOD_PROD_ENV) == []
+
+
+def test_production_rejects_unsafe_settings():
+    p = server.production_problems
+    assert any("SERVICE_KEY" in x for x in p({**GOOD_PROD_ENV, "SERVICE_KEY": ""}))
+    assert any("SERVICE_KEY" in x for x in p({**GOOD_PROD_ENV, "SERVICE_KEY": "replace-with-something-long-enough-1234567"}))
+    for origin in ("http://retina.example.org", "https://localhost:5173", "", "https://ok.example,http://bad.example"):
+        assert any("CLIENT_ORIGINS" in x for x in p({**GOOD_PROD_ENV, "CLIENT_ORIGINS": origin})), origin
+    assert any("AUTH_SERVER_URL" in x for x in p({**GOOD_PROD_ENV, "AUTH_SERVER_URL": ""}))
+    assert any("https" in x for x in p({**GOOD_PROD_ENV, "AUTH_SERVER_URL": "http://auth.internal.example:4000"}))
+    assert p({**GOOD_PROD_ENV, "AUTH_SERVER_URL": "https://auth.internal.example"}) == []
+    assert any("HOST" in x for x in p({**GOOD_PROD_ENV, "HOST": "0.0.0.0"}))
+    assert p({**GOOD_PROD_ENV, "HOST": "0.0.0.0", "ALLOW_PUBLIC_BIND": "true"}) == []
+
+
+def _run_python(code, **env):
+    import subprocess, sys
+
+    full = {**os.environ, "DISABLE_MATLAB": "true", **env}
+    return subprocess.run([sys.executable, "-c", code], cwd=os.path.dirname(server.__file__), env=full, capture_output=True, text=True, timeout=120)
+
+
+def test_production_start_is_refused_with_dev_settings():
+    r = _run_python("import server", APP_ENV="production", SERVICE_KEY="", CLIENT_ORIGINS="http://localhost:5173")
+    assert r.returncode != 0 and "Refusing to start in production" in r.stderr
+
+
+def test_api_docs_are_only_available_in_development():
+    probe = (
+        "import server\n"
+        "from fastapi.testclient import TestClient\n"
+        "c = TestClient(server.app)\n"
+        "print([c.get(p).status_code for p in ('/docs', '/redoc', '/openapi.json')])\n"
+    )
+    dev = _run_python(probe, APP_ENV="development")
+    assert dev.stdout.strip().endswith("[200, 200, 200]"), dev.stderr[-500:]
+    prod = _run_python(probe, APP_ENV="production", **GOOD_PROD_ENV)
+    assert prod.stdout.strip().endswith("[404, 404, 404]"), prod.stderr[-500:]
+
+
+def test_responses_are_not_cacheable(client):
+    r = client.get("/api/health")
+    assert r.headers["cache-control"] == "no-store" and r.headers["x-content-type-options"] == "nosniff"
