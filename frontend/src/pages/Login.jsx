@@ -3,7 +3,7 @@ import AuthLayout, { Field, FormAlert } from '../components/AuthLayout';
 import { login } from '../api/auth';
 import { validateEmail } from '../utils/validation';
 
-export default function Login({ onLogin, onGoToSignup, onNeedsVerification }) {
+export default function Login({ onLogin, onGoToSignup, onNeedsVerification, onForgotPassword, notice }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [errors, setErrors] = useState({});
@@ -47,6 +47,7 @@ export default function Login({ onLogin, onGoToSignup, onNeedsVerification }) {
       subtitle="Sign in to access your clinical dashboard & reports."
     >
       <form onSubmit={handleSubmit} noValidate className="space-y-4">
+        <FormAlert message={notice} tone="success" />
         <FormAlert message={formError} />
 
         <Field
@@ -78,6 +79,16 @@ export default function Login({ onLogin, onGoToSignup, onNeedsVerification }) {
           placeholder="••••••••"
           error={errors.password}
         />
+
+        <div className="text-right -mt-1">
+          <button
+            type="button"
+            onClick={onForgotPassword}
+            className="text-xs font-bold text-[#0d1424] hover:underline cursor-pointer"
+          >
+            Forgot password?
+          </button>
+        </div>
 
         <button
           type="submit"

@@ -8,6 +8,7 @@ import { usePatientProfile } from './hooks/usePatientProfile';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
 import VerifyEmail from './pages/VerifyEmail';
+import ForgotPassword from './pages/ForgotPassword';
 import Dashboard from './pages/Dashboard';
 import PatientDetailsPage from './pages/PatientDetailsPage';
 import DetailedReportPage from './pages/DetailedReportPage';
@@ -34,9 +35,12 @@ function PublicOnly({ children }) {
 function LoginRoute() {
   const { signIn } = useAuth();
   const navigate = useNavigate();
+  const { state } = useLocation();
   return (
     <Login
       onLogin={signIn}
+      notice={state?.notice}
+      onForgotPassword={() => navigate('/forgot-password')}
       onGoToSignup={() => navigate('/signup')}
       onNeedsVerification={(email) => navigate('/verify', { state: { email } })}
     />
@@ -46,6 +50,16 @@ function LoginRoute() {
 function SignupRoute() {
   const navigate = useNavigate();
   return <Signup onSignup={(email) => navigate('/verify', { state: { email } })} onGoToLogin={() => navigate('/login')} />;
+}
+
+function ForgotPasswordRoute() {
+  const navigate = useNavigate();
+  return (
+    <ForgotPassword
+      onDone={(notice) => navigate('/login', { state: { notice } })}
+      onBackToLogin={() => navigate('/login')}
+    />
+  );
 }
 
 function VerifyRoute() {
@@ -118,6 +132,7 @@ export default function App() {
         <Route path="/login" element={<PublicOnly><LoginRoute /></PublicOnly>} />
         <Route path="/signup" element={<PublicOnly><SignupRoute /></PublicOnly>} />
         <Route path="/verify" element={<PublicOnly><VerifyRoute /></PublicOnly>} />
+        <Route path="/forgot-password" element={<PublicOnly><ForgotPasswordRoute /></PublicOnly>} />
 
         <Route element={<RequireAuth />}>
           <Route path="/" element={<DashboardRoute />} />

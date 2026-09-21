@@ -42,3 +42,5 @@ export const resendCode = (payload) => request('/auth/resend-code', { method: 'P
 export const login = (payload) => request('/auth/login', { method: 'POST', body: payload });
 export const fetchMe = () => request('/auth/me', { auth: true });
 export const logoutRequest = () => request('/auth/logout', { method: 'POST', auth: true });
+export const forgotPassword = (payload) => request('/auth/forgot-password', { method: 'POST', body: payload });
+export const resetPassword = (payload) => request('/auth/reset-password', { method: 'POST', body: payload });

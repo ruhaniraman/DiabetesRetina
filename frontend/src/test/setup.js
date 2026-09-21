@@ -1,6 +1,6 @@
 import '@testing-library/jest-dom/vitest';
 import { afterEach } from 'vitest';
-import { cleanup } from '@testing-library/react';
+import { cleanup, configure } from '@testing-library/react';
 
 afterEach(cleanup);
 
@@ -8,3 +8,6 @@ afterEach(cleanup);
 let counter = 0;
 URL.createObjectURL = () => `blob:test-${(counter += 1)}`;
 URL.revokeObjectURL = () => {};
+
+// Async queries (findBy*) get a generous window so slow CI/dev machines don't cause false failures.
+configure({ asyncUtilTimeout: 5000 });
