@@ -62,3 +62,6 @@ __pycache__/
 
 # Site calibration runs (contain per-image results from a clinic's own data)
 calibration/output/
+
+# Raw Grad-CAM maps (135 MB); regenerate with validation/gradcam_eval.py. The summary (gradcam.md/.json) is committed.
+validation/results/gradcam_*.mat

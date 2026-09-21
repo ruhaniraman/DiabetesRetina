@@ -206,8 +206,30 @@ def build():
         add(quote(f"{t['icdrLevel']}\n{t['confidenceNote']}\n{t['referralLine']}") + "\n")
     add("**Disclaimer on every PDF report:**\n")
     add(quote(s4["cases"][0]["text"]["disclaimer"]) + "\n")
-    add("The PDF header reads \"AI SCREENING AID\", the badge reads \"REFERRAL RECOMMENDED\" or \"NO REFERRAL FLAGGED\", and the metadata cells are "
-        "labelled PREDICTED GRADE (ESTIMATE), CONFIDENCE (a band), REFERRAL SCORE and DATE.\n")
+    add("The PDF header reads \"AI SCREENING AID\", the badge reads \"REFERRAL RECOMMENDED\" (red) or \"NO REFERRAL FLAGGED\" (a neutral slate colour, deliberately not green), "
+        "and the metadata cells are labelled PREDICTED GRADE (ESTIMATE), CONFIDENCE (a band), REFERRAL SCORE and DATE. The left picture is titled \"FUNDUS IMAGE (AS ANALYSED)\" "
+        "(the cropped view the network sees) and the right one \"REGIONS THAT RAISED THE REFERRAL SCORE\".\n")
+    t0 = s4["cases"][0]["text"]
+    if t0.get("heatmapNote"):
+        add(f"- **Caption under the heatmap:** \"{t0['heatmapNote']}\"")
+        add(f"- **Caption under the class-probability chart** (titled \"CLASS PROBABILITIES (RAW OUTPUT)\"): \"{t0['probabilityNote']}\"")
+        add(f"- **Shown instead when no region raised the score (web app):** \"{web['HEATMAP_EMPTY_NOTE']}\"\n")
+
+    gc_path = RESULTS / "gradcam.json"
+    if gc_path.exists():
+        g = json.loads(gc_path.read_text(encoding="utf-8"))
+        loc, old, dele = g["localisation_referral_map"], g["localisation_earlier_map"], g["deletion_12_cells"]
+        mm = g["old_map_mismatch"]
+        add("**How far the heatmap can be trusted** (details and method: `validation/results/gradcam.md`). The map shows the regions that raised the *referral score* "
+            "(the quantity the decision is made on). Before this change it explained the single most likely grade instead, which for "
+            f"{mm['mismatched']} of {mm['flagged']} referral-flagged test eyes was No DR or Mild.\n")
+        add(f"- It depends on what the network learned: with random weights it correlates only {g['randomised_all_layers_abs_corr']:.2f}-{g['randomised_classifier_abs_corr']:.2f} with the real map.")
+        add(f"- The hottest regions matter more than others, but the effect is modest: hiding the 12 hottest cells lowers the referral score by {dele['hottest_drop']:.3f} on average "
+            f"({dele['hottest_minus_random']:+.3f} more than hiding 12 random cells; hottest more important in {dele['share_of_eyes_hottest_larger'] * 100:.0f}% of eyes). "
+            "A flagged eye stays flagged: the evidence is spread across the retina.")
+        add(f"- It is only weakly hotter on lesions than elsewhere: on IDRiD photographs with expert lesion masks the pixel AUC is {loc['pixel_auc']:.2f} (0.5 is chance) and the hottest point is on a lesion in "
+            f"{loc['hottest_pixel_on_lesion'] * 100:.0f}% of photographs (chance {loc['chance'] * 100:.1f}%); the earlier map was at chance (AUC {old['pixel_auc']:.2f}).")
+        add("- **Question for the reviewer:** is a coarse \"regions that raised the score\" picture appropriate to show to patients, or only to clinicians?\n")
 
     add("### 3e. Not covered by this packet\n")
     add("- **Hindi and Kannada.** The dashboard summary is machine-translated (Argos Translate) on demand and labelled as such; it has not been reviewed by a "

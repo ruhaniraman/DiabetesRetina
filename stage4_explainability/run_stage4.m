@@ -84,9 +84,8 @@ for i = 1:n
 
     try
         result = predictWithThreshold(net, imgPath, bestThreshold, classNames);
-        [~, predictedClassIdx] = max(result.probs);
-        [~, overlayImg] = generateGradCAM(net, result.preprocessedImage, ...
-            predictedClassIdx, classNames);
+        % The heatmap explains the REFERRAL score, the quantity the referral decision is made on (not the single most likely grade).
+        [~, overlayImg] = referralGradCAM(net, result.preprocessedImage);
         reportText = formatReportText(result);
         outputPaths = createMedicalReport(imgPath, result, [], overlayImg, ...
             reportText, outputDir);

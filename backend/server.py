@@ -584,28 +584,33 @@ async def run_stage3_assessment(
 # --------------------------------------------------------------------------- #
 # Stage 4 - real Grad-CAM (MATLAB)
 # --------------------------------------------------------------------------- #
-def render_gradcam(img: np.ndarray) -> np.ndarray:
+def render_gradcam(img: np.ndarray) -> tuple:
+    """Grad-CAM of the REFERRAL score for one photograph (MATLAB). Returns (overlay image, referral probability, map is empty)."""
     with tempfile.TemporaryDirectory(prefix="retina_") as tmp:
         src, dst = Path(tmp) / "in.png", Path(tmp) / "gradcam.png"
         cv2.imwrite(str(src), img)
-        matlab_service.call("gradCamToFile", str(src), str(dst), nargout=0)
+        referral, empty = matlab_service.call("gradCamToFile", str(src), str(dst), nargout=2)
         out = cv2.imread(str(dst), cv2.IMREAD_COLOR)
     if out is None:
         raise RuntimeError("MATLAB did not produce a Grad-CAM image.")
-    return out
+    return out, float(referral), bool(empty)
 
 
 @app.post("/api/stage4-heatmap", dependencies=[Depends(require_user)])
 async def run_stage4_heatmap(file: UploadFile = File(...)):
     img = await read_image(file)
+    q = await run_in_threadpool(assess_quality, img)          # same gate as grading: no heatmap for a picture that would not be graded
+    if q["verdict"] == "reject":
+        raise HTTPException(status_code=422, detail=q["reason"])
     try:
-        overlay = await run_in_threadpool(render_gradcam, img)
+        overlay, referral, empty = await run_in_threadpool(render_gradcam, img)
     except HTTPException:
         raise
     except Exception:
         log.exception("Stage 4 Grad-CAM failed")
         raise HTTPException(status_code=500, detail="Grad-CAM generation failed.")
-    return {"status": "success", "heatmapUrl": png_data_url(overlay), "method": "gradcam"}
+    # method: what the map explains. "gradcam-referral": the referral score (P(Moderate)+P(Severe)+P(Proliferate_DR)), not the most likely grade.
+    return {"status": "success", "heatmapUrl": png_data_url(overlay), "method": "gradcam-referral", "referralScore": referral, "empty": empty}
 
 
 # --------------------------------------------------------------------------- #

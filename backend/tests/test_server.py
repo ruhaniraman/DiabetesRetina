@@ -109,7 +109,7 @@ def test_segmentation_on_black_image_is_a_422_not_a_crash(client):
 
 def test_stage3_and_stage4_report_503_without_matlab(client):
     assert client.post("/api/stage3-assessment", files=two_images()).status_code == 503
-    assert client.post("/api/stage4-heatmap", files=upload("a.png", fake_fundus())).status_code == 503
+    assert client.post("/api/stage4-heatmap", files=upload("a.png", realistic_fundus(seed=1))).status_code == 503
 
 
 @pytest.mark.parametrize("overall", ["No_DR", "Mild", "Moderate", "Severe", "Proliferate_DR"])
@@ -146,6 +146,19 @@ def two_images():
         "leftEye": ("l.png", png_bytes(realistic_fundus(seed=1)), "image/png"),
         "rightEye": ("r.png", png_bytes(realistic_fundus(seed=2)), "image/png"),
     }
+
+
+def test_heatmap_endpoint_explains_the_referral_score(client, monkeypatch):
+    monkeypatch.setattr(server, "render_gradcam", lambda img: (np.zeros((224, 224, 3), np.uint8), 0.42, False))
+    body = client.post("/api/stage4-heatmap", files=upload("a.png", realistic_fundus(seed=1))).json()
+    assert body["status"] == "success" and body["method"] == "gradcam-referral"
+    assert body["referralScore"] == 0.42 and body["empty"] is False and body["heatmapUrl"].startswith("data:image/png;base64,")
+
+
+def test_heatmap_endpoint_refuses_a_picture_that_would_not_be_graded(client, monkeypatch):
+    monkeypatch.setattr(server, "render_gradcam", lambda img: pytest.fail("MATLAB must not run"))
+    r = client.post("/api/stage4-heatmap", files=upload("black.png", np.zeros((224, 224, 3), np.uint8)))
+    assert r.status_code == 422 and "fundus" in r.json()["detail"]
 
 
 def test_grading_refuses_an_unfit_picture_and_names_the_eye(client, monkeypatch):

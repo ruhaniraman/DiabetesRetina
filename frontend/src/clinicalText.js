@@ -83,7 +83,11 @@ export const REFERRAL_CHIP = {
   hint: "The most likely stage is lower, but the screening model's referral threshold was reached",
 };
 
-export const HEATMAP_NOTE = 'Shows where the model looked, not a lesion detection. Warm colours do not by themselves mean disease.';
+export const HEATMAP_NOTE =
+  "Shows the regions that raised this eye's referral score, on a coarse grid. A rough guide, not a lesion detection: warm colours do not by themselves mean disease, " +
+  'and disease can be present outside them.';
+
+export const HEATMAP_EMPTY_NOTE = "No region raised this eye's referral score, so nothing is highlighted. That does not rule out disease.";
 
 export const TRANSLATION_NOTICE = 'Machine-translated and not clinically reviewed. If anything is unclear, the English text is authoritative.';
 

@@ -1,0 +1,28 @@
+{
+ "randomised_all_layers_abs_corr": 0.1501708976304372,
+ "randomised_classifier_abs_corr": 0.21515233664373004,
+ "deletion_12_cells": {
+  "hottest_drop": 0.033882491720410496,
+  "random_drop": -0.0762054421294194,
+  "hottest_minus_random": 0.1100879338498299,
+  "ci": [
+   0.0640903431771753,
+   0.16671532041823064
+  ],
+  "share_of_eyes_hottest_larger": 0.9038461538461539
+ },
+ "localisation_referral_map": {
+  "pixel_auc": 0.6600798457925329,
+  "hottest_pixel_on_lesion": 0.12345679012345678,
+  "chance": 0.030946857702560605
+ },
+ "localisation_earlier_map": {
+  "pixel_auc": 0.5082623769349967,
+  "hottest_pixel_on_lesion": 0.037037037037037035
+ },
+ "old_map_mismatch": {
+  "flagged": 247,
+  "mismatched": 51,
+  "of": 548
+ }
+}

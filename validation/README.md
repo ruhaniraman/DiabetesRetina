@@ -12,6 +12,7 @@ model never trained on.
 | 3. Leakage audit | `python validation/leakage_audit.py` | `data/aptos2019/` | `results/leakage.json` |
 | 4. Analyse | `python validation/analyze.py` | numpy only | `results/metrics.json`, `results/tables.md` |
 | Quality gate + external check | see `QUALITY.md` (Reproduce) | MATLAB, both datasets | `results/quality.md`, `results/idrid_*.csv`, `results/degradation_*.csv` |
+| Stage 4 heatmap trust tests | `python validation/gradcam_eval.py` (about 20 minutes) then `python validation/analyze_gradcam.py` | MATLAB, APTOS, IDRiD segmentation | `results/gradcam.md`, `results/gradcam.json` |
 | Lesion overlay | `python validation/evaluate_lesions.py` (about 5 minutes) | `data/idrid_segmentation/`, `data/aptos2019/` | `results/lesions.json`, `results/lesions.md` |
 
 The committed `results/` files are enough to re-run step 4 (and read the report) without MATLAB or the images.

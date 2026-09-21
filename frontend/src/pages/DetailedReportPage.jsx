@@ -4,7 +4,7 @@ import Disclaimer from '../components/Disclaimer';
 import { fetchHeatmap } from '../api/ml';
 import { bannerConfig, reportThemes } from '../utils/drStyles';
 import { LESION_OVERLAY_ENABLED } from '../config';
-import { CONFIDENCE, HEATMAP_NOTE, REPORT_LABELS, STAGE_NOTE, TRIAGE, basisText } from '../clinicalText';
+import { CONFIDENCE, HEATMAP_EMPTY_NOTE, HEATMAP_NOTE, REPORT_LABELS, STAGE_NOTE, TRIAGE, basisText } from '../clinicalText';
 
 const LESION_ROWS = [
   ['microaneurysms', 'Microaneurysm-like spots'],
@@ -38,7 +38,7 @@ export default function DetailedReportPage({ patient, session, onBack }) {
     setHeatmaps((h) => ({ ...h, [key]: { status: 'loading' } }));
     try {
       const result = await fetchHeatmap(eyeScan.file);
-      setHeatmaps((h) => ({ ...h, [key]: { status: 'success', url: result.heatmapUrl } }));
+      setHeatmaps((h) => ({ ...h, [key]: { status: 'success', url: result.heatmapUrl, empty: Boolean(result.empty) } }));
     } catch (err) {
       requested.current.delete(key); // allow retry
       setHeatmaps((h) => ({ ...h, [key]: { status: 'error', error: err.message } }));
@@ -177,9 +177,9 @@ export default function DetailedReportPage({ patient, session, onBack }) {
                   <div className="absolute inset-0 z-30 flex items-center justify-center bg-[#0b1329]">
                     {heatmap?.status === 'success' ? (
                       <>
-                        <img src={heatmap.url} alt="Grad-CAM heatmap" className="w-full h-full object-contain" />
+                        <img src={heatmap.url} alt="Heatmap of the regions that raised the referral score" className="w-full h-full object-contain" />
                         <div className="absolute inset-x-0 bottom-0 bg-slate-900/85 text-slate-200 text-[11px] font-semibold p-2.5">
-                          {HEATMAP_NOTE}
+                          {heatmap.empty ? HEATMAP_EMPTY_NOTE : HEATMAP_NOTE}
                         </div>
                       </>
                     ) : heatmap?.status === 'error' ? (

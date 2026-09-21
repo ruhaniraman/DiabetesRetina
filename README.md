@@ -14,7 +14,7 @@ backend/        Python/FastAPI: image analysis API (port 5000)
    ├─ Stage 1  image quality check           OpenCV
    ├─ Stage 2  lesion overlay (EXPERIMENTAL, off by default: validation/LESIONS.md shows it does not detect lesions)
    ├─ Stage 3  bilateral DR grading          MATLAB Engine → trained network (stage_3/)
-   └─ Stage 4  Grad-CAM explainability       MATLAB Engine → stage4_explainability/
+   └─ Stage 4  Grad-CAM of the referral score     MATLAB Engine → stage4_explainability/
 stage1_quality/ (original MATLAB Stage 1; the app runs backend/quality.py) stage2_structure/ stage_3/ stage4_explainability/ stage5_simulink/ utils/   MATLAB source
 ```
 
@@ -68,7 +68,7 @@ Override the API addresses with `frontend/.env.local` (see `frontend/.env.exampl
    you'll get a 6-digit code by email, choose a new password, and every existing session is signed out.
 2. Complete the patient profile (edit icon in "My Health Record"). It is saved to your account, so it is there next time you sign in.
 3. Upload a fundus photo for each eye. Each is quality-checked; rejected images must be replaced.
-4. **Run AI Assessment**, then open **Detailed Report** for per-eye grades, lesion candidates and the Grad-CAM heatmap.
+4. **Run AI Assessment**, then open **Detailed Report** for per-eye grades and a heatmap of the regions that raised the referral score (a rough guide, not a lesion detector: `validation/results/gradcam.md`).
    Each assessment is saved to **Exam History** on the dashboard.
 
 ## Accounts and sessions

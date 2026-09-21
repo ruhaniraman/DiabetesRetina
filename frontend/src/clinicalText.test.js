@@ -18,7 +18,7 @@ function strings(value, path = []) {
 }
 const ALL = Object.entries(text).flatMap(([name, value]) => strings(value, [name]));
 // basisText is a function; include its output.
-ALL.push(['basisText(20%)', text.basisText('20%')], ['basisText(null)', text.basisText(null)], ['basisText(site)', text.basisText('36%', 'site')]);
+ALL.push(['HEATMAP_EMPTY_NOTE', text.HEATMAP_EMPTY_NOTE], ['basisText(20%)', text.basisText('20%')], ['basisText(null)', text.basisText(null)], ['basisText(site)', text.basisText('36%', 'site')]);
 
 describe('clinical wording guard rails', () => {
   it('finds a meaningful number of strings to check', () => {
