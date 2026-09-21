@@ -16,6 +16,8 @@ i18n
       kn: { translation: kn }
     },
     fallbackLng: 'en',
+    supportedLngs: ['en', 'hi', 'kn'],
+    nonExplicitSupportedLngs: true,
     interpolation: {
       escapeValue: false
     }

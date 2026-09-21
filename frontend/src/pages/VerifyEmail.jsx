@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import AuthLayout, { Field, FormAlert } from '../components/AuthLayout';
 import { verifyEmail, resendCode } from '../api/auth';
 

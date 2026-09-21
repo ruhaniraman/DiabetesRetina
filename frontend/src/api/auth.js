@@ -1,4 +1,4 @@
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000/api';
+import { AUTH_API_URL as API_URL } from '../config';
 const TOKEN_KEY = 'retina_rescue_token';
 
 export class ApiError extends Error {
@@ -41,3 +41,4 @@ export const verifyEmail = (payload) => request('/auth/verify-email', { method: 
 export const resendCode = (payload) => request('/auth/resend-code', { method: 'POST', body: payload });
 export const login = (payload) => request('/auth/login', { method: 'POST', body: payload });
 export const fetchMe = () => request('/auth/me', { auth: true });
+export const logoutRequest = () => request('/auth/logout', { method: 'POST', auth: true });

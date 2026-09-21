@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import AuthLayout, { Field, FormAlert } from '../components/AuthLayout';
 import { login } from '../api/auth';
 import { validateEmail } from '../utils/validation';

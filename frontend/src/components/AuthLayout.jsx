@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 
 /**
  * Shared shell for Login, Signup and VerifyEmail so the hero panel,
