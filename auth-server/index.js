@@ -9,6 +9,7 @@ import jwt from 'jsonwebtoken';
 import db from './db.js';
 import { createInternalRouter, createPatientRouter } from './health.js';
 import { createVault } from './vault.js';
+import { productionProblems, trustProxySetting } from './prodcheck.js';
 import { isMailConfigured, sendPasswordResetEmail, sendVerificationEmail } from './mailer.js';
 
 /* ------------------------------ Config ------------------------------ */
@@ -23,20 +24,19 @@ if (!JWT_SECRET) {
   process.exit(1);
 }
 
-// In production, refuse to start rather than fail on the first sign-up.
-if (process.env.NODE_ENV === 'production' && !isMailConfigured()) {
-  console.error('GMAIL_USER and GMAIL_APP_PASSWORD must be set when NODE_ENV=production.');
-  process.exit(1);
+// In production, refuse to start with missing, weak or placeholder settings rather than fail later.
+if (process.env.NODE_ENV === 'production') {
+  const problems = productionProblems(process.env);
+  if (problems.length) {
+    console.error(['Refusing to start in production:', ...problems.map((p) => `  - ${p}`)].join('\n'));
+    process.exit(1);
+  }
 }
 
 // Health data is encrypted at rest with DATA_KEY. Falling back to a key derived from JWT_SECRET keeps development
 // easy, but rotating JWT_SECRET would then make stored data unreadable, so production must set DATA_KEY.
 const DATA_KEY = process.env.DATA_KEY;
 if (!DATA_KEY) {
-  if (process.env.NODE_ENV === 'production') {
-    console.error('DATA_KEY must be set when NODE_ENV=production (it encrypts stored health data).');
-    process.exit(1);
-  }
   console.warn('DATA_KEY is not set; deriving the encryption key from JWT_SECRET (development only).');
 }
 const vault = createVault(DATA_KEY || `health-data:${JWT_SECRET}`);
@@ -132,7 +132,14 @@ function requireAuth(req, res, next) {
 
 const app = express();
 app.disable('x-powered-by');
+// Behind a reverse proxy, req.ip must come from X-Forwarded-For or every user shares one rate-limit bucket.
+app.set('trust proxy', trustProxySetting(process.env));
 app.use(helmet());
+// Responses carry health data and session state: never let a browser or proxy cache them.
+app.use('/api', (_req, res, next) => {
+  res.set('Cache-Control', 'no-store');
+  next();
+});
 app.use(cors({ origin: CLIENT_ORIGIN }));
 app.use(express.json({ limit: '10kb' }));
 

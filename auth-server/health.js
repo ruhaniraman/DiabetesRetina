@@ -148,6 +148,15 @@ export function createInternalRouter({ vault, serviceKey }) {
 
   const sha = (s) => crypto.createHash('sha256').update(String(s)).digest();
 
+  // Service-to-service only. The ML backend calls this directly on the local network; a request that came through
+  // the public reverse proxy carries forwarding headers, so it is refused regardless of the key (defence in depth).
+  router.use((req, res, next) => {
+    if (req.get('x-forwarded-for') || req.get('forwarded') || req.get('x-real-ip')) {
+      return res.status(403).json({ message: 'Not available through the public proxy.' });
+    }
+    next();
+  });
+
   router.post('/exams', (req, res) => {
     if (!serviceKey) return res.status(503).json({ message: 'Exam recording is not configured (SERVICE_KEY).' });
     const supplied = req.get('x-service-key') || '';

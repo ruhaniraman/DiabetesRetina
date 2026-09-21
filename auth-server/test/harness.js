@@ -10,7 +10,7 @@ const root = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
 
 export const SERVICE_KEY = 'test-service-key-0123456789';
 
-export async function startServer() {
+export async function startServer(extraEnv = {}) {
   const port = 4300 + Math.floor(Math.random() * 500);
   const api = `http://127.0.0.1:${port}/api`;
   const tmp = mkdtempSync(path.join(tmpdir(), 'rr-auth-'));
@@ -28,6 +28,7 @@ export async function startServer() {
       GMAIL_USER: '',
       GMAIL_APP_PASSWORD: '',
       NODE_ENV: 'development',
+      ...extraEnv,
     },
   });
   server.stdout.on('data', (d) => { output += d; });
@@ -71,6 +72,7 @@ export async function startServer() {
   }
 
   return {
+    api,
     call,
     post,
     me,
