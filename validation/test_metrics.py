@@ -72,3 +72,28 @@ def test_the_model_reproduces_its_own_stored_test_result():
     """The regression guard behind the preprocessing decision: plain resize matches stage3Results exactly."""
     _, labels, probs = analyze.load("app_test_resize")
     assert analyze.confusion(labels, probs, analyze.DEPLOYED_THRESHOLD) == analyze.STORED
+
+
+# --- Stage 1 quality analysis helpers (validation/analyze_quality.py) -------------------------------------
+def test_the_old_quality_gate_is_reproduced_faithfully_for_comparison():
+    import analyze_quality as aq
+
+    assert aq.old_gate_verdict(5.0, 100.0) == "reject"        # Laplacian variance below 12
+    assert aq.old_gate_verdict(300.0, 30.0) == "enhance"      # whole-frame mean below 45
+    assert aq.old_gate_verdict(300.0, 230.0) == "enhance"     # ... or above 210
+    assert aq.old_gate_verdict(300.0, 100.0) == "accept"
+
+
+def test_blank_measures_are_read_as_nan_not_text():
+    import analyze_quality as aq
+
+    assert np.isnan(aq.num("")) and aq.num("0.5") == 0.5 and aq.num("aptos") == "aptos"
+
+
+def test_outcome_marks_referral_errors_and_misses():
+    import analyze_quality as aq
+
+    P = lambda **k: np.array([k.get(c, 0.0) for c in analyze.CLASSES])
+    assert aq.outcome("No_DR", P(No_DR=1.0))["wrong"] is False
+    assert aq.outcome("Moderate", P(No_DR=0.9, Moderate=0.1)) == {"wrong": True, "missed": True, "truth": True, "flagged": False}
+    assert aq.outcome("No_DR", P(Moderate=0.5, No_DR=0.5)) == {"wrong": True, "missed": False, "truth": False, "flagged": True}

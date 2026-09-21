@@ -1,0 +1,30 @@
+{
+ "area": {
+  "lap_var_norm": 0.20679599791765213,
+  "hf_ratio": 0.25867754220962524
+ },
+ "lanczos": {
+  "lap_var_norm": 0.869937002658844,
+  "hf_ratio": 0.40778806805610657
+ },
+ "linear_noAA": {
+  "lap_var_norm": 0.7736739814281464,
+  "hf_ratio": 0.392277330160141
+ },
+ "nearest": {
+  "lap_var_norm": 0.8759540915489197,
+  "hf_ratio": 0.4086489677429199
+ },
+ "area_unsharp": {
+  "lap_var_norm": 0.6749197244644165,
+  "hf_ratio": 0.4223058670759201
+ },
+ "area_unsharp_strong": {
+  "lap_var_norm": 1.3151178359985352,
+  "hf_ratio": 0.5163553059101105
+ },
+ "_aptos_train_natural": {
+  "lap_var_norm": 0.6940480768680573,
+  "hf_ratio": 0.3442341834306717
+ }
+}

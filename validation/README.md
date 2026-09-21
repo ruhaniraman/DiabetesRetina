@@ -1,6 +1,6 @@
 # validation/
 
-Held-out validation of the Stage 3 model (**[`REPORT.md`](REPORT.md)**) and an evaluation of the Stage 2 lesion overlay (**[`LESIONS.md`](LESIONS.md)**).
+Held-out validation of the Stage 3 model (**[`REPORT.md`](REPORT.md)**) an evaluation of the Stage 2 lesion overlay (**[`LESIONS.md`](LESIONS.md)**), and the Stage 1 quality gate with an external check on IDRiD (**[`QUALITY.md`](QUALITY.md)**).
 
 The train/validation/test split is read from `stage_3/Stage3_checkpoint.mat`, so the "test" images are exactly the ones the
 model never trained on.
@@ -11,6 +11,7 @@ model never trained on.
 | 2. Predict on the splits | `python validation/run_predictions.py` (about 15 min; `--quick` for the test set only) | MATLAB + `data/aptos2019/` | `results/<model>_<split>_<method>.csv` |
 | 3. Leakage audit | `python validation/leakage_audit.py` | `data/aptos2019/` | `results/leakage.json` |
 | 4. Analyse | `python validation/analyze.py` | numpy only | `results/metrics.json`, `results/tables.md` |
+| Quality gate + external check | see `QUALITY.md` (Reproduce) | MATLAB, both datasets | `results/quality.md`, `results/idrid_*.csv`, `results/degradation_*.csv` |
 | Lesion overlay | `python validation/evaluate_lesions.py` (about 5 minutes) | `data/idrid_segmentation/`, `data/aptos2019/` | `results/lesions.json`, `results/lesions.md` |
 
 The committed `results/` files are enough to re-run step 4 (and read the report) without MATLAB or the images.

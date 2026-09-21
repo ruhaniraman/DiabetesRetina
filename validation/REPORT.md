@@ -23,6 +23,10 @@
    tuned referral threshold, which would have missed about 1 in 12 referable patients that the model can find.
 5. **The stored test numbers are slightly optimistic.** 13.7% of test images have a duplicate in the training or
    validation data. Excluding them, sensitivity is 91.2% and specificity 89.2%.
+6. **It does not transfer cleanly to a second dataset.** On IDRiD (516 full-resolution photographs it never saw), sensitivity held
+   (**94.4%**) but specificity fell to **46.1%** (AUC 0.90): it flagged more than half of the healthy eyes. Performance depends on the
+   camera and population, and must be re-measured on your own images before any real use. Details in
+   [`QUALITY.md`](QUALITY.md#a-larger-finding-the-classifier-does-not-transfer-to-another-dataset-well).
 
 ## Problems found in the app, and what was changed
 
@@ -80,7 +84,7 @@ will be false alarms even though the model is good. Using the leakage-adjusted r
 
 ## What this does not establish
 
-- **One dataset, one source.** APTOS is a single public dataset (one collection programme; its details are not recorded in this repo). Nothing here shows the model works on your
+- **Two datasets, and they disagree.** Everything above is APTOS. A second public dataset (IDRiD) gave the same sensitivity but far lower specificity (46% vs 90%), so results clearly do not carry over automatically. Nothing here shows the model works on your
   cameras, your patients, or other populations. Different devices and image quality routinely lower performance. Run it on
   local, clinician-graded images before relying on it.
 - **The reference labels are imperfect.** There are 134 pairs of identical image files, and about 3 in 10 of the
