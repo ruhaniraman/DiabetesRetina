@@ -58,6 +58,7 @@ isReferable = referableProb >= bestThreshold;
 [confidence, maxIdx] = max(probs);
 predictedGrade = classNames(maxIdx);
 
+result.threshold = bestThreshold;   % so report text states the threshold actually used
 result.probs = probs;
 result.predictedGrade = predictedGrade;
 result.referableProb = referableProb;
