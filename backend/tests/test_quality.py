@@ -139,6 +139,23 @@ def test_the_new_measures_do_not_depend_on_file_size():
         assert abs(a[k] - b[k]) < 0.05, k
 
 
+# ----------------------------------------------------------------------------------- the same picture twice
+def test_the_same_picture_is_recognised_even_when_resaved_shrunk_or_brightened():
+    a = realistic_fundus(seed=1)
+    jpeg = cv2.imdecode(cv2.imencode(".jpg", a, [cv2.IMWRITE_JPEG_QUALITY, 40])[1], cv2.IMREAD_COLOR)
+    for copy in (a.copy(), jpeg, cv2.resize(a, (112, 112), interpolation=cv2.INTER_AREA), np.clip(a.astype(np.float32) * 1.3, 0, 255).astype(np.uint8)):
+        assert quality.is_same_picture(a, copy)
+
+
+def test_different_photographs_are_not_the_same_picture():
+    assert not quality.is_same_picture(realistic_fundus(seed=1), realistic_fundus(seed=2))
+    assert quality.picture_similarity(realistic_fundus(seed=1), realistic_fundus(seed=2)) < quality.THRESHOLDS["same_picture"] - 0.1
+
+
+def test_a_blank_image_is_never_the_same_picture_as_anything():
+    assert quality.picture_similarity(np.zeros((224, 224, 3), np.uint8), realistic_fundus()) == 0.0
+
+
 # ----------------------------------------------------------------------------------- decision logic
 def test_thresholds_are_ordered_so_warn_bands_sit_between_accept_and_reject():
     t = quality.THRESHOLDS

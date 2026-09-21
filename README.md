@@ -15,7 +15,7 @@ backend/        Python/FastAPI: image analysis API (port 5000)
    ├─ Stage 2  lesion overlay (EXPERIMENTAL, off by default: validation/LESIONS.md shows it does not detect lesions)
    ├─ Stage 3  bilateral DR grading          MATLAB Engine → trained network (stage_3/)
    └─ Stage 4  Grad-CAM explainability       MATLAB Engine → stage4_explainability/
-stage1_quality/ stage2_structure/ stage_3/ stage4_explainability/ stage5_simulink/ utils/   MATLAB source
+stage1_quality/ (original MATLAB Stage 1; the app runs backend/quality.py) stage2_structure/ stage_3/ stage4_explainability/ stage5_simulink/ utils/   MATLAB source
 ```
 
 The browser talks to both servers. The Python backend never sees passwords or the JWT secret: it forwards each

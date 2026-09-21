@@ -48,6 +48,29 @@ def fundus_measures(img_bgr: np.ndarray) -> dict:
     return {"retina_aspect": float(box_w / max(box_h, 1)), "warm_share": float(warm.mean()), "mean_saturation": float(sat.mean() / 255)}
 
 
+def _structure_signature(img_bgr: np.ndarray, size: int = 96):
+    """Fine retinal structure (vessels, lesions) on a small copy, ignoring overall brightness and the black border."""
+    grey = cv2.cvtColor(cv2.resize(img_bgr, (size, size), interpolation=cv2.INTER_AREA), cv2.COLOR_BGR2GRAY).astype(np.float32)
+    return cv2.GaussianBlur(grey, (0, 0), 1) - cv2.GaussianBlur(grey, (0, 0), 4), grey > 15
+
+
+def picture_similarity(a_bgr: np.ndarray, b_bgr: np.ndarray) -> float:
+    """Correlation (-1 to 1) of the fine structure of two photographs. About 1.0 for the same picture (even re-saved, shrunk or
+    brightened); different fundus photographs reach at most 0.92 (3,100 random pairs from APTOS and IDRiD)."""
+    (band_a, mask_a), (band_b, mask_b) = _structure_signature(a_bgr), _structure_signature(b_bgr)
+    both = mask_a & mask_b
+    if both.sum() < 500:
+        return 0.0
+    x, y = band_a[both] - band_a[both].mean(), band_b[both] - band_b[both].mean()
+    denom = float(np.sqrt((x * x).sum() * (y * y).sum()))
+    return float((x * y).sum() / denom) if denom > 0 else 0.0
+
+
+def is_same_picture(a_bgr: np.ndarray, b_bgr: np.ndarray) -> bool:
+    """True when the two uploads are the same photograph. A mirrored or cropped copy is not detected."""
+    return picture_similarity(a_bgr, b_bgr) >= THRESHOLDS["same_picture"]
+
+
 def measures(img_bgr: np.ndarray) -> dict:
     """All quality measures for one image (any size, BGR uint8). `no_retina` is 1 when no retina could be found."""
     view = model_view(img_bgr)
@@ -109,6 +132,7 @@ THRESHOLDS = {
     "colour_warn": 0.35,       # warm_share below this: unusual colour; 0.7% of real photos, and some non-fundus scenes (up to 0.28)
     "aspect_min": 0.65,        # retina bounding box narrower/wider than this: only part of the retina is in the picture
     "aspect_max": 1.45,        # (real photos: 0.75 to 1.24)
+    "same_picture": 0.95,      # two uploads correlate at least this much: the same photo twice (different photos: at most 0.92)
 }
 
 MESSAGES = {
@@ -120,6 +144,7 @@ MESSAGES = {
     "not_colour_reject": "Image rejected: this does not look like a colour retinal photograph. Please upload a colour fundus photograph.",
     "partial_reject": "Image rejected: only part of the retina is visible. Please retake the photo with the whole retina in the frame.",
     "colour_warn": "Image has an unusual colour balance for a retinal photograph; results may be less reliable. Check that it is a fundus photograph.",
+    "same_picture": "Image rejected: the left and right photos are the same picture. Please upload a separate photo for each eye.",
     "blur_warn": "Image is slightly soft; results may be less reliable.",
     "dark_warn": "Image is dark; results may be less reliable.",
     "bright_warn": "Image is very bright; results may be less reliable.",

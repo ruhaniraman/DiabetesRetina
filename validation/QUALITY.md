@@ -89,6 +89,15 @@ Limits: these rules look at colour and outline. A picture with a warm cast and a
 black border, looks whole; the optic disc, macula and vessels are not detected. The non-fundus test set is a handful of pictures. A trained
 fundus/non-fundus detector would be the proper fix and needs a set of real non-fundus uploads to train and test on.
 
+## Enforced by the server, and the same photo twice (added later)
+
+- **The gate is now enforced when grading**, not only on the upload screen. `/api/stage3-assessment` runs the same checks on both photographs before the
+  model and refuses (HTTP 422, naming the eye) any that would be rejected, so a direct API call cannot get a grade for an unfit picture. Photographs that only
+  warn are graded and the warnings come back as `qualityWarnings`.
+- **The same picture uploaded for both eyes is refused.** Two photographs are compared by the correlation of their fine retinal structure. Copies of one photo
+  (re-saved as JPEG quality 40, shrunk to half, brightened 1.3x) score 0.95 or more (lowest 0.952); different photographs score at most 0.92 (3,100 random pairs
+  from APTOS and IDRiD; median 0.26). The limit is 0.95. A mirrored or cropped copy is **not** detected (its correlation falls to about 0.45 or less).
+
 ## Limits
 
 - Calibrated on two datasets (mostly one camera type in each). Other cameras, phone-based fundus adapters and different fields of view may need other thresholds.
@@ -114,3 +123,5 @@ Every conclusion above stands. All IDs are now unique, and the calibration tool 
 | Controlled degradations | `python validation/degradation_experiment.py` | MATLAB (about 10 min) |
 | Shrinking / JPEG diagnostics | `python validation/downscale_experiment.py`, then `python validation/downscale_sharpness.py` | MATLAB, IDRiD |
 | Analyse | `python validation/analyze_quality.py` | committed `results/` only |
+
+Note: `stage1_quality/` (MATLAB) is the team's original Stage 1. The app does not use it; it runs `backend/quality.py`, which keeps its approach (green channel, retina mask, contrast-normalised blur) and replaces its thresholds.

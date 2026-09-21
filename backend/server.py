@@ -366,6 +366,21 @@ def assess_quality(img_bgr: np.ndarray) -> dict:
     }
 
 
+def check_pair(left_img: np.ndarray, right_img: np.ndarray) -> list[str]:
+    """Stage 1 for a pair of uploads, run before grading. Raises 422 for an unfit picture (naming the eye) or for the same picture
+    uploaded twice; returns the warnings for pictures that are accepted with a caution."""
+    warnings = []
+    for eye, img in (("Left eye", left_img), ("Right eye", right_img)):
+        q = assess_quality(img)
+        if q["verdict"] == "reject":
+            raise HTTPException(status_code=422, detail=f"{eye}: {q['reason']}")
+        if q["verdict"] == "warn":
+            warnings.append(f"{eye}: {q['reason']}")
+    if quality.is_same_picture(left_img, right_img):
+        raise HTTPException(status_code=422, detail=quality.MESSAGES["same_picture"])
+    return warnings
+
+
 @app.post("/api/stage1-quality", dependencies=[Depends(require_user)])
 async def check_image_quality(file: UploadFile = File(...)):
     img = await read_image(file)
@@ -525,6 +540,8 @@ async def run_stage3_assessment(
 ):
     left_img = await read_image(leftEye)
     right_img = await read_image(rightEye)
+    # Stage 1 is enforced here, not only in the browser: a direct API call cannot get a grade for an unfit picture.
+    checks = await run_in_threadpool(check_pair, left_img, right_img)
     try:
         raw = await run_in_threadpool(grade_eyes, left_img, right_img)
     except HTTPException:
@@ -553,6 +570,7 @@ async def run_stage3_assessment(
         "escalated": d["escalated"],
         "overallRisk": d["overall"],
         "overallSummary": build_summary(d["overall"], d["left"], d["right"], decision=d),
+        "qualityWarnings": checks,
     }
 
     exam_id = None

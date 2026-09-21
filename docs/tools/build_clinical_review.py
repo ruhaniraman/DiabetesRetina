@@ -187,6 +187,7 @@ def build():
         "bright_reject": ("Overexposed", "reject"), "noise_reject": ("Grainy or heavily compressed", "reject"),
         "not_colour_reject": ("Not a colour retinal photograph (greyscale, or no retinal colour)", "reject"),
         "partial_reject": ("Only part of the retina in the picture", "reject"),
+        "same_picture": ("The same photo uploaded for both eyes (checked when grading)", "reject"),
         "colour_warn": ("Unusual colour balance", "warn"),
         "blur_warn": ("Slightly soft", "warn"), "dark_warn": ("Dark", "warn"), "bright_warn": ("Very bright", "warn"),
         "accept": ("Passes", "accept"),

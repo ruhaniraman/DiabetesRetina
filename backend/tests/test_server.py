@@ -10,6 +10,7 @@ import pytest  # noqa: E402
 from fastapi.testclient import TestClient  # noqa: E402
 
 import server  # noqa: E402
+from synthetic import realistic_fundus  # noqa: E402
 
 
 @pytest.fixture()
@@ -107,8 +108,7 @@ def test_segmentation_on_black_image_is_a_422_not_a_crash(client):
 
 
 def test_stage3_and_stage4_report_503_without_matlab(client):
-    files = {"leftEye": ("l.png", png_bytes(fake_fundus()), "image/png"), "rightEye": ("r.png", png_bytes(fake_fundus()), "image/png")}
-    assert client.post("/api/stage3-assessment", files=files).status_code == 503
+    assert client.post("/api/stage3-assessment", files=two_images()).status_code == 503
     assert client.post("/api/stage4-heatmap", files=upload("a.png", fake_fundus())).status_code == 503
 
 
@@ -141,10 +141,43 @@ def raw(overall, left, right, left_conf, right_conf, left_ref, right_ref, thresh
 
 
 def two_images():
+    """Two different photographs that pass the Stage 1 gate (uploading one picture twice is refused)."""
     return {
-        "leftEye": ("l.png", png_bytes(fake_fundus()), "image/png"),
-        "rightEye": ("r.png", png_bytes(fake_fundus()), "image/png"),
+        "leftEye": ("l.png", png_bytes(realistic_fundus(seed=1)), "image/png"),
+        "rightEye": ("r.png", png_bytes(realistic_fundus(seed=2)), "image/png"),
     }
+
+
+def test_grading_refuses_an_unfit_picture_and_names_the_eye(client, monkeypatch):
+    called = []
+    monkeypatch.setattr(server, "grade_eyes", lambda *a: called.append(a))
+    files = two_images()
+    files["rightEye"] = ("r.png", png_bytes(np.zeros((224, 224, 3), np.uint8)), "image/png")
+    r = client.post("/api/stage3-assessment", files=files)
+    assert r.status_code == 422 and r.json()["detail"].startswith("Right eye: ")
+    files = two_images()
+    files["leftEye"] = ("l.png", png_bytes(cv2.GaussianBlur(realistic_fundus(seed=1), (0, 0), 3)), "image/png")
+    r = client.post("/api/stage3-assessment", files=files)
+    assert r.status_code == 422 and r.json()["detail"].startswith("Left eye: ")
+    assert called == []                                       # the model was never run
+
+
+def test_grading_refuses_the_same_picture_for_both_eyes(client, monkeypatch):
+    monkeypatch.setattr(server, "grade_eyes", lambda *a: pytest.fail("the model must not run"))
+    same = png_bytes(realistic_fundus(seed=1))
+    reencoded = cv2.imencode(".jpg", realistic_fundus(seed=1), [cv2.IMWRITE_JPEG_QUALITY, 60])[1].tobytes()
+    for other, name in ((same, "png"), (reencoded, "jpeg")):
+        r = client.post("/api/stage3-assessment", files={"leftEye": ("l.png", same, "image/png"), "rightEye": ("r." + name, other, "image/" + name)})
+        assert r.status_code == 422 and "same picture" in r.json()["detail"]
+
+
+def test_a_warning_photo_is_graded_and_the_warning_is_returned(client, monkeypatch):
+    monkeypatch.setattr(server, "grade_eyes", lambda l, r: raw("No_DR", "No_DR", "No_DR", 0.9, 0.9, 0.05, 0.05))
+    files = two_images()
+    files["leftEye"] = ("l.png", png_bytes(realistic_fundus(seed=1, brightness=0.4)), "image/png")      # dark: warn, not reject
+    body = client.post("/api/stage3-assessment", files=files).json()
+    assert body["status"] == "success" and len(body["qualityWarnings"]) == 1 and body["qualityWarnings"][0].startswith("Left eye: ")
+    assert client.post("/api/stage3-assessment", files=two_images()).json()["qualityWarnings"] == []
 
 
 def test_stage3_saves_the_exam_for_the_calling_user(client, monkeypatch):
