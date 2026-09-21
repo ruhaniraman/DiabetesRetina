@@ -21,29 +21,28 @@ Full detail: `validation/REPORT.md`. Test set: 548 images never used in training
 
 | Measure | Result |
 |---|---|
-| Referable patients found (sensitivity) | **92.4%** (95% CI 88.1% to 95.2%) |
-| Non-referable correctly not flagged (specificity) | **89.8%** (86.1% to 92.7%) |
-| Excluding test images duplicated in training | sensitivity 91.2%, specificity 89.2% |
-| Exact stage correct (5 classes) | 77.7% |
+| Referable patients found (sensitivity) | **95.1%** (95% CI 91.4% to 97.2%) |
+| Non-referable correctly not flagged (specificity) | **89.2%** (85.4% to 92.2%) |
+| Excluding test images duplicated in training | sensitivity 94.3%, specificity 88.9% |
+| Exact stage correct (5 classes) | 78.1% |
 | **Second dataset (IDRiD, 516 full-resolution photographs, never seen in training):** sensitivity | 94.4% |
 | **Second dataset (IDRiD):** specificity | **46.1%**: it flagged more than half of the healthy eyes |
-| Referable patients found if decided from the single most likely stage instead | 83.9% (this is why the threshold rule is used) |
+| Referable patients found if decided from the single most likely stage instead | 82.1% (this is why the threshold rule is used) |
 
 **Where it fails (test set):**
 
-- Missed referable cases at the deployed threshold: 17 of 223 (Moderate 15 of 150, Severe 0 of 29, Proliferative 2 of 44).
-- A **proliferative** case (`753b14c27c83`) was called Mild with referral score 0.15: the tool said nothing was flagged.
-- A **proliferative** case (`eaa0dfbd5024`) was called Mild with referral score 0.02: the tool said nothing was flagged.
-- The exact stage is unreliable at the severe end: only 59% of Severe and 41% of Proliferative cases were graded as such (most were graded a neighbouring or two-away stage).
+- Missed referable cases at the deployed threshold: 11 of 223 (Moderate 15 of 150, Severe 0 of 29, Proliferative 2 of 44).
+- A **proliferative** case (`eaa0dfbd5024`) was called Mild with referral score 0.04: the tool said nothing was flagged.
+- The exact stage is unreliable at the severe end: only 52% of Severe and 48% of Proliferative cases were graded as such (most were graded a neighbouring or two-away stage).
 - **It does not transfer cleanly to other data.** On the second public dataset it found 94.4% of referable patients but only 46.1% of healthy eyes were left unflagged, so a clinic using a different camera or population could see many false referrals. Nothing is known about other cameras, age groups or diabetes types. The reference grades themselves are imperfect (the same photograph appears with different grades).
 
 **What a flag means in a real clinic** (positive predictive value falls as disease becomes rarer):
 
 | Referable prevalence | Chance a flag is truly referable | Chance a "no referral" is truly fine | Flagged per 1,000 patients |
 |---|---|---|---|
-| 20% | 68% | 97.6% | 268 |
-| 10% | 49% | 98.9% | 188 |
-| 5% | 31% | 99.5% | 148 |
+| 20% | 68% | 98.4% | 278 |
+| 10% | 49% | 99.3% | 194 |
+| 5% | 31% | 99.7% | 153 |
 
 **Confidence bands.** The interface shows High / Moderate / Low, not a percentage, because the model's raw probabilities are over-confident. Measured on the test set:
 
@@ -125,7 +124,7 @@ Basis line: "Basis: referral score compared with a 20% threshold".
 - **Note when a heatmap is shown:** "Shows where the model looked, not a lesion detection. Warm colours do not by themselves mean disease."
 - **Shown when text is machine-translated:** "Machine-translated and not clinically reviewed. If anything is unclear, the English text is authoritative."
 - **Chip on an eye flagged despite a milder stage:** "Referral flagged" (hover: "The most likely stage is lower, but the screening model's referral threshold was reached")
-- **Confidence note (report):** "Lower confidence means the grade is less likely to be right. In testing, the referral decision was wrong in about 2% of high-confidence results and about 18% of the rest."
+- **Confidence note (report):** "Lower confidence means the grade is less likely to be right. In testing, the referral decision was wrong in about 1% of high-confidence results and about 15% of the rest."
 - **Sign-in page:** "AI-assisted retinal screening to help catch diabetic eye disease early."
 
 ### 3c. Image-quality messages (shown when a photo is checked)
@@ -244,7 +243,7 @@ These are engineering safeguards, not clinical judgements; please confirm or ove
 ## 5. Questions for the reviewer
 
 1. Is "referable = moderate NPDR or worse" the right referral criterion for your setting and guidelines? (Macular oedema is not assessed.)
-2. Is the operating point acceptable? At the 20% threshold about 8% of referable patients are missed in testing, including 2 of 44 proliferative cases. What miss rate is acceptable, and should the threshold be lower (more sensitive, more false alarms)?
+2. Is the operating point acceptable? At the 20% threshold about 5% of referable patients are missed in testing, including 2 of 44 proliferative cases. What miss rate is acceptable, and should the threshold be lower (more sensitive, more false alarms)?
 3. Is the "does not rule out disease" wording, and the safety-net sentence about changes in vision, appropriate for a no-referral result? Is anything else needed (for example emergency symptoms)?
 4. For a Mild result below the referral threshold, is "follow-up with an eye-care professional is recommended" right, and is there a local guideline interval that should be stated?
 5. For Severe and Proliferative results, is "URGENT ... prompt referral to an ophthalmologist is recommended" the right urgency and phrasing?

@@ -38,7 +38,7 @@ STAGE_TEXT = {
 GRADE_ORDER = ["No_DR", "Mild", "Moderate", "Severe", "Proliferate_DR"]
 
 # Confidence is reported as a band, not a percentage: the model's raw probabilities are over-confident (on held-out data
-# the "Moderate" band claims ~81% but is right ~68% of the time). Thresholds match stage4_explainability/report/formatReportText.m.
+# the "Moderate" band claims ~81% but is right ~75% of the time). Thresholds match stage4_explainability/report/formatReportText.m.
 CONFIDENCE_BANDS = (("High", 0.90), ("Moderate", 0.70), ("Low", 0.0))
 
 

@@ -39,9 +39,9 @@ end
 
 % ---- Confidence banding ----
 % Reported as a band, not a percentage: on held-out data the model is over-confident (its 'Moderate' band claims about
-% 81% but is right about 68% of the time; validation/REPORT.md). A lower band does NOT mean the referral decision is less
-% trustworthy in general, but in testing the referral decision was wrong in about 2% of high-confidence results and about
-% 18% of the rest, so lower confidence is a real reason for a closer look. The same bands are used by the app
+% 81% but is right about 75% of the time; validation/REPORT.md). A lower band does NOT mean the referral decision is less
+% trustworthy in general, but in testing the referral decision was wrong in about 1% of high-confidence results and about
+% 15% of the rest, so lower confidence is a real reason for a closer look. The same bands are used by the app
 % (backend/clinical_text.py).
 conf = result.confidence;
 confidenceCaveat = ' Confidence is only a rough guide: the model tends to be over-confident.';
@@ -61,7 +61,7 @@ end
 
 % ---- Referral recommendation ----
 % Driven by isReferable / referableProb, NOT by confidenceBand. The tuned threshold decision was technically validated on
-% held-out APTOS images (sensitivity 92.4%, specificity 89.8%; validation/REPORT.md). It has NOT been clinically validated
+% held-out APTOS images (sensitivity 95.1%, specificity 89.2%; validation/REPORT.md). It has NOT been clinically validated
 % and it misses some referable cases, so a 'not referred' result must never read as reassurance.
 thr = 0.2;
 if isfield(result, 'threshold') && ~isempty(result.threshold)

@@ -2,7 +2,7 @@
 
 The app flags an eye for referral when its referral score (probability of Moderate + Severe + Proliferate DR) reaches a
 threshold. The model's own threshold is **0.20**, tuned on APTOS. On a second public dataset (IDRiD) the same threshold kept
-sensitivity (about 94%) but flagged about 79% of all photographs, because specificity fell to about 46%
+sensitivity (about 92%) but flagged about 70% of all photographs, because specificity fell to about 67% (it was 46% before the input preparation was improved)
 (`validation/QUALITY.md`). A clinic's camera and patients differ from both datasets, so this tool measures the trade-off on
 **your** graded photographs and shows what a different threshold would cost.
 

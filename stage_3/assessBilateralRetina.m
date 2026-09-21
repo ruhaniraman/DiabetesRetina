@@ -10,8 +10,8 @@ function [overallGrade, leftResult, rightResult] = assessBilateralRetina(trained
 % with the model (see loadStage3Model). That decision is made by the caller: it catches far more
 % referable eyes than the most-likely grade alone (validation/REPORT.md).
 %
-% Images go through preprocessStage3Input (plain resize), the preprocessing the network was
-% trained and validated with.
+% Images go through preprocessStage3Input (retina crop) and the scores are averaged with the mirror image
+% (stage3Scores); see validation/results/stage3_pipeline.md for why.
 
     % Higher index = more severe stage
     stages = {'No_DR', 'Mild', 'Moderate', 'Severe', 'Proliferate_DR'};
@@ -44,7 +44,9 @@ end
 
 function [pred, probs, referableProb] = gradeOneEye(net, imgPath)
     imgReady = preprocessStage3Input(imread(imgPath));
-    [pred, probs] = classify(net, imgReady);
+    [predAll, scores] = stage3Scores(net, imgReady);   % average of the image and its mirror image
+    pred = predAll(1);
+    probs = scores(1, :);
     classes = cellstr(net.Layers(end).Classes);
     referableProb = double(sum(probs(ismember(classes, {'Moderate', 'Severe', 'Proliferate_DR'}))));
 end

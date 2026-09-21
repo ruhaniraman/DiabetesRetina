@@ -472,7 +472,7 @@ def decide(g: dict) -> dict:
     """Turn the raw network output into the clinical decision.
 
     The network was tuned to flag an eye as referable when P(Moderate)+P(Severe)+P(Proliferate) reaches a threshold
-    (stored with the model). On the held-out test set that rule finds 92.4% of referable patients, against 83.9% when
+    (stored with the model). On the held-out test set that rule finds 95.1% of referable patients, against 82.1% when
     deciding from the single most-likely grade (validation/REPORT.md), so the threshold is what decides.
 
     The displayed grade is never lowered, and is raised to Moderate (Stage 2) when the threshold flags an eye whose most

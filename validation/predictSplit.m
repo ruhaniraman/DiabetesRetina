@@ -9,7 +9,7 @@ function predictSplit(modelSpec, splitName, method, outCsv, maxN)
 %   splitName  'train' | 'validation' | 'test' -- the split recorded in Stage3_checkpoint.mat, so the
 %              held-out images are exactly the ones the model never trained on
 %   method     'crop'   preprocessForNetwork (crop to retina, pad square, resize): NOT what the model was trained with
-%              'resize' plain imresize to 224x224 (what the model was trained with; same as preprocessStage3Input)
+%              'resize' plain imresize to 224x224 (what the model was trained with; the app no longer uses it)
 %   outCsv     output file: id, label, then one probability column per class (network class order)
 %   maxN       optional: use a reproducible random subset of this many images (handy for 'train')
 %

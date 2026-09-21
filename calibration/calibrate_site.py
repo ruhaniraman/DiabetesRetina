@@ -84,7 +84,8 @@ def run_model(paths, labels, ids, out_csv):
     eng = matlab.engine.start_matlab()
     for rel in ["utils", "stage_3", "validation"]:
         eng.addpath(str(ROOT / rel), nargout=0)
-    eng.predictFiles([str(p) for p in paths], list(labels), Path(out_csv).as_posix(), list(ids), nargout=0)
+    # 'crop_mirror' is the app's own preparation and scoring (utils/preprocessStage3Input.m, utils/stage3Scores.m): calibrate what is deployed.
+    eng.predictFiles([str(p) for p in paths], list(labels), Path(out_csv).as_posix(), list(ids), 'crop_mirror', nargout=0)
     eng.quit()
 
 

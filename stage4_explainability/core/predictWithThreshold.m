@@ -32,17 +32,10 @@ elseif size(img, 3) == 4
     img = img(:, :, 1:3);
 end
 
-% Plain resize: the preprocessing the network was trained and validated with (see preprocessStage3Input.m
-% and validation/REPORT.md). Stage 3 grading uses the same function, so the Grad-CAM explains exactly the
-% image that was graded. The whole image is used, so cropInfo covers the full frame.
-imgReady = preprocessStage3Input(img);
-cropInfo.bbox = [1 1 size(img, 2) size(img, 1)];
-cropInfo.padded = false;
-cropInfo.originalSize = [size(img, 1) size(img, 2)];
-
-% classify() applies the network's own zscore normalization internally
-[~, scores] = classify(net, imgReady);
-probs = scores;  % 1x5, in net.Layers(end).Classes order
+% Same preparation and scoring as Stage 3 grading (retina crop, then the average of the image and its mirror image), so the class
+% explained here is the class that was graded. The Grad-CAM itself is computed on the un-mirrored prepared image.
+[imgReady, cropInfo] = preprocessForNetwork(img, [224 224]);   % what preprocessStage3Input does, keeping the crop box
+[~, probs] = stage3Scores(net, imgReady);   % 1x5, in net.Layers(end).Classes order
 
 % ---- Referable-DR decision rule ----
 % Referable = Moderate, Severe, or Proliferate_DR (NOT argmax alone).

@@ -17,7 +17,11 @@ SIZE = 224
 
 
 def model_view(img_bgr: np.ndarray) -> np.ndarray:
-    """The image as the network sees it: the whole frame resized to SIZE x SIZE (no cropping)."""
+    """The whole frame resized to SIZE x SIZE (no cropping): the view the thresholds below were calibrated on.
+
+    The classifier now sees a retina crop instead (utils/preprocessStage3Input.m). Measured on the crop, the gate's verdict would change for about 2% of
+    real photographs (15 of 516 IDRiD, 10 of 800 APTOS sampled). The thresholds have not been re-calibrated for the crop view.
+    """
     return cv2.resize(img_bgr, (SIZE, SIZE), interpolation=cv2.INTER_AREA)
 
 

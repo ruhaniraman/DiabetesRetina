@@ -69,8 +69,8 @@ export const REPORT_LABELS = {
 export const CONFIDENCE = {
   label: 'confidence',
   note:
-    'Lower confidence means the grade is less likely to be right. In testing, the referral decision was wrong in about 2% of high-confidence ' +
-    'results and about 18% of the rest.',
+    'Lower confidence means the grade is less likely to be right. In testing, the referral decision was wrong in about 1% of high-confidence ' +
+    'results and about 15% of the rest.',
 };
 
 export const STAGE_NOTE =

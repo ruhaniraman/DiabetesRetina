@@ -17,7 +17,7 @@ REFERABLE = ["Moderate", "Severe", "Proliferate_DR"]                          # 
 DEPLOYED_THRESHOLD = 0.2                                                      # stage3Results.threshold
 STORED = {"TP": 206, "TN": 292, "FP": 33, "FN": 17}                           # stage3Results, test split, threshold 0.2
 BOOTSTRAPS = 2000
-METHOD = "resize"   # the preprocessing the model was trained/evaluated with (established in section 1)
+METHOD = "cropmirror"   # the DEPLOYED pipeline: retina crop + mirror averaging (see results/stage3_pipeline.md); "resize" is what the network was trained with
 
 
 # ------------------------------------------------------------------ loading
@@ -215,7 +215,7 @@ def main():
     P("")
 
     # 4) Threshold: was 0.2 a sound choice, and would validation have picked it?
-    P("## 4. Threshold behaviour (deployed model, plain-resize preprocessing)\n")
+    P("## 4. Threshold behaviour (deployed model and pipeline)\n")
     P("| Threshold | Val sens | Val spec | Test sens | Test spec |\n|---|---|---|---|---|")
     ths = [0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.4, 0.5, 0.6, 0.7]
     sv, st = sweep(y_val, p_val, ths), sweep(y_test, p_test, ths)
@@ -303,10 +303,10 @@ def main():
     out["missed_severe_or_proliferate"] = [{"id": i, "label": t, "referable_probability": r_, "predicted": q} for i, t, r_, q, _ in bad]
 
     # 5d) crop vs resize on every split, for completeness
-    P("\n## 5d. Preprocessing comparison on held-out data (deployed model)\n")
+    P("\n## 5d. Preprocessing comparison on held-out data (`cropmirror` is what the app runs now; `resize` is what the network was trained with)\n")
     P("| Data | Preprocessing | Sensitivity | Specificity | AUC |\n|---|---|---|---|---|")
     for split in ("test", "validation"):
-        for method in ("resize", "crop"):
+        for method in ("resize", "crop", "cropmirror"):
             _, yy, pp = load(f"app_{split}_{method}")
             r = rates(confusion(yy, pp, DEPLOYED_THRESHOLD))
             P(f"| {split} | {method} | {r['sensitivity']:.1%} | {r['specificity']:.1%} | {auc(referable_prob(pp), is_referable(yy)):.3f} |")
