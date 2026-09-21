@@ -3,7 +3,7 @@ import data from './translations.json';
 // Hindi and Kannada are read aloud from fixed sentences (translations.json), never from machine translation: the machine translator has no Kannada model at all,
 // and its Hindi mistranslated safety-critical sentences ("can miss disease" came out as "can remember the disease", "Right eye" as "correct eye").
 // A language is only used once `reviewed[lang]` is true, i.e. once a qualified person has checked every sentence (docs/SPOKEN_TRANSLATIONS_FOR_REVIEW.md),
-// unless the deployment turns that check off on purpose (VITE_ALLOW_UNREVIEWED_SPEECH, see config.js).
+// unless the deployment turns that check off on purpose (VITE_ALLOW_UNREVIEWED_SPEECH, per language, see config.js).
 
 const fill = (template, values) => template.replace(/\{(\w+)\}/g, (whole, key) => (key in values ? values[key] : whole));
 const stageNumber = (label) => /Stage (\d)/.exec(String(label || ''))?.[1];

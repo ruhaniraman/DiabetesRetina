@@ -77,7 +77,7 @@ For people who cannot read it, the dashboard and the report page have a **Listen
 phone or browser (the Web Speech API): nothing plays until it is tapped, nothing is recorded, and only voices that run **on the device** are used, because online voices would send the result to
 another service. If the phone has no voice for the chosen language the screen says how to add one, and offers English. In Hindi and Kannada it reads **fixed sentences** (`frontend/src/speech/translations.json`), never machine translation (the machine translator has no Kannada model, and its Hindi mistranslated
 safety-critical sentences). Those sentences are drafts, so **Hindi and Kannada speech is off until they are reviewed** (`docs/SPOKEN_TRANSLATIONS_FOR_REVIEW.md`); English works now. The words being read are shown on the page,
-with the current sentence highlighted. Which sentences are spoken: `frontend/src/speech/reportScript.js`. Set `VITE_ALLOW_NETWORK_VOICES=true` only if you accept online voices, and `VITE_ALLOW_UNREVIEWED_SPEECH=true` only for a demo that knowingly reads the unreviewed drafts (announced aloud first).
+with the current sentence highlighted. Which sentences are spoken: `frontend/src/speech/reportScript.js`. Set `VITE_ALLOW_NETWORK_VOICES=true` only if you accept online voices, and `VITE_ALLOW_UNREVIEWED_SPEECH` (`hi`, `kn`, `hi,kn` or `true`) only for a demo that knowingly reads the unreviewed drafts of those languages (announced aloud first).
 
 ## The PDF report
 

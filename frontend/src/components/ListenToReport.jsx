@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { FiSquare, FiVolume2 } from 'react-icons/fi';
-import { ALLOW_NETWORK_VOICES, ALLOW_UNREVIEWED_SPEECH } from '../config';
+import { ALLOW_NETWORK_VOICES, allowsUnreviewedSpeech } from '../config';
 import { LANGUAGES } from '../languages';
 import { useSpeech } from '../hooks/useSpeech';
 import { buildSpokenScript } from '../speech/reportScript';
@@ -22,7 +22,7 @@ export default function ListenToReport({ assessment, compact = false }) {
   const script = useMemo(() => buildSpokenScript(assessment), [assessment]);
   const isEnglish = lang === 'en';
   const fixed = useMemo(() => (isEnglish ? null : buildTranslatedScript(lang, assessment)), [isEnglish, lang, assessment]);
-  const allowed = isEnglish || isReviewed(lang) || ALLOW_UNREVIEWED_SPEECH;
+  const allowed = isEnglish || isReviewed(lang) || allowsUnreviewedSpeech(lang);
   // The sentences for this language: reviewed ones as they are; unreviewed drafts (only when a deployment allows them) announce that first.
   const localScript = fixed && allowed ? (isReviewed(lang) ? fixed : [draftNotice(lang), ...fixed]) : null;
 

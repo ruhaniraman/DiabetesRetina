@@ -1,14 +1,12 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { render, screen, waitFor, act } from '@testing-library/react';
+import { render, screen, waitFor, act, cleanup } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
 // Switches the tests can flip: whether the deployment allows unreviewed drafts, and whether a language has been reviewed.
-const flags = vi.hoisted(() => ({ allowUnreviewed: false, reviewed: { hi: false, kn: false } }));
+const flags = vi.hoisted(() => ({ allowUnreviewed: [], reviewed: { hi: false, kn: false } }));
 vi.mock('../config', async (importOriginal) => ({
   ...(await importOriginal()),
-  get ALLOW_UNREVIEWED_SPEECH() {
-    return flags.allowUnreviewed;
-  },
+  allowsUnreviewedSpeech: (lang) => flags.allowUnreviewed.includes('true') || flags.allowUnreviewed.includes(lang),
 }));
 vi.mock('../speech/translations', async (importOriginal) => ({
   ...(await importOriginal()),
@@ -43,7 +41,7 @@ const useLanguage = async (lang) => {
 };
 
 beforeEach(async () => {
-  flags.allowUnreviewed = false;
+  flags.allowUnreviewed = [];
   flags.reviewed = { hi: false, kn: false };
   await useLanguage('en');
 });
@@ -153,7 +151,7 @@ describe.each([
   });
 
   it('when a deployment allows drafts, announces first that they are drafts, then reads the fixed sentences with a device voice', async () => {
-    flags.allowUnreviewed = true;
+    flags.allowUnreviewed = [lang]; // only this language is switched on
     const synth = installFakeSpeech({ voices: [makeVoice('en-IN'), makeVoice(voiceTag, { name: 'device-voice' })] });
     const user = await setup();
     await user.click(listenButton());
@@ -214,6 +212,32 @@ describe.each([
     const user = await setup();
     await user.click(listenButton());
     expect(await screen.findByRole('alert')).toBeInTheDocument();
+    expect(synth.spoken).toEqual([]);
+  });
+});
+
+describe('the demo switch for unreviewed drafts is per language', () => {
+  afterEach(async () => {
+    await useLanguage('en');
+  });
+
+  it('with only Hindi switched on, Hindi speaks (announcing the draft) and Kannada still does not', async () => {
+    flags.allowUnreviewed = ['hi'];
+    const synth = installFakeSpeech({ voices: [makeVoice('en-IN'), makeVoice('hi-IN'), makeVoice('kn-IN')] });
+
+    await useLanguage('hi');
+    const first = await setup();
+    await first.click(listenButton());
+    await waitFor(() => expect(synth.spoken.length).toBeGreaterThan(3));
+    expect(spokenText(synth).join(' ').startsWith(data.hi.draftNotice)).toBe(true);
+
+    await waitFor(() => expect(screen.getByRole('button', { name: /नतीजा सुनें/ })).toBeInTheDocument()); // finished reading
+    cleanup();
+    synth.spoken.length = 0;
+    await useLanguage('kn');
+    const second = await setup();
+    await second.click(listenButton());
+    expect(await screen.findByRole('alert')).toHaveTextContent('ಕನ್ನಡ');
     expect(synth.spoken).toEqual([]);
   });
 });

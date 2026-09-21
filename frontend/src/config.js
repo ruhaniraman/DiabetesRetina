@@ -14,7 +14,14 @@ export const MAX_UPLOAD_MB = 15;
 export const ALLOW_NETWORK_VOICES = import.meta.env.VITE_ALLOW_NETWORK_VOICES === 'true';
 
 // Hindi and Kannada speech uses fixed sentences (src/speech/translations.json) that are DRAFTS until a qualified person has reviewed them; speech in a language is off until
-// reviewed[lang] is true. Set VITE_ALLOW_UNREVIEWED_SPEECH=true only for a demo or pilot that knowingly accepts unreviewed wording (the draft is announced aloud first).
-export const ALLOW_UNREVIEWED_SPEECH = import.meta.env.VITE_ALLOW_UNREVIEWED_SPEECH === 'true';
+// reviewed[lang] is true. VITE_ALLOW_UNREVIEWED_SPEECH turns the drafts on for a demo or pilot that knowingly accepts unreviewed wording (the draft status is announced aloud first):
+// a comma-separated list of languages ("hi" or "hi,kn"), or "true" for all of them.
+export const parseLanguageList = (value) =>
+  String(value || '')
+    .split(',')
+    .map((item) => item.trim().toLowerCase())
+    .filter(Boolean);
+const UNREVIEWED_SPEECH = parseLanguageList(import.meta.env.VITE_ALLOW_UNREVIEWED_SPEECH);
+export const allowsUnreviewedSpeech = (lang) => UNREVIEWED_SPEECH.includes('true') || UNREVIEWED_SPEECH.includes(lang);
 
 export const LESION_OVERLAY_ENABLED = import.meta.env.VITE_ENABLE_LESION_OVERLAY === 'true';
