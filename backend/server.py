@@ -11,6 +11,7 @@ so the JWT secret never leaves that service and logouts are honoured.
 """
 import asyncio
 import base64
+import datetime
 import hashlib
 import logging
 import os
@@ -27,12 +28,13 @@ import httpx
 import numpy as np
 import uvicorn
 from dotenv import load_dotenv
-from fastapi import Depends, FastAPI, File, Header, HTTPException, Request, UploadFile
+from fastapi import Depends, FastAPI, File, Form, Header, HTTPException, Request, Response, UploadFile
 from fastapi.concurrency import run_in_threadpool
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 
 import quality
+from report_pdf import build_report_pdf
 from clinical_text import (  # noqa: F401  (re-exported: tests and callers use server.build_summary, server.DISCLAIMER, ...)
     DISCLAIMER,
     GRADE_ORDER,
@@ -540,6 +542,18 @@ async def run_stage3_assessment(
 ):
     left_img = await read_image(leftEye)
     right_img = await read_image(rightEye)
+    result = await assess_pair(left_img, right_img)
+
+    exam_id = None
+    if user.get("id") is not None:
+        exam = {k: result[k] for k in ("overallRisk", "leftGrade", "rightGrade", "leftConfidence", "rightConfidence")}
+        exam["summary"] = result["overallSummary"]
+        exam_id = await record_exam(user["id"], exam)
+    return result | {"saved": exam_id is not None, "examId": exam_id}
+
+
+async def assess_pair(left_img: np.ndarray, right_img: np.ndarray) -> dict:
+    """Stage 1 gate + Stage 3 grading + the clinical decision for a pair of photographs. Used by the assessment and the report endpoints."""
     # Stage 1 is enforced here, not only in the browser: a direct API call cannot get a grade for an unfit picture.
     checks = await run_in_threadpool(check_pair, left_img, right_img)
     try:
@@ -551,7 +565,7 @@ async def run_stage3_assessment(
         raise HTTPException(status_code=500, detail="Assessment failed.")
 
     d = decide(raw)
-    result = {
+    return {
         "status": "success",
         "leftGrade": STAGE_LABELS.get(d["left"], d["left"]),
         "rightGrade": STAGE_LABELS.get(d["right"], d["right"]),
@@ -573,26 +587,24 @@ async def run_stage3_assessment(
         "qualityWarnings": checks,
     }
 
-    exam_id = None
-    if user.get("id") is not None:
-        exam = {k: result[k] for k in ("overallRisk", "leftGrade", "rightGrade", "leftConfidence", "rightConfidence")}
-        exam["summary"] = result["overallSummary"]
-        exam_id = await record_exam(user["id"], exam)
-    return result | {"saved": exam_id is not None, "examId": exam_id}
-
 
 # --------------------------------------------------------------------------- #
 # Stage 4 - real Grad-CAM (MATLAB)
 # --------------------------------------------------------------------------- #
-def render_gradcam(img: np.ndarray) -> tuple:
-    """Grad-CAM of the REFERRAL score for one photograph (MATLAB). Returns (overlay image, referral probability, map is empty)."""
+def render_gradcam(img: np.ndarray, with_analysed: bool = False) -> tuple:
+    """Grad-CAM of the REFERRAL score for one photograph (MATLAB). Returns (overlay image, referral probability, map is empty), plus the
+    prepared image the network analysed when `with_analysed` is set."""
     with tempfile.TemporaryDirectory(prefix="retina_") as tmp:
-        src, dst = Path(tmp) / "in.png", Path(tmp) / "gradcam.png"
+        src, dst, analysed_path = Path(tmp) / "in.png", Path(tmp) / "gradcam.png", Path(tmp) / "analysed.png"
         cv2.imwrite(str(src), img)
-        referral, empty = matlab_service.call("gradCamToFile", str(src), str(dst), nargout=2)
+        args = (str(src), str(dst), str(analysed_path)) if with_analysed else (str(src), str(dst))
+        referral, empty = matlab_service.call("gradCamToFile", *args, nargout=2)
         out = cv2.imread(str(dst), cv2.IMREAD_COLOR)
-    if out is None:
+        analysed = cv2.imread(str(analysed_path), cv2.IMREAD_COLOR) if with_analysed else None
+    if out is None or (with_analysed and analysed is None):
         raise RuntimeError("MATLAB did not produce a Grad-CAM image.")
+    if with_analysed:
+        return out, float(referral), bool(empty), analysed
     return out, float(referral), bool(empty)
 
 
@@ -611,6 +623,57 @@ async def run_stage4_heatmap(file: UploadFile = File(...)):
         raise HTTPException(status_code=500, detail="Grad-CAM generation failed.")
     # method: what the map explains. "gradcam-referral": the referral score (P(Moderate)+P(Severe)+P(Proliferate_DR)), not the most likely grade.
     return {"status": "success", "heatmapUrl": png_data_url(overlay), "method": "gradcam-referral", "referralScore": referral, "empty": empty}
+
+
+# --------------------------------------------------------------------------- #
+# Downloadable PDF report
+# --------------------------------------------------------------------------- #
+def _clean_patient(name: str | None, dob: str | None) -> dict:
+    """Validate the optional patient details printed on the report (they are used for this one PDF and not stored)."""
+    out = {}
+    if name is not None and name.strip():
+        name = name.strip()
+        if len(name) > 100 or any(ord(c) < 32 for c in name):
+            raise HTTPException(status_code=422, detail="The patient name is too long or contains control characters.")
+        out["name"] = name
+    if dob is not None and dob.strip():
+        try:
+            born = datetime.date.fromisoformat(dob.strip())
+        except ValueError:
+            raise HTTPException(status_code=422, detail="Date of birth must look like 1972-05-12.")
+        if born > datetime.date.today() or born.year < 1900:
+            raise HTTPException(status_code=422, detail="Date of birth is not a plausible date.")
+        out["dob"] = born.isoformat()
+    return out
+
+
+@app.post("/api/report-pdf")
+async def run_report(
+    leftEye: UploadFile = File(...),
+    rightEye: UploadFile = File(...),
+    patientName: str | None = Form(default=None),
+    patientDob: str | None = Form(default=None),
+    user: dict = Depends(require_user),
+):
+    """Grade both photographs, draw the heatmaps and return a PDF report. The report is built in memory and returned; the server keeps neither it
+    nor the photographs, and nothing is added to the patient's exam history (only the assessment endpoint does that)."""
+    patient = _clean_patient(patientName, patientDob)
+    left_img = await read_image(leftEye)
+    right_img = await read_image(rightEye)
+    result = await assess_pair(left_img, right_img)
+    try:
+        eyes = {}
+        for eye, img in (("left", left_img), ("right", right_img)):
+            heat, _score, empty, analysed = await run_in_threadpool(render_gradcam, img, True)
+            eyes[eye] = {"analysed": analysed, "heatmap": heat, "heatmap_empty": empty}
+        pdf = await run_in_threadpool(lambda: build_report_pdf(result, eyes, patient=patient))
+    except HTTPException:
+        raise
+    except Exception:
+        log.exception("Report generation failed")
+        raise HTTPException(status_code=500, detail="The report could not be generated.")
+    return Response(content=pdf, media_type="application/pdf",
+                    headers={"Content-Disposition": 'attachment; filename="retina-rescue-report.pdf"', "Cache-Control": "no-store"})
 
 
 # --------------------------------------------------------------------------- #

@@ -65,7 +65,7 @@ export const REPORT_LABELS = {
 };
 
 // Confidence is shown as a band, not a percentage: the model's raw probabilities are over-confident (in testing, the
-// "Moderate" band claims about 81% but is right about 68% of the time). See validation/REPORT.md.
+// "Moderate" band claims about 81% but is right about 75% of the time). See validation/REPORT.md.
 export const CONFIDENCE = {
   label: 'confidence',
   note:
@@ -74,7 +74,7 @@ export const CONFIDENCE = {
 };
 
 export const STAGE_NOTE =
-  'The referral decision is the more reliable output. On held-out test images it found about 92% of referable cases, while the exact stage ' +
+  'The referral decision is the more reliable output. On held-out test images it found about 95% of referable cases, while the exact stage ' +
   'matched the reference grade about 78% of the time. Results depend on the camera and population: on a second public dataset it flagged many more eyes that had no disease ' +
   '(see validation/REPORT.md).';
 
@@ -87,7 +87,13 @@ export const HEATMAP_NOTE =
   "Shows the regions that raised this eye's referral score, on a coarse grid. A rough guide, not a lesion detection: warm colours do not by themselves mean disease, " +
   'and disease can be present outside them.';
 
+export const HEATMAP_BELOW_NOTE =
+  "This eye's referral score is below the threshold, so it was not flagged. The map shows where the score was relatively highest, not a finding.";
+
 export const HEATMAP_EMPTY_NOTE = "No region raised this eye's referral score, so nothing is highlighted. That does not rule out disease.";
+
+export const PDF_PRIVACY_NOTE =
+  "The PDF prints the patient's name and date of birth from their profile. To create it, the photographs are sent to the server again; the server does not keep the photographs or the report file.";
 
 export const TRANSLATION_NOTICE = 'Machine-translated and not clinically reviewed. If anything is unclear, the English text is authoritative.';
 

@@ -120,8 +120,9 @@ Basis line: "Basis: referral score compared with a 20% threshold".
 
 - **Before an assessment is run:** "Upload fundus images for both eyes and run the AI assessment to see the screening result."
 - **On-screen disclaimer:** "Screening aid only. Results are produced by automated image analysis and are not a medical diagnosis, and the tool can miss disease. It has not been clinically validated. Always have a qualified eye-care professional review the findings before making any treatment decision."
-- **Note about stage reliability:** "The referral decision is the more reliable output. On held-out test images it found about 92% of referable cases, while the exact stage matched the reference grade about 78% of the time. Results depend on the camera and population: on a second public dataset it flagged many more eyes that had no disease (see validation/REPORT.md)."
+- **Note about stage reliability:** "The referral decision is the more reliable output. On held-out test images it found about 95% of referable cases, while the exact stage matched the reference grade about 78% of the time. Results depend on the camera and population: on a second public dataset it flagged many more eyes that had no disease (see validation/REPORT.md)."
 - **Note when a heatmap is shown:** "Shows the regions that raised this eye's referral score, on a coarse grid. A rough guide, not a lesion detection: warm colours do not by themselves mean disease, and disease can be present outside them."
+- **Note under the heatmap of an eye that was not flagged:** "This eye's referral score is below the threshold, so it was not flagged. The map shows where the score was relatively highest, not a finding."
 - **Shown when text is machine-translated:** "Machine-translated and not clinically reviewed. If anything is unclear, the English text is authoritative."
 - **Chip on an eye flagged despite a milder stage:** "Referral flagged" (hover: "The most likely stage is lower, but the screening model's referral threshold was reached")
 - **Confidence note (report):** "Lower confidence means the grade is less likely to be right. In testing, the referral decision was wrong in about 1% of high-confidence results and about 15% of the rest."
@@ -148,7 +149,36 @@ Source: `backend/quality.py`. A photo is **rejected** (the user is asked to reta
 | Very bright | warn | Image is very bright; results may be less reliable. |
 | Passes | accept | Quality check passed. |
 
-### 3d. PDF screening report (Stage 4)
+### 3d. Downloadable PDF report (what a patient or clinician can save and print)
+
+Source: `backend/report_pdf.py`, wording in `backend/clinical_text.py` (`PDF_TEXT`) plus the summary sentence shown in 3a. Created when the user presses "Download PDF Report": the server grades both photographs again, draws the heatmaps and returns the PDF. **It prints the patient's name and date of birth (if given) and both eyes' results.** The server keeps neither the photographs nor the report file and adds nothing to the exam history. Names in scripts the report font cannot print (for example Devanagari or Kannada) are replaced by a note. The report never shows raw class probabilities or lesion claims.
+
+| Where | Text |
+|---|---|
+| Header | RETINARESCUE  •  AI SCREENING AID |
+| Title | Diabetic Retinopathy Screening Report |
+| Badge, referral flagged (red) | REFERRAL RECOMMENDED |
+| Badge, no referral flagged (neutral slate, not green) | NO REFERRAL FLAGGED |
+| Caption under the analysed photograph | Photograph as analysed by the model (cropped to the retina) |
+| Caption under the heatmap | Regions that raised this eye's referral score |
+| Note under each eye | Shows the regions that raised this eye's referral score, on a coarse grid. A rough guide, not a lesion detection: warm colours do not by themselves mean disease, and disease can be present outside them. |
+| Note when no region is highlighted | No region raised this eye's referral score, so nothing is highlighted. That does not rule out disease. |
+| Note under an eye that was not flagged | This eye's referral score is below the threshold, so it was not flagged. The map shows where the score was relatively highest, not a finding. |
+| Eye flagged although its most likely stage is milder | Referral flagged although the most likely stage is lower |
+| Note on confidence | Lower confidence means the grade is less likely to be right. In testing, the referral decision was wrong in about 1% of high-confidence results and about 15% of the rest. |
+| Note on stage reliability | The referral decision is the more reliable output. On held-out test images it found about 95% of referable cases, while the exact stage matched the reference grade about 78% of the time. Results depend on the camera and population: on a second public dataset it flagged many more eyes that had no disease (see validation/REPORT.md). |
+| Note when the site set its own threshold | The referral threshold used here was set by this site from its own calibration, not the model's default. It is only appropriate if the site's clinical lead has approved it. |
+| Last line of the notes | Generated on request from the photographs supplied. The server does not keep this report file. |
+| Instead of a name the font cannot print | (name uses characters this report cannot print; see the application record) |
+| When name or date of birth is missing | Not provided |
+
+Per eye the report lists: estimated stage (labelled an estimate), confidence band, referral score with the threshold, and the result for that eye. Any photograph-quality warnings are listed under "Notes on this report". The footer on every page reads "Automated screening aid, not a diagnosis".
+
+- **Question for the reviewer:** should the PDF carry the patient's name and date of birth at all, and is the referral score percentage appropriate to print for patients?
+
+### 3e. Developer tool: the MATLAB PDF (Stage 4)
+
+`createMedicalReport.m` / `run_stage4.m` are the team's original command-line report generator for a single photograph. The app does **not** use it. Its wording is below because the file can still be run by hand.
 
 Source: `stage4_explainability/report/formatReportText.m` (captured by running the real function). 
 
@@ -223,7 +253,7 @@ The PDF header reads "AI SCREENING AID", the badge reads "REFERRAL RECOMMENDED" 
 - It is only weakly hotter on lesions than elsewhere: on IDRiD photographs with expert lesion masks the pixel AUC is 0.66 (0.5 is chance) and the hottest point is on a lesion in 12% of photographs (chance 3.1%); the earlier map was at chance (AUC 0.51).
 - **Question for the reviewer:** is a coarse "regions that raised the score" picture appropriate to show to patients, or only to clinicians?
 
-### 3e. Not covered by this packet
+### 3f. Not covered by this packet
 
 - **Hindi and Kannada.** The dashboard summary is machine-translated (Argos Translate) on demand and labelled as such; it has not been reviewed by a clinician or a medical translator. The fixed interface labels in `frontend/src/locales/` are also unreviewed. Machine translation of medical advice can be wrong; consider disabling it, or having translations professionally reviewed, before use with patients.
 - **Anything typed by staff or patients**, and email text (sign-in codes only).

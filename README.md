@@ -68,8 +68,17 @@ Override the API addresses with `frontend/.env.local` (see `frontend/.env.exampl
    you'll get a 6-digit code by email, choose a new password, and every existing session is signed out.
 2. Complete the patient profile (edit icon in "My Health Record"). It is saved to your account, so it is there next time you sign in.
 3. Upload a fundus photo for each eye. Each is quality-checked; rejected images must be replaced.
-4. **Run AI Assessment**, then open **Detailed Report** for per-eye grades and a heatmap of the regions that raised the referral score (a rough guide, not a lesion detector: `validation/results/gradcam.md`).
+4. **Run AI Assessment**, then open **Detailed Report** (it has **Download PDF Report** for both eyes, and a browser print button) for per-eye grades and a heatmap of the regions that raised the referral score (a rough guide, not a lesion detector: `validation/results/gradcam.md`).
    Each assessment is saved to **Exam History** on the dashboard.
+
+## The PDF report
+
+**Download PDF Report** (Detailed Report page) calls `POST /api/report-pdf` with both photographs and, optionally, the patient's name and date of birth. The server runs the
+same Stage 1 checks and grading as the assessment, draws each eye's heatmap, builds a one-page PDF in memory (`backend/report_pdf.py`) and returns it. It does **not** keep
+the photographs or the PDF, and it does **not** add an entry to the exam history. The name and date of birth are printed on the report only. Because the photographs are
+graded again, it takes about as long as an assessment and queues behind other MATLAB work. Names in scripts the report font cannot print (Devanagari, Kannada, ...) are replaced by
+a note. The wording is in `backend/clinical_text.py` (`PDF_TEXT`) and is part of the clinician review packet (`docs/CLINICAL_REVIEW.md`, section 3d). `stage4_explainability/report/createMedicalReport.m`
+is an older single-photograph MATLAB generator kept as a developer tool; the app does not use it.
 
 ## Accounts and sessions
 
@@ -82,7 +91,7 @@ touched (see `deploy/DEPLOYMENT.md`). The API also accepts `DELETE /api/auth/acc
 | Stored (per user) | Not stored |
 |---|---|
 | Patient profile: name, date of birth, gender, blood group, diabetes duration, blood pressure, HbA1c, fasting sugar | Retinal photographs (they are analysed in memory and discarded) |
-| Each assessment: date, per-eye grade and confidence, overall grade, summary text | Grad-CAM heatmaps and lesion overlays |
+| Each assessment: date, per-eye grade and confidence, overall grade, summary text | Grad-CAM heatmaps and lesion overlays; the downloadable PDF report (below) |
 
 - **Encrypted at rest.** Profile and exam payloads are AES-256-GCM encrypted with `DATA_KEY` before they reach SQLite, so a
   copied database file is unreadable without the key (and tampering is detected). The account name, email and login data are

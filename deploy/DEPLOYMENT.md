@@ -102,6 +102,8 @@ Test HTTPS quality at <https://www.ssllabs.com/ssltest/> and headers at <https:/
   This relies on the app and both APIs sharing one origin, as the Caddy setup does. If you put the APIs on a different site, the cookie will not be sent.
   Sessions last 7 days and are revoked by logout, password reset and account deletion. After deploying this version everyone has to sign in once again.
 - **Fonts are bundled with the app** (Outfit and Plus Jakarta Sans, via `@fontsource`), so visitors' browsers contact no third party for them and the CSP allows only `'self'` for styles and fonts.
+- **PDF reports contain personal data and are made on demand.** `POST /api/report-pdf` returns the PDF to the requesting browser only; the server writes nothing to disk and keeps no copy, and
+  the request is logged without the name or date of birth. Anything the user saves or prints afterwards is outside the server's control. Each report re-grades both photographs (two extra MATLAB heatmap runs), so it competes with assessments for the single MATLAB engine.
 - **One MATLAB engine handles one request at a time.** Concurrent assessments queue. That is fine for a clinic; for
   district-scale load you need multiple backend instances (each needs a MATLAB license).
 - **SQLite is a single file on one server.** Back up `auth-server/retina-rescue.db*` **and** `DATA_KEY` (separately!) on a schedule, and test a restore. Deleting an account removes it from the live database only; copies in your backups remain until those backups expire, so state that in your privacy policy.

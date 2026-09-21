@@ -83,6 +83,43 @@ ESCALATED_TEMPLATE = (
 FALLBACK_TEMPLATE = "Bilateral analysis complete. Highest grade estimated by the screening model: {overall}. Review by an eye-care professional is recommended."
 
 
+# --------------------------------------------------------------------------------------------------------------------
+# The downloadable PDF report (backend/report_pdf.py). Sentences that also appear in the web app (frontend/src/clinicalText.js)
+# must stay identical to it: backend/tests/test_report_pdf.py fails if they drift apart.
+# --------------------------------------------------------------------------------------------------------------------
+PDF_TEXT = {
+    "kicker": "RETINARESCUE  •  AI SCREENING AID",
+    "title": "Diabetic Retinopathy Screening Report",
+    "badge_referral": "REFERRAL RECOMMENDED",
+    "badge_no_referral": "NO REFERRAL FLAGGED",
+    "photo_caption": "Photograph as analysed by the model (cropped to the retina)",
+    "heatmap_caption": "Regions that raised this eye's referral score",
+    "heatmap_note": (
+        "Shows the regions that raised this eye's referral score, on a coarse grid. A rough guide, not a lesion detection: warm colours do not by themselves mean disease, "
+        "and disease can be present outside them."
+    ),
+    "heatmap_below_threshold_note": "This eye's referral score is below the threshold, so it was not flagged. The map shows where the score was relatively highest, not a finding.",
+    "heatmap_empty_note": "No region raised this eye's referral score, so nothing is highlighted. That does not rule out disease.",
+    "confidence_note": (
+        "Lower confidence means the grade is less likely to be right. In testing, the referral decision was wrong in about 1% of high-confidence "
+        "results and about 15% of the rest."
+    ),
+    "stage_note": (
+        "The referral decision is the more reliable output. On held-out test images it found about 95% of referable cases, while the exact stage "
+        "matched the reference grade about 78% of the time. Results depend on the camera and population: on a second public dataset it flagged many more eyes that had no disease "
+        "(see validation/REPORT.md)."
+    ),
+    "escalated_chip": "Referral flagged although the most likely stage is lower",
+    "site_threshold_note": (
+        "The referral threshold used here was set by this site from its own calibration, not the model's default. "
+        "It is only appropriate if the site's clinical lead has approved it."
+    ),
+    "generated_note": "Generated on request from the photographs supplied. The server does not keep this report file.",
+    "name_unprintable": "(name uses characters this report cannot print; see the application record)",
+    "not_provided": "Not provided",
+}
+
+
 def _eyes(names: list[str]) -> str:
     return " and ".join(names) + (" eye" if len(names) == 1 else " eyes")
 

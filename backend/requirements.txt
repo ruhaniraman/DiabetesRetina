@@ -10,6 +10,9 @@ python-dotenv>=1.0
 numpy
 opencv-python-headless
 
+# Downloadable PDF report
+reportlab>=4
+
 # Offline translation (Hindi / Kannada)
 argostranslate
 

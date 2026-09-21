@@ -1,5 +1,8 @@
 function summaryTable = run_stage4(inputPath, outputDir)
-% RUN_STAGE4  Entry point for Stage 4 (Explainability & Reporting).
+% RUN_STAGE4  Developer tool: batch heatmaps and single-photograph PDF reports from MATLAB. The web app does not use it (its report is
+% built by backend/report_pdf.py, see docs/CLINICAL_REVIEW.md 3d).
+%
+% Entry point for Stage 4 (Explainability & Reporting).
 %
 %   summaryTable = run_stage4(inputPath)
 %   summaryTable = run_stage4(inputPath, outputDir)

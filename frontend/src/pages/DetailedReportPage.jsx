@@ -1,10 +1,11 @@
 import { useRef, useState } from 'react';
 import { FiArrowLeft, FiLayers, FiCheckCircle, FiEye, FiInfo } from 'react-icons/fi';
 import Disclaimer from '../components/Disclaimer';
-import { fetchHeatmap } from '../api/ml';
+import { downloadReportPdf, fetchHeatmap } from '../api/ml';
+import { saveBlob } from '../utils/download';
 import { bannerConfig, reportThemes } from '../utils/drStyles';
 import { LESION_OVERLAY_ENABLED } from '../config';
-import { CONFIDENCE, HEATMAP_EMPTY_NOTE, HEATMAP_NOTE, REPORT_LABELS, STAGE_NOTE, TRIAGE, basisText } from '../clinicalText';
+import { CONFIDENCE, HEATMAP_BELOW_NOTE, HEATMAP_EMPTY_NOTE, HEATMAP_NOTE, PDF_PRIVACY_NOTE, REPORT_LABELS, STAGE_NOTE, TRIAGE, basisText } from '../clinicalText';
 
 const LESION_ROWS = [
   ['microaneurysms', 'Microaneurysm-like spots'],
@@ -20,6 +21,8 @@ export default function DetailedReportPage({ patient, session, onBack }) {
   // eye -> { status: 'loading' | 'success' | 'error', url, error }. Reset per eye image (keyed by object URL).
   const [heatmaps, setHeatmaps] = useState({});
   const requested = useRef(new Set());
+  // Download of the PDF report: idle | working | error
+  const [pdf, setPdf] = useState({ status: 'idle', error: '' });
 
   const { assessment } = session;
   const scan = selectedEye === 'OS' ? session.left : session.right;
@@ -42,6 +45,17 @@ export default function DetailedReportPage({ patient, session, onBack }) {
     } catch (err) {
       requested.current.delete(key); // allow retry
       setHeatmaps((h) => ({ ...h, [key]: { status: 'error', error: err.message } }));
+    }
+  };
+
+  const downloadPdf = async () => {
+    setPdf({ status: 'working', error: '' });
+    try {
+      const blob = await downloadReportPdf(session.left.file, session.right.file, patient);
+      saveBlob(blob, 'retina-rescue-report.pdf');
+      setPdf({ status: 'idle', error: '' });
+    } catch (err) {
+      setPdf({ status: 'error', error: err.message || 'The report could not be created.' });
     }
   };
 
@@ -180,6 +194,7 @@ export default function DetailedReportPage({ patient, session, onBack }) {
                         <img src={heatmap.url} alt="Heatmap of the regions that raised the referral score" className="w-full h-full object-contain" />
                         <div className="absolute inset-x-0 bottom-0 bg-slate-900/85 text-slate-200 text-[11px] font-semibold p-2.5">
                           {heatmap.empty ? HEATMAP_EMPTY_NOTE : HEATMAP_NOTE}
+                          {!heatmap.empty && assessment && !eyeFlagged && <span className="block mt-1">{HEATMAP_BELOW_NOTE}</span>}
                         </div>
                       </>
                     ) : heatmap?.status === 'error' ? (
@@ -270,6 +285,25 @@ export default function DetailedReportPage({ patient, session, onBack }) {
                 </>
               )}
             </div>
+
+            {assessment && session.left.file && session.right.file && (
+              <div className="space-y-1.5 print:hidden">
+                <button
+                  type="button"
+                  disabled={pdf.status === 'working'}
+                  onClick={downloadPdf}
+                  className="w-full bg-amber-500 hover:bg-amber-600 disabled:opacity-60 text-white font-bold py-3.5 rounded-2xl shadow-sm transition text-xs uppercase tracking-wider cursor-pointer"
+                >
+                  {pdf.status === 'working' ? 'Preparing report…' : 'Download PDF Report'}
+                </button>
+                <p className="text-[11px] text-slate-500 leading-snug">{PDF_PRIVACY_NOTE}</p>
+                {pdf.status === 'error' && (
+                  <p role="alert" className="text-[11px] font-semibold text-rose-600">
+                    {pdf.error}
+                  </p>
+                )}
+              </div>
+            )}
 
             <button type="button" onClick={() => window.print()} className="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-3.5 rounded-2xl shadow-sm transition text-xs uppercase tracking-wider cursor-pointer print:hidden">
               Print Report

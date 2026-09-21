@@ -170,7 +170,7 @@ def build():
     add(f"\nBasis line: \"{web['basisText']['withThreshold']}\".\n")
     add("**Other wording:**\n")
     for label, key in [("Before an assessment is run", "IDLE_NOTE"), ("On-screen disclaimer", "DISCLAIMER"),
-                       ("Note about stage reliability", "STAGE_NOTE"), ("Note when a heatmap is shown", "HEATMAP_NOTE"),
+                       ("Note about stage reliability", "STAGE_NOTE"), ("Note when a heatmap is shown", "HEATMAP_NOTE"), ("Note under the heatmap of an eye that was not flagged", "HEATMAP_BELOW_NOTE"),
                        ("Shown when text is machine-translated", "TRANSLATION_NOTICE"), ("Chip on an eye flagged despite a milder stage", None)]:
         add(f"- **{label}:** " + (f"\"{web[key]}\"" if key else f"\"{web['REFERRAL_CHIP']['label']}\" (hover: \"{web['REFERRAL_CHIP']['hint']}\")"))
     add(f"- **Confidence note (report):** \"{web['CONFIDENCE']['note']}\"")
@@ -197,7 +197,25 @@ def build():
         add(f"| {situation} | {outcome} | {quality.MESSAGES[code]} |")
     add("")
 
-    add("### 3d. PDF screening report (Stage 4)\n")
+    add("### 3d. Downloadable PDF report (what a patient or clinician can save and print)\n")
+    add("Source: `backend/report_pdf.py`, wording in `backend/clinical_text.py` (`PDF_TEXT`) plus the summary sentence shown in 3a. Created when the user presses "
+        "\"Download PDF Report\": the server grades both photographs again, draws the heatmaps and returns the PDF. **It prints the patient's name and date of birth "
+        "(if given) and both eyes' results.** The server keeps neither the photographs nor the report file and adds nothing to the exam history. Names in scripts the report font "
+        "cannot print (for example Devanagari or Kannada) are replaced by a note. The report never shows raw class probabilities or lesion claims.\n")
+    add("| Where | Text |\n|---|---|")
+    for key, label in [("kicker", "Header"), ("title", "Title"), ("badge_referral", "Badge, referral flagged (red)"), ("badge_no_referral", "Badge, no referral flagged (neutral slate, not green)"),
+                       ("photo_caption", "Caption under the analysed photograph"), ("heatmap_caption", "Caption under the heatmap"), ("heatmap_note", "Note under each eye"),
+                       ("heatmap_empty_note", "Note when no region is highlighted"), ("heatmap_below_threshold_note", "Note under an eye that was not flagged"), ("escalated_chip", "Eye flagged although its most likely stage is milder"),
+                       ("confidence_note", "Note on confidence"), ("stage_note", "Note on stage reliability"), ("site_threshold_note", "Note when the site set its own threshold"),
+                       ("generated_note", "Last line of the notes"), ("name_unprintable", "Instead of a name the font cannot print"), ("not_provided", "When name or date of birth is missing")]:
+        add(f"| {label} | {ct.PDF_TEXT[key]} |")
+    add("\nPer eye the report lists: estimated stage (labelled an estimate), confidence band, referral score with the threshold, and the result for that eye. "
+        "Any photograph-quality warnings are listed under \"Notes on this report\". The footer on every page reads \"Automated screening aid, not a diagnosis\".\n")
+    add("- **Question for the reviewer:** should the PDF carry the patient's name and date of birth at all, and is the referral score percentage appropriate to print for patients?\n")
+
+    add("### 3e. Developer tool: the MATLAB PDF (Stage 4)\n")
+    add("`createMedicalReport.m` / `run_stage4.m` are the team's original command-line report generator for a single photograph. The app does **not** use it. Its wording is below "
+        "because the file can still be run by hand.\n")
     add("Source: `stage4_explainability/report/formatReportText.m` (captured by running the real function). "
         + ("**The capture is out of date: re-run `python docs/tools/export_stage4_text.py`.**\n" if s4["source_sha256"] != stage4_source_hash() else "\n"))
     for case in s4["cases"]:
@@ -231,7 +249,7 @@ def build():
             f"{loc['hottest_pixel_on_lesion'] * 100:.0f}% of photographs (chance {loc['chance'] * 100:.1f}%); the earlier map was at chance (AUC {old['pixel_auc']:.2f}).")
         add("- **Question for the reviewer:** is a coarse \"regions that raised the score\" picture appropriate to show to patients, or only to clinicians?\n")
 
-    add("### 3e. Not covered by this packet\n")
+    add("### 3f. Not covered by this packet\n")
     add("- **Hindi and Kannada.** The dashboard summary is machine-translated (Argos Translate) on demand and labelled as such; it has not been reviewed by a "
         "clinician or a medical translator. The fixed interface labels in `frontend/src/locales/` are also unreviewed. Machine translation of medical advice can be "
         "wrong; consider disabling it, or having translations professionally reviewed, before use with patients.")

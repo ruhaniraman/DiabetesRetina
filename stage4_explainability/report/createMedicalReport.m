@@ -1,5 +1,8 @@
 function outputPaths = createMedicalReport(imgPath, result, heatmap, overlayImg, reportText, outputDir)
-% CREATEMEDICALREPORT  RetinaRescue-branded screening report: dark navy
+% CREATEMEDICALREPORT  DEVELOPER TOOL. The web app does NOT use this file: its downloadable report is built by backend/report_pdf.py
+% (both eyes, wording in backend/clinical_text.py). This one draws a single-photograph report from MATLAB (run_stage4.m).
+%
+% RetinaRescue-branded screening report: dark navy
 % cards, gold/teal accents (matching the web app), structured metadata
 % grid (inspired by clinical operative report templates), saved as PDF
 % (A4) and PNG.
