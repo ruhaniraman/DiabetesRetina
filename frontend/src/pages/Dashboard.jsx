@@ -42,6 +42,9 @@ function runHint(session) {
   return '';
 }
 
+// The referral threshold can flag an eye whose most likely stage is below Stage 2; say so next to the stage tag.
+const understated = (flagged, label) => Boolean(flagged) && /Stage [01]/.test(label || '');
+
 const dash = (value, suffix = '') => (value === '' || value == null ? '—' : `${value}${suffix}`);
 
 export default function Dashboard({ user, patient, session, history, onEditPatient, onViewDetailedReport, onLogout }) {
@@ -165,6 +168,7 @@ export default function Dashboard({ user, patient, session, history, onEditPatie
                 scan={left}
                 tagLabel={leftTag.label}
                 tagClass={leftTag.cls}
+                referralFlagged={understated(assessment?.leftReferable, assessment?.leftGrade)}
                 onUpload={left.upload}
                 onExpand={setFullscreenImage}
               />
@@ -174,6 +178,7 @@ export default function Dashboard({ user, patient, session, history, onEditPatie
                 scan={right}
                 tagLabel={rightTag.label}
                 tagClass={rightTag.cls}
+                referralFlagged={understated(assessment?.rightReferable, assessment?.rightGrade)}
                 onUpload={right.upload}
                 onExpand={setFullscreenImage}
               />

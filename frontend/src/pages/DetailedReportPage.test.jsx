@@ -42,3 +42,32 @@ describe('DetailedReportPage', () => {
     expect(screen.getByText('Summary text.')).toBeInTheDocument();
   });
 });
+
+
+describe('DetailedReportPage referral details', () => {
+  const flagged = {
+    ...assessment('Moderate', 'Stage 1 - Mild', 'Stage 0 - Clear'),
+    leftReferableProbability: 0.35,
+    rightReferableProbability: 0.02,
+    leftReferable: true,
+    rightReferable: false,
+    referralThreshold: 0.2,
+    escalated: true,
+  };
+
+  it('shows the referral probability of each eye and the flag threshold', () => {
+    renderReport(flagged);
+    expect(screen.getByText(/Referral probability: left 35%, right 2%/)).toHaveTextContent('20% or more');
+  });
+
+  it('flags the eye that reached the threshold even though its stage looks mild', () => {
+    renderReport(flagged);
+    expect(screen.getByText(/· flagged/)).toBeInTheDocument();
+    expect(screen.getByText('Human Doctor Review Required')).toBeInTheDocument();
+  });
+
+  it('tells the reader the stage is less reliable than the referral decision', () => {
+    renderReport(flagged);
+    expect(screen.getByText(/referral decision is the more reliable output/i)).toBeInTheDocument();
+  });
+});

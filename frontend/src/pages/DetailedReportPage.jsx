@@ -23,6 +23,8 @@ export default function DetailedReportPage({ patient, session, onBack }) {
   const scan = selectedEye === 'OS' ? session.left : session.right;
   const eyeGrade = assessment ? (selectedEye === 'OS' ? assessment.leftGrade : assessment.rightGrade) : null;
   const eyeConfidence = assessment ? percent(selectedEye === 'OS' ? assessment.leftConfidence : assessment.rightConfidence) : null;
+  const eyeReferral = assessment ? percent(selectedEye === 'OS' ? assessment.leftReferableProbability : assessment.rightReferableProbability) : null;
+  const eyeFlagged = assessment ? Boolean(selectedEye === 'OS' ? assessment.leftReferable : assessment.rightReferable) : false;
 
   const heatmapKey = scan.imageUrl ? `${selectedEye}:${scan.imageUrl}` : null;
   const heatmap = heatmapKey ? heatmaps[heatmapKey] : null;
@@ -127,7 +129,17 @@ export default function DetailedReportPage({ patient, session, onBack }) {
                   {percent(assessment.leftConfidence) && ` (model confidence ${percent(assessment.leftConfidence)})`}. Right eye (OD): {assessment.rightGrade}
                   {percent(assessment.rightConfidence) && ` (model confidence ${percent(assessment.rightConfidence)})`}.
                 </p>
+                {percent(assessment.leftReferableProbability) && (
+                  <p>
+                    Referral probability: left {percent(assessment.leftReferableProbability)}, right {percent(assessment.rightReferableProbability)}
+                    {' '}(an eye is flagged for referral at {percent(assessment.referralThreshold)} or more).
+                  </p>
+                )}
                 <p>{assessment.overallSummary}</p>
+                <p className="text-[11px] text-slate-500">
+                  The referral decision is the more reliable output. On held-out test images it found about 92% of referable
+                  cases, while the exact stage matched the reference grade about 78% of the time (see <code>validation/REPORT.md</code>).
+                </p>
               </>
             ) : (
               <p>No assessment has been run for this session.</p>
@@ -218,6 +230,15 @@ export default function DetailedReportPage({ patient, session, onBack }) {
                   <span className="font-black text-slate-900">
                     {eyeGrade}
                     {eyeConfidence && <span className="text-slate-500 font-semibold"> · {eyeConfidence}</span>}
+                  </span>
+                </div>
+              )}
+              {eyeReferral && (
+                <div className={`p-3 rounded-2xl border text-xs flex justify-between items-center ${eyeFlagged ? 'bg-amber-50 border-amber-200' : 'bg-slate-50 border-slate-200'}`}>
+                  <span className="font-bold text-slate-900">Referral probability</span>
+                  <span className="font-black text-slate-900">
+                    {eyeReferral}
+                    <span className="text-slate-500 font-semibold"> · {eyeFlagged ? 'flagged' : 'not flagged'}</span>
                   </span>
                 </div>
               )}

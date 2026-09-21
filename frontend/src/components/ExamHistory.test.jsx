@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import ExamHistory from './ExamHistory';
+import EyePanel from './EyePanel';
 import PatientDetailsPage from '../pages/PatientDetailsPage';
 import { ApiError } from '../api/auth';
 import { emptyPatient } from '../utils/patient';
@@ -82,5 +83,18 @@ describe('PatientDetailsPage saving', () => {
 
     await user.click(screen.getByRole('button', { name: /delete my health data/i }));
     expect(onErase).toHaveBeenCalled();
+  });
+});
+
+
+describe('EyePanel referral chip', () => {
+  const scan = { imageUrl: null, viewMode: 'original', quality: { status: 'accepted', verdict: 'accept', reason: '' }, mask: { status: 'idle' }, setViewMode: () => {} };
+  const panel = (flag) => <EyePanel title="Left Eye (OS)" inputId="x" scan={scan} tagLabel="Stage 1 - Mild" tagClass="" referralFlagged={flag} onUpload={() => {}} onExpand={() => {}} />;
+
+  it('appears only when the referral threshold flags the eye', () => {
+    const { rerender } = render(panel(false));
+    expect(screen.queryByText('Referral flagged')).not.toBeInTheDocument();
+    rerender(panel(true));
+    expect(screen.getByText('Referral flagged')).toBeInTheDocument();
   });
 });

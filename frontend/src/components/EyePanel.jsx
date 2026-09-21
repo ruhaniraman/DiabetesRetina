@@ -1,7 +1,7 @@
 import { FiEye, FiMaximize2 } from 'react-icons/fi';
 
 /** One eye's upload viewport, quality status and original/mapped toggle. */
-export default function EyePanel({ title, inputId, scan, tagLabel, tagClass, onUpload, onExpand }) {
+export default function EyePanel({ title, inputId, scan, tagLabel, tagClass, referralFlagged = false, onUpload, onExpand }) {
   const { imageUrl, viewMode, quality, mask } = scan;
   const accepted = quality.status === 'accepted';
 
@@ -40,6 +40,11 @@ export default function EyePanel({ title, inputId, scan, tagLabel, tagClass, onU
 
         <div className="flex items-center gap-2 min-h-[24px] flex-wrap">
           <span className={`text-[11px] font-bold px-2.5 py-0.5 rounded-lg border transition-colors ${tagClass}`}>{tagLabel}</span>
+          {referralFlagged && (
+            <span className="px-2 py-0.5 bg-amber-100 text-amber-900 border border-amber-300 rounded-md text-[10px] font-extrabold uppercase" title="The most likely stage is lower, but the screening model's referral threshold was reached">
+              Referral flagged
+            </span>
+          )}
           {accepted && quality.verdict === 'enhance' && (
             <span className="px-2 py-0.5 bg-indigo-100 text-indigo-800 border border-indigo-200 rounded-md text-[10px] font-extrabold uppercase">Poor lighting</span>
           )}
