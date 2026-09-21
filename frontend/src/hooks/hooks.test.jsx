@@ -12,6 +12,8 @@ vi.mock('../api/ml', () => ({
 import { checkQuality, segmentLesions, assessEyes } from '../api/ml';
 import { useEyeScan } from './useEyeScan';
 import { useScanSession } from './useScanSession';
+import { useTranslatedText } from './useTranslatedText';
+import { translateText } from '../api/ml';
 
 const image = (name) => new File(['x'], name, { type: 'image/png' });
 const deferred = () => {
@@ -28,11 +30,19 @@ beforeEach(() => {
 });
 
 describe('useEyeScan', () => {
-  it('runs quality then lesion mapping for an accepted image', async () => {
-    const { result } = renderHook(() => useEyeScan());
+  it('runs quality, and (only when the experimental overlay is enabled) lesion mapping', async () => {
+    const { result } = renderHook(() => useEyeScan({ lesionOverlay: true }));
     await act(() => result.current.upload(image('a.png')));
     expect(result.current.quality.status).toBe('accepted');
     expect(result.current.mask).toMatchObject({ status: 'success', url: 'data:mask' });
+  });
+
+  it('does not call the lesion overlay at all by default', async () => {
+    const { result } = renderHook(() => useEyeScan());
+    await act(() => result.current.upload(image('a.png')));
+    expect(result.current.quality.status).toBe('accepted');
+    expect(segmentLesions).not.toHaveBeenCalled();
+    expect(result.current.mask.status).toBe('idle');
   });
 
   it('does not map lesions for a rejected image', async () => {
@@ -119,5 +129,25 @@ describe('useScanSession', () => {
     expect(result.current.assessment).not.toBeNull();
     await act(() => result.current.left.upload(image('l2.png')));
     await waitFor(() => expect(result.current.assessment).toBeNull());
+  });
+});
+
+
+describe('useTranslatedText', () => {
+  it('reports translated=false in English and while a translation is pending or has failed', async () => {
+    translateText.mockRejectedValue(new Error('down'));
+    const en = renderHook(() => useTranslatedText('Hello', 'en'));
+    expect(en.result.current).toEqual({ text: 'Hello', translated: false });
+    const hi = renderHook(() => useTranslatedText('Hello', 'hi'));
+    expect(hi.result.current).toEqual({ text: 'Hello', translated: false });   // pending
+    await waitFor(() => expect(translateText).toHaveBeenCalled());
+    expect(hi.result.current.translated).toBe(false);                            // failed: original text, no false notice
+  });
+
+  it('reports translated=true only once a real translation is showing', async () => {
+    translateText.mockResolvedValue('नमस्ते');
+    const { result } = renderHook(() => useTranslatedText('Hello', 'hi'));
+    await waitFor(() => expect(result.current.translated).toBe(true));
+    expect(result.current.text).toBe('नमस्ते');
   });
 });

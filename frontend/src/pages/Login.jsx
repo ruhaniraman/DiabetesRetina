@@ -2,6 +2,7 @@ import { useState } from 'react';
 import AuthLayout, { Field, FormAlert } from '../components/AuthLayout';
 import { login } from '../api/auth';
 import { validateEmail } from '../utils/validation';
+import { LOGIN_HERO } from '../clinicalText';
 
 export default function Login({ onLogin, onGoToSignup, onNeedsVerification, onForgotPassword, notice }) {
   const [email, setEmail] = useState('');
@@ -42,9 +43,9 @@ export default function Login({ onLogin, onGoToSignup, onNeedsVerification, onFo
   return (
     <AuthLayout
       heroTitle={<>Early detection <br />for preserving vision.</>}
-      heroText="AI-powered retinal screening & diagnostic biomarker analytics."
+      heroText={LOGIN_HERO.text}
       title="Welcome Back"
-      subtitle="Sign in to access your clinical dashboard & reports."
+      subtitle={LOGIN_HERO.subtitle}
     >
       <form onSubmit={handleSubmit} noValidate className="space-y-4">
         <FormAlert message={notice} tone="success" />

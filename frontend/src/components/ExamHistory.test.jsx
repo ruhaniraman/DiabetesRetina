@@ -24,7 +24,7 @@ describe('ExamHistory', () => {
     render(<ExamHistory history={{ status: 'ready', exams: [exam(3), exam(2, 'No_DR')], remove: vi.fn() }} />);
     expect(screen.getAllByText(/OS Stage 2 · OD Stage 0/)).toHaveLength(2);
     expect(screen.getByText('Stage 2 Risk')).toBeInTheDocument();
-    expect(screen.getByText('Stage 0 Clear')).toBeInTheDocument();
+    expect(screen.getByText('Stage 0 · No DR detected')).toBeInTheDocument();
     expect(screen.queryByText(/No exams recorded yet/)).not.toBeInTheDocument();
   });
 
@@ -96,5 +96,18 @@ describe('EyePanel referral chip', () => {
     expect(screen.queryByText('Referral flagged')).not.toBeInTheDocument();
     rerender(panel(true));
     expect(screen.getByText('Referral flagged')).toBeInTheDocument();
+  });
+});
+
+
+describe('EyePanel lesion toggle', () => {
+  const scan = { imageUrl: null, viewMode: 'original', quality: { status: 'accepted', verdict: 'accept', reason: '' }, mask: { status: 'idle' }, setViewMode: () => {} };
+  const panel = (enabled) => <EyePanel title="Left Eye (OS)" inputId="x" scan={scan} tagLabel="t" tagClass="" overlayEnabled={enabled} onUpload={() => {}} onExpand={() => {}} />;
+
+  it('hides the Original/Mapped toggle unless the experimental overlay is enabled', () => {
+    const { rerender } = render(panel(false));
+    expect(screen.queryByRole('button', { name: /mapped/i })).not.toBeInTheDocument();
+    rerender(panel(true));
+    expect(screen.getByRole('button', { name: /mapped \(experimental\)/i })).toBeInTheDocument();
   });
 });

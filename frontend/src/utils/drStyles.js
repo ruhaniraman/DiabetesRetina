@@ -1,54 +1,46 @@
-// Keys are the raw grades returned by the ML backend (`overallRisk`).
-export const bannerConfig = {
+import { BANNER_TEXT } from '../clinicalText';
+
+// Keys are the raw grades returned by the ML backend (`overallRisk`). Colours live here; the words live in clinicalText.js.
+const bannerStyles = {
   No_DR: {
     gradient: 'from-emerald-500/10 via-emerald-500/5 to-white border-emerald-200/90 border-l-emerald-500',
     iconBg: 'bg-emerald-500',
     badge: 'bg-emerald-500',
     iconColor: 'text-emerald-400',
-    badgeText: 'Stage 0 Clear',
-    title: 'Overall Assessment: Stage 0 – Clear',
   },
   Mild: {
     gradient: 'from-yellow-500/10 via-yellow-500/5 to-white border-yellow-300/90 border-l-yellow-500',
     iconBg: 'bg-yellow-500',
     badge: 'bg-yellow-500',
     iconColor: 'text-yellow-500',
-    badgeText: 'Stage 1 Risk',
-    title: 'Overall Assessment: Stage 1 – Mild Risk',
   },
   Moderate: {
     gradient: 'from-orange-500/10 via-orange-500/5 to-white border-orange-200/90 border-l-orange-500',
     iconBg: 'bg-orange-500',
     badge: 'bg-orange-500',
     iconColor: 'text-orange-400',
-    badgeText: 'Stage 2 Risk',
-    title: 'Overall Assessment: Stage 2 – Moderate Risk',
   },
   Severe: {
     gradient: 'from-red-500/10 via-red-500/5 to-white border-red-200/90 border-l-red-500',
     iconBg: 'bg-red-500',
     badge: 'bg-red-500',
     iconColor: 'text-red-400',
-    badgeText: 'Stage 3 Risk',
-    title: 'Overall Assessment: Stage 3 – Severe Risk',
   },
   Proliferate_DR: {
     gradient: 'from-purple-500/10 via-purple-500/5 to-white border-purple-200/90 border-l-purple-500',
     iconBg: 'bg-purple-500',
     badge: 'bg-purple-500',
     iconColor: 'text-purple-400',
-    badgeText: 'Stage 4 Risk',
-    title: 'Overall Assessment: Stage 4 – Proliferative Risk',
   },
   Pending: {
     gradient: 'from-slate-500/10 via-slate-500/5 to-white border-slate-200/90 border-l-slate-500',
     iconBg: 'bg-slate-500',
     badge: 'bg-slate-500',
     iconColor: 'text-slate-400',
-    badgeText: 'Pending',
-    title: 'Overall Assessment: Awaiting Scan Data',
   },
 };
+
+export const bannerConfig = Object.fromEntries(Object.entries(bannerStyles).map(([grade, style]) => [grade, { ...style, ...BANNER_TEXT[grade] }]));
 
 // Tag colours for a per-eye grade label such as "Stage 2 - Moderate".
 export function getTagColors(label) {

@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { checkQuality, segmentLesions } from '../api/ml';
-import { MAX_UPLOAD_MB } from '../config';
+import { LESION_OVERLAY_ENABLED, MAX_UPLOAD_MB } from '../config';
 
 const initialState = {
   file: null,
@@ -17,7 +17,7 @@ const initialState = {
  * Every async step is tied to the upload that started it, so a slow response for an
  * earlier photo can never overwrite the state of a newer one.
  */
-export function useEyeScan() {
+export function useEyeScan({ lesionOverlay = LESION_OVERLAY_ENABLED } = {}) {
   const [scan, setScan] = useState(initialState);
   const requestId = useRef(0);
   const objectUrl = useRef(null);
@@ -61,21 +61,22 @@ export function useEyeScan() {
       setScan((s) => ({
         ...s,
         quality: { status: 'accepted', verdict: q.verdict, reason: q.reason },
-        mask: { ...initialState.mask, status: 'loading' },
+        mask: { ...initialState.mask, status: lesionOverlay ? 'loading' : 'idle' },
       }));
     } catch (err) {
       if (isCurrent()) setScan((s) => ({ ...s, quality: { status: 'error', verdict: null, reason: err.message } }));
       return;
     }
 
-    // Stage 2 - lesion candidates.
+    // Stage 2 - experimental lesion overlay. Skipped unless explicitly enabled (see config.js).
+    if (!lesionOverlay) return;
     try {
       const seg = await segmentLesions(file);
       if (isCurrent()) setScan((s) => ({ ...s, mask: { status: 'success', url: seg.maskUrl, counts: seg.counts, error: '' } }));
     } catch (err) {
       if (isCurrent()) setScan((s) => ({ ...s, mask: { status: 'error', url: null, counts: null, error: err.message } }));
     }
-  }, []);
+  }, [lesionOverlay]);
 
   const setViewMode = useCallback((viewMode) => setScan((s) => ({ ...s, viewMode })), []);
 

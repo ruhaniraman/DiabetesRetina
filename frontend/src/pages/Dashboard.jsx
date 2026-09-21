@@ -8,6 +8,8 @@ import ExamHistory from '../components/ExamHistory';
 import { useTranslatedText } from '../hooks/useTranslatedText';
 import { bannerConfig, getTagColors } from '../utils/drStyles';
 import { calcAge, formatDob } from '../utils/patient';
+import { LESION_OVERLAY_ENABLED } from '../config';
+import { IDLE_NOTE, TRANSLATION_NOTICE } from '../clinicalText';
 
 const LANGUAGES = [
   { code: 'en', label: 'EN' },
@@ -15,7 +17,6 @@ const LANGUAGES = [
   { code: 'kn', label: 'ಕನ್ನಡ' },
 ];
 
-const IDLE_NOTE = 'Upload fundus images for both eyes and run the AI assessment to generate clinical insights.';
 
 // What to show in an eye's status tag, in order of precedence.
 function eyeTag(scan, grade, running) {
@@ -56,7 +57,7 @@ export default function Dashboard({ user, patient, session, history, onEditPatie
 
   const overallRisk = assessment?.overallRisk || 'Pending';
   const activeBanner = bannerConfig[overallRisk] || bannerConfig.Pending;
-  const note = useTranslatedText(assessment?.overallSummary || IDLE_NOTE, lang);
+  const { text: note, translated } = useTranslatedText(assessment?.overallSummary || IDLE_NOTE, lang);
 
   const displayName = patient.fullName || user?.fullName || '';
   const age = calcAge(patient.dob);
@@ -119,6 +120,7 @@ export default function Dashboard({ user, patient, session, history, onEditPatie
               </span>
               <h2 className="text-base md:text-lg font-bold text-slate-900 tracking-tight">{activeBanner.title}</h2>
               <p className="text-xs md:text-sm text-slate-600 font-medium">{note}</p>
+              {translated && <p className="text-[11px] text-slate-500 font-semibold">{TRANSLATION_NOTICE}</p>}
             </div>
           </div>
         </div>
@@ -145,7 +147,7 @@ export default function Dashboard({ user, patient, session, history, onEditPatie
                   </div>
                   <h3 className="font-bold text-slate-900 text-base tracking-tight">{t('dualCardTitle')}</h3>
                 </div>
-                <p className="text-xs text-slate-500 font-medium mt-1">Stage 1 Quality Assessment & Stage 2 Lesion Workstation</p>
+                <p className="text-xs text-slate-500 font-medium mt-1">Image quality check and AI screening of both eyes</p>
               </div>
               <div className="flex flex-col items-start sm:items-end gap-1">
                 <button
@@ -184,9 +186,9 @@ export default function Dashboard({ user, patient, session, history, onEditPatie
               />
             </div>
 
-            {(left.viewMode === 'mapped' || right.viewMode === 'mapped') && (
+            {LESION_OVERLAY_ENABLED && (left.viewMode === 'mapped' || right.viewMode === 'mapped') && (
               <div className="mt-2 bg-slate-50 border border-slate-200/90 rounded-xl p-4 flex flex-wrap items-center justify-center gap-6 shadow-xs">
-                <span className="text-xs font-black text-slate-800 uppercase tracking-wider mr-2">Candidate regions:</span>
+                <span className="text-xs font-black text-slate-800 uppercase tracking-wider mr-2">Experimental highlights (not lesion detection; also drawn on healthy eyes):</span>
                 {[
                   ['bg-rose-500 border-rose-300', 'Hemorrhage'],
                   ['bg-emerald-400 border-emerald-300', 'Hard Exudate'],

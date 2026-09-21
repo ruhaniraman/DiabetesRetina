@@ -3,6 +3,8 @@ import { FiArrowLeft, FiLayers, FiCheckCircle, FiEye, FiInfo } from 'react-icons
 import Disclaimer from '../components/Disclaimer';
 import { fetchHeatmap } from '../api/ml';
 import { bannerConfig, reportThemes } from '../utils/drStyles';
+import { LESION_OVERLAY_ENABLED } from '../config';
+import { CONFIDENCE, HEATMAP_NOTE, REPORT_LABELS, STAGE_NOTE, TRIAGE, basisText } from '../clinicalText';
 
 const LESION_ROWS = [
   ['microaneurysms', 'Microaneurysm-like spots'],
@@ -22,7 +24,7 @@ export default function DetailedReportPage({ patient, session, onBack }) {
   const { assessment } = session;
   const scan = selectedEye === 'OS' ? session.left : session.right;
   const eyeGrade = assessment ? (selectedEye === 'OS' ? assessment.leftGrade : assessment.rightGrade) : null;
-  const eyeConfidence = assessment ? percent(selectedEye === 'OS' ? assessment.leftConfidence : assessment.rightConfidence) : null;
+  const eyeConfidence = assessment ? (selectedEye === 'OS' ? assessment.leftConfidenceBand : assessment.rightConfidenceBand) : null;
   const eyeReferral = assessment ? percent(selectedEye === 'OS' ? assessment.leftReferableProbability : assessment.rightReferableProbability) : null;
   const eyeFlagged = assessment ? Boolean(selectedEye === 'OS' ? assessment.leftReferable : assessment.rightReferable) : false;
 
@@ -57,29 +59,14 @@ export default function DetailedReportPage({ patient, session, onBack }) {
   const banner = bannerConfig[overall] || bannerConfig.Pending;
   const riskLevel = banner.title.replace('Overall Assessment: ', '');
 
+  const thresholdPercent = percent(assessment?.referralThreshold);
+  // `referable` comes from the backend (threshold rule). Older saved data without it falls back to the grade.
+  const referable = assessment ? (assessment.referable ?? ['Moderate', 'Severe', 'Proliferate_DR'].includes(overall)) : false;
   let triage;
-  if (!assessment) {
-    triage = {
-      title: 'No Assessment Yet',
-      priority: 'Not assessed',
-      rule: 'NO_ASSESSMENT_RUN',
-      sub: 'Upload both fundus images on the dashboard and run the AI assessment. Nothing on this page should be read as a result until then.',
-    };
-  } else if (overall === 'No_DR') {
-    triage = {
-      title: 'No Referral Flagged',
-      priority: 'Priority: Routine',
-      rule: 'RULE_1_HEALTHY_BASELINE',
-      sub: 'The screening model found no signs of diabetic retinopathy in either eye. Continue routine annual screening.',
-    };
-  } else {
-    triage = {
-      title: 'Human Doctor Review Required',
-      priority: 'Priority: High',
-      rule: 'RULE_3_PATHOLOGY_THRESHOLD',
-      sub: 'The screening model flagged diabetic retinopathy in at least one eye. Automated triage cannot action this result.',
-    };
-  }
+  if (!assessment) triage = { ...TRIAGE.none, basis: basisText(null) };
+  else if (referable) triage = { ...TRIAGE.referral, basis: basisText(thresholdPercent) };
+  else if (overall === 'No_DR') triage = { ...TRIAGE.noReferral, basis: basisText(thresholdPercent) };
+  else triage = { ...TRIAGE.followUp, basis: basisText(thresholdPercent) };
 
   const candidateCount = (s) => (s.mask.counts ? Object.values(s.mask.counts).reduce((a, b) => a + b, 0) : null);
 
@@ -91,7 +78,7 @@ export default function DetailedReportPage({ patient, session, onBack }) {
             <FiArrowLeft className="text-lg" />
           </button>
           <div>
-            <span className="text-[10px] font-extrabold tracking-wider text-slate-400 uppercase block">RETINARESCUE • DIAGNOSTIC REPORT</span>
+            <span className="text-[10px] font-extrabold tracking-wider text-slate-400 uppercase block">{REPORT_LABELS.eyebrow}</span>
             <h1 className="text-2xl font-black text-slate-900 tracking-tight">Detailed Retinal Analysis</h1>
           </div>
         </div>
@@ -106,7 +93,7 @@ export default function DetailedReportPage({ patient, session, onBack }) {
           <div className="space-y-2 flex-1">
             <div className="flex items-center gap-3 flex-wrap">
               <span className={`${theme.badge} text-white font-black text-[9px] uppercase tracking-wider px-2.5 py-0.5 rounded-full shadow-sm`}>{triage.priority}</span>
-              <span className="text-[9px] font-mono font-bold text-slate-400 uppercase tracking-widest">{triage.rule}</span>
+              <span className="text-[9px] font-mono font-bold text-slate-400 uppercase tracking-widest">{triage.basis}</span>
             </div>
             <h2 className="text-2xl md:text-3xl font-black text-slate-900 tracking-tight uppercase">{triage.title}</h2>
             <p className="text-xs font-medium text-slate-500">{triage.sub}</p>
@@ -114,32 +101,30 @@ export default function DetailedReportPage({ patient, session, onBack }) {
           </div>
 
           <div className="md:border-l-2 border-white/50 md:pl-8 text-left md:text-right flex flex-col justify-center min-w-[220px]">
-            <span className="text-[9px] font-mono font-bold text-slate-400 uppercase tracking-widest mb-1 block">Assessed DR Severity</span>
-            <span className={`text-xl md:text-2xl font-black ${theme.text}`}>{assessment ? riskLevel : 'Not assessed'}</span>
+            <span className="text-[9px] font-mono font-bold text-slate-400 uppercase tracking-widest mb-1 block">{REPORT_LABELS.severity}</span>
+            <span className={`text-xl md:text-2xl font-black ${theme.text}`}>{assessment ? riskLevel : REPORT_LABELS.notAssessed}</span>
           </div>
         </div>
 
         <div className="relative z-10">
-          <h3 className="text-[10px] font-mono font-bold text-slate-400 uppercase tracking-widest mb-2 ml-1">Clinical Evidence & Decision Rationale:</h3>
+          <h3 className="text-[10px] font-mono font-bold text-slate-400 uppercase tracking-widest mb-2 ml-1">{REPORT_LABELS.rationaleHeading}:</h3>
           <div className="bg-white/85 backdrop-blur-sm border border-black/5 rounded-2xl p-5 text-xs font-medium text-slate-700 leading-relaxed shadow-sm space-y-2">
             {assessment ? (
               <>
                 <p className="font-semibold text-slate-900">
                   Left eye (OS): {assessment.leftGrade}
-                  {percent(assessment.leftConfidence) && ` (model confidence ${percent(assessment.leftConfidence)})`}. Right eye (OD): {assessment.rightGrade}
-                  {percent(assessment.rightConfidence) && ` (model confidence ${percent(assessment.rightConfidence)})`}.
+                  {assessment.leftConfidenceBand && ` (${assessment.leftConfidenceBand} ${CONFIDENCE.label})`}. Right eye (OD): {assessment.rightGrade}
+                  {assessment.rightConfidenceBand && ` (${assessment.rightConfidenceBand} ${CONFIDENCE.label})`}.
                 </p>
                 {percent(assessment.leftReferableProbability) && (
                   <p>
-                    Referral probability: left {percent(assessment.leftReferableProbability)}, right {percent(assessment.rightReferableProbability)}
+                    Referral score: left {percent(assessment.leftReferableProbability)}, right {percent(assessment.rightReferableProbability)}
                     {' '}(an eye is flagged for referral at {percent(assessment.referralThreshold)} or more).
                   </p>
                 )}
                 <p>{assessment.overallSummary}</p>
-                <p className="text-[11px] text-slate-500">
-                  The referral decision is the more reliable output. On held-out test images it found about 92% of referable
-                  cases, while the exact stage matched the reference grade about 78% of the time (see <code>validation/REPORT.md</code>).
-                </p>
+                <p className="text-[11px] text-slate-500">{CONFIDENCE.note}</p>
+                <p className="text-[11px] text-slate-500">{STAGE_NOTE}</p>
               </>
             ) : (
               <p>No assessment has been run for this session.</p>
@@ -162,7 +147,9 @@ export default function DetailedReportPage({ patient, session, onBack }) {
           <div className="flex bg-slate-100 p-1 rounded-2xl text-xs font-extrabold self-start md:self-auto" role="group" aria-label="View">
             <button type="button" aria-pressed={viewMode === 'original'} onClick={() => chooseView('original')} className={`px-3.5 py-2 rounded-xl transition cursor-pointer ${viewMode === 'original' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500'}`}>Original Photo</button>
             <button type="button" aria-pressed={viewMode === 'heatmap'} onClick={() => chooseView('heatmap')} className={`px-3.5 py-2 rounded-xl transition cursor-pointer ${viewMode === 'heatmap' ? 'bg-amber-500 text-white shadow-sm' : 'text-slate-500'}`}>AI Heatmap</button>
-            <button type="button" aria-pressed={viewMode === 'overlay'} onClick={() => chooseView('overlay')} className={`px-3.5 py-2 rounded-xl transition cursor-pointer ${viewMode === 'overlay' ? 'bg-slate-900 text-white shadow-sm' : 'text-slate-500'}`}>Lesion Overlay</button>
+            {LESION_OVERLAY_ENABLED && (
+              <button type="button" aria-pressed={viewMode === 'overlay'} onClick={() => chooseView('overlay')} className={`px-3.5 py-2 rounded-xl transition cursor-pointer ${viewMode === 'overlay' ? 'bg-slate-900 text-white shadow-sm' : 'text-slate-500'}`}>Experimental overlay</button>
+            )}
           </div>
         </div>
 
@@ -189,7 +176,12 @@ export default function DetailedReportPage({ patient, session, onBack }) {
                 {viewMode === 'heatmap' && (
                   <div className="absolute inset-0 z-30 flex items-center justify-center bg-[#0b1329]">
                     {heatmap?.status === 'success' ? (
-                      <img src={heatmap.url} alt="Grad-CAM heatmap" className="w-full h-full object-contain" />
+                      <>
+                        <img src={heatmap.url} alt="Grad-CAM heatmap" className="w-full h-full object-contain" />
+                        <div className="absolute inset-x-0 bottom-0 bg-slate-900/85 text-slate-200 text-[11px] font-semibold p-2.5">
+                          {HEATMAP_NOTE}
+                        </div>
+                      </>
                     ) : heatmap?.status === 'error' ? (
                       <div className="text-center p-6 space-y-3">
                         <span className="text-amber-400 font-bold text-sm block">Heatmap unavailable</span>
@@ -221,7 +213,7 @@ export default function DetailedReportPage({ patient, session, onBack }) {
           <div className="space-y-4 flex flex-col justify-between">
             <div className="space-y-3">
               <h3 className="text-xs font-extrabold text-slate-900 uppercase tracking-wider flex items-center gap-2">
-                <FiLayers className="text-amber-600" /> Lesion candidates ({selectedEye})
+                <FiLayers className="text-amber-600" /> Model findings ({selectedEye})
               </h3>
 
               {eyeGrade && (
@@ -229,13 +221,13 @@ export default function DetailedReportPage({ patient, session, onBack }) {
                   <span className="font-bold text-slate-900">Model grade</span>
                   <span className="font-black text-slate-900">
                     {eyeGrade}
-                    {eyeConfidence && <span className="text-slate-500 font-semibold"> · {eyeConfidence}</span>}
+                    {eyeConfidence && <span className="text-slate-500 font-semibold"> · {eyeConfidence} {CONFIDENCE.label}</span>}
                   </span>
                 </div>
               )}
               {eyeReferral && (
                 <div className={`p-3 rounded-2xl border text-xs flex justify-between items-center ${eyeFlagged ? 'bg-amber-50 border-amber-200' : 'bg-slate-50 border-slate-200'}`}>
-                  <span className="font-bold text-slate-900">Referral probability</span>
+                  <span className="font-bold text-slate-900">Referral score</span>
                   <span className="font-black text-slate-900">
                     {eyeReferral}
                     <span className="text-slate-500 font-semibold"> · {eyeFlagged ? 'flagged' : 'not flagged'}</span>
@@ -243,6 +235,8 @@ export default function DetailedReportPage({ patient, session, onBack }) {
                 </div>
               )}
 
+              {LESION_OVERLAY_ENABLED && (
+                <>
               {scan.mask.status === 'success' ? (
                 <div className="space-y-2 text-xs">
                   {LESION_ROWS.map(([key, label]) => (
@@ -271,8 +265,10 @@ export default function DetailedReportPage({ patient, session, onBack }) {
 
               <p className="flex gap-1.5 text-[11px] text-slate-500 leading-snug">
                 <FiInfo className="shrink-0 mt-0.5" aria-hidden="true" />
-                Counts come from a simple image-processing pass, not the neural network. They are unverified candidates and may include false positives (e.g. vessels, reflections).
+                EXPERIMENTAL. These regions come from a simple image-processing pass, not the neural network. Validation found they are drawn on healthy eyes as often as on diseased ones and miss real lesions, so they are not findings and must not be used clinically (see validation/LESIONS.md).
               </p>
+                </>
+              )}
             </div>
 
             <button type="button" onClick={() => window.print()} className="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-3.5 rounded-2xl shadow-sm transition text-xs uppercase tracking-wider cursor-pointer print:hidden">
