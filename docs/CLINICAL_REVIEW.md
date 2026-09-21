@@ -25,6 +25,8 @@ Full detail: `validation/REPORT.md`. Test set: 548 images never used in training
 | Non-referable correctly not flagged (specificity) | **89.8%** (86.1% to 92.7%) |
 | Excluding test images duplicated in training | sensitivity 91.2%, specificity 89.2% |
 | Exact stage correct (5 classes) | 77.7% |
+| **Second dataset (IDRiD, 516 full-resolution photographs, never seen in training):** sensitivity | 94.4% |
+| **Second dataset (IDRiD):** specificity | **46.1%**: it flagged more than half of the healthy eyes |
 | Referable patients found if decided from the single most likely stage instead | 83.9% (this is why the threshold rule is used) |
 
 **Where it fails (test set):**
@@ -33,7 +35,7 @@ Full detail: `validation/REPORT.md`. Test set: 548 images never used in training
 - A **proliferative** case (`753b14c27c83`) was called Mild with referral score 0.15: the tool said nothing was flagged.
 - A **proliferative** case (`eaa0dfbd5024`) was called Mild with referral score 0.02: the tool said nothing was flagged.
 - The exact stage is unreliable at the severe end: only 59% of Severe and 41% of Proliferative cases were graded as such (most were graded a neighbouring or two-away stage).
-- Trained and tested on one public dataset. Nothing is known about performance on other cameras, populations, image quality, age groups, or diabetes types. The reference grades themselves are imperfect (the same photograph appears with different grades).
+- **It does not transfer cleanly to other data.** On the second public dataset it found 94.4% of referable patients but only 46.1% of healthy eyes were left unflagged, so a clinic using a different camera or population could see many false referrals. Nothing is known about other cameras, age groups or diabetes types. The reference grades themselves are imperfect (the same photograph appears with different grades).
 
 **What a flag means in a real clinic** (positive predictive value falls as disease becomes rarer):
 
@@ -119,7 +121,7 @@ Basis line: "Basis: referral score compared with a 20% threshold".
 
 - **Before an assessment is run:** "Upload fundus images for both eyes and run the AI assessment to see the screening result."
 - **On-screen disclaimer:** "Screening aid only. Results are produced by automated image analysis and are not a medical diagnosis, and the tool can miss disease. It has not been clinically validated. Always have a qualified eye-care professional review the findings before making any treatment decision."
-- **Note about stage reliability:** "The referral decision is the more reliable output. On held-out test images it found about 92% of referable cases, while the exact stage matched the reference grade about 78% of the time (see validation/REPORT.md)."
+- **Note about stage reliability:** "The referral decision is the more reliable output. On held-out test images it found about 92% of referable cases, while the exact stage matched the reference grade about 78% of the time. Results depend on the camera and population: on a second public dataset it flagged many more eyes that had no disease (see validation/REPORT.md)."
 - **Note when a heatmap is shown:** "Shows where the model looked, not a lesion detection. Warm colours do not by themselves mean disease."
 - **Shown when text is machine-translated:** "Machine-translated and not clinically reviewed. If anything is unclear, the English text is authoritative."
 - **Chip on an eye flagged despite a milder stage:** "Referral flagged" (hover: "The most likely stage is lower, but the screening model's referral threshold was reached")
@@ -128,9 +130,19 @@ Basis line: "Basis: referral score compared with a 20% threshold".
 
 ### 3c. Image-quality messages (shown when a photo is checked)
 
-- **Too blurry:** "Image rejected: too blurry for a reliable assessment. Please retake the photo."
-- **Poorly lit:** "Image is poorly illuminated; contrast enhancement will be applied."
-- **Acceptable:** "Quality check passed."
+Source: `backend/quality.py`. A photo is **rejected** (the user is asked to retake it) or **accepted with a warning**. The image is never altered: nothing is "enhanced". Thresholds and their evidence: `validation/QUALITY.md`.
+
+| Situation | Outcome | Message |
+|---|---|---|
+| No retina found | reject | No retina could be found in this image. Please upload a fundus photograph. |
+| Very blurry | reject | Image rejected: too blurry for a reliable assessment. Please retake the photo. |
+| Very dark | reject | Image rejected: too dark for a reliable assessment. Please retake the photo with better illumination. |
+| Overexposed | reject | Image rejected: overexposed. Please retake the photo. |
+| Grainy or heavily compressed | reject | Image rejected: it looks grainy or heavily compressed. Please retake the photo or upload the original file. |
+| Slightly soft | warn | Image is slightly soft; results may be less reliable. |
+| Dark | warn | Image is dark; results may be less reliable. |
+| Very bright | warn | Image is very bright; results may be less reliable. |
+| Passes | accept | Quality check passed. |
 
 ### 3d. PDF screening report (Stage 4)
 
@@ -239,6 +251,7 @@ These are engineering safeguards, not clinical judgements; please confirm or ove
 10. Image-quality messages: is asking the user to retake a blurry photo sufficient, and should poor-lighting images be blocked rather than enhanced?
 11. Translations: is machine translation of these summaries acceptable at all, or should it be switched off until professionally reviewed?
 12. Who is responsible for follow-up when a patient is flagged, and does the wording make that clear enough?
+13. The tool over-refers on a second dataset (many healthy eyes flagged). Should each site be required to grade a local sample and re-tune the referral threshold before use, and how many images and which agreement with clinicians would you accept as evidence it is safe to deploy there?
 
 ## 6. Outside a wording review
 

@@ -71,6 +71,8 @@ def calibration():
 
 def build():
     metrics = json.loads((RESULTS / "metrics.json").read_text(encoding="utf-8"))
+    ext = json.loads((RESULTS / "quality.json").read_text(encoding="utf-8"))["external"]["IDRiD, variant 'app'"]
+    ext_rate = ext["at_threshold"]
     web = frontend_text()
     s4 = json.loads(STAGE4.read_text(encoding="utf-8"))
     L = []
@@ -109,6 +111,8 @@ def build():
     add(f"| Non-referable correctly not flagged (specificity) | **{pct(rate['specificity'])}** ({pct(rate['specificity_ci'][0])} to {pct(rate['specificity_ci'][1])}) |")
     add(f"| Excluding test images duplicated in training | sensitivity {pct(clean['sensitivity'])}, specificity {pct(clean['specificity'])} |")
     add(f"| Exact stage correct (5 classes) | {pct(perf['accuracy_5class'])} |")
+    add(f"| **Second dataset (IDRiD, {ext['n']} full-resolution photographs, never seen in training):** sensitivity | {pct(ext_rate['sensitivity'])} |")
+    add(f"| **Second dataset (IDRiD):** specificity | **{pct(ext_rate['specificity'])}**: it flagged more than half of the healthy eyes |")
     add(f"| Referable patients found if decided from the single most likely stage instead | {pct(argmax['sensitivity'])} (this is why the threshold rule is used) |\n")
     add("**Where it fails (test set):**\n")
     add(f"- Missed referable cases at the deployed threshold: {thr_rule['FN']} of {thr_rule['TP'] + thr_rule['FN']} "
@@ -118,8 +122,9 @@ def build():
         add(f"- A **proliferative** case (`{m['id']}`) was called {m['predicted']} with referral score {m['referable_probability']:.2f}: the tool said nothing was flagged.")
     add(f"- The exact stage is unreliable at the severe end: only {pct(pcr['Severe'], 0)} of Severe and {pct(pcr['Proliferate_DR'], 0)} of Proliferative "
         "cases were graded as such (most were graded a neighbouring or two-away stage).")
-    add("- Trained and tested on one public dataset. Nothing is known about performance on other cameras, populations, image quality, age groups, or "
-        "diabetes types. The reference grades themselves are imperfect (the same photograph appears with different grades).\n")
+    add(f"- **It does not transfer cleanly to other data.** On the second public dataset it found {pct(ext_rate['sensitivity'])} of referable patients but only "
+        f"{pct(ext_rate['specificity'])} of healthy eyes were left unflagged, so a clinic using a different camera or population could see many false referrals. "
+        "Nothing is known about other cameras, age groups or diabetes types. The reference grades themselves are imperfect (the same photograph appears with different grades).\n")
     add("**What a flag means in a real clinic** (positive predictive value falls as disease becomes rarer):\n")
     add("| Referable prevalence | Chance a flag is truly referable | Chance a \"no referral\" is truly fine | Flagged per 1,000 patients |\n|---|---|---|---|")
     for prev in ("0.2", "0.1", "0.05"):
@@ -172,13 +177,19 @@ def build():
     add(f"- **Sign-in page:** \"{web['LOGIN_HERO']['text']}\"\n")
 
     add("### 3c. Image-quality messages (shown when a photo is checked)\n")
-    import server  # noqa: E402  (after DISABLE_MATLAB is set)
+    add("Source: `backend/quality.py`. A photo is **rejected** (the user is asked to retake it) or **accepted with a warning**. "
+        "The image is never altered: nothing is \"enhanced\". Thresholds and their evidence: `validation/QUALITY.md`.\n")
+    import quality  # noqa: E402
 
-    flat = np.full((128, 128), 100, np.uint8)
-    dark = (np.random.default_rng(0).integers(0, 20, (128, 128))).astype(np.uint8)
-    textured = np.random.default_rng(0).integers(60, 160, (128, 128)).astype(np.uint8)
-    for label, img in [("Too blurry", flat), ("Poorly lit", dark), ("Acceptable", textured)]:
-        add(f"- **{label}:** \"{server.assess_quality(img)['reason']}\"")
+    add("| Situation | Outcome | Message |\n|---|---|---|")
+    labels = {
+        "no_retina": ("No retina found", "reject"), "blur_reject": ("Very blurry", "reject"), "dark_reject": ("Very dark", "reject"),
+        "bright_reject": ("Overexposed", "reject"), "noise_reject": ("Grainy or heavily compressed", "reject"),
+        "blur_warn": ("Slightly soft", "warn"), "dark_warn": ("Dark", "warn"), "bright_warn": ("Very bright", "warn"),
+        "accept": ("Passes", "accept"),
+    }
+    for code, (situation, outcome) in labels.items():
+        add(f"| {situation} | {outcome} | {quality.MESSAGES[code]} |")
     add("")
 
     add("### 3d. PDF screening report (Stage 4)\n")
@@ -237,6 +248,8 @@ def build():
         "Image-quality messages: is asking the user to retake a blurry photo sufficient, and should poor-lighting images be blocked rather than enhanced?",
         "Translations: is machine translation of these summaries acceptable at all, or should it be switched off until professionally reviewed?",
         "Who is responsible for follow-up when a patient is flagged, and does the wording make that clear enough?",
+        "The tool over-refers on a second dataset (many healthy eyes flagged). Should each site be required to grade a local sample and re-tune the referral threshold "
+        "before use, and how many images and which agreement with clinicians would you accept as evidence it is safe to deploy there?",
     ], 1):
         add(f"{i}. {q}")
     add("")

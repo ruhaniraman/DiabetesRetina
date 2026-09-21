@@ -60,9 +60,21 @@ def test_quality_rejects_flat_blurry_image(client):
     assert r.status_code == 200 and r.json()["verdict"] == "reject"
 
 
-def test_quality_accepts_textured_image(client):
-    r = client.post("/api/stage1-quality", files=upload("ok.png", fake_fundus()))
-    assert r.status_code == 200 and r.json()["verdict"] in ("accept", "enhance")
+def test_quality_accepts_a_good_photo_and_never_offers_to_enhance_it(client):
+    from synthetic import realistic_fundus
+
+    r = client.post("/api/stage1-quality", files=upload("ok.png", realistic_fundus()))
+    body = r.json()
+    assert r.status_code == 200 and body["verdict"] == "accept" and body["status"] == "accepted"
+    assert "enhanc" not in body["reason"].lower()
+
+
+def test_quality_warns_about_a_dark_photo_but_still_accepts_it(client):
+    from synthetic import realistic_fundus
+
+    body = client.post("/api/stage1-quality", files=upload("dark.png", realistic_fundus(brightness=0.4))).json()
+    assert body["verdict"] == "warn" and body["status"] == "accepted" and "less reliable" in body["reason"]
+    assert body["reasons"] == ["dark_warn"]
 
 
 def test_non_image_upload_is_a_400(client):

@@ -111,3 +111,23 @@ describe('EyePanel lesion toggle', () => {
     expect(screen.getByRole('button', { name: /mapped \(experimental\)/i })).toBeInTheDocument();
   });
 });
+
+
+describe('EyePanel quality warning', () => {
+  const panel = (quality) => (
+    <EyePanel title="Left Eye (OS)" inputId="x" tagLabel="t" tagClass="" overlayEnabled={false} onUpload={() => {}} onExpand={() => {}}
+      scan={{ imageUrl: null, viewMode: 'original', quality, mask: { status: 'idle' }, setViewMode: () => {} }} />
+  );
+
+  it('shows the reason, and never says the image will be enhanced', () => {
+    render(panel({ status: 'accepted', verdict: 'warn', reason: 'Image is dark; results may be less reliable.' }));
+    expect(screen.getByText('Lower image quality')).toBeInTheDocument();
+    expect(screen.getByRole('status')).toHaveTextContent('Image is dark; results may be less reliable.');
+    expect(screen.queryByText(/enhanc/i)).not.toBeInTheDocument();
+  });
+
+  it('shows nothing extra for a clean image', () => {
+    render(panel({ status: 'accepted', verdict: 'accept', reason: 'Quality check passed.' }));
+    expect(screen.queryByText('Lower image quality')).not.toBeInTheDocument();
+  });
+});

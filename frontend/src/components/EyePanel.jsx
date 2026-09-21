@@ -47,11 +47,18 @@ export default function EyePanel({ title, inputId, scan, tagLabel, tagClass, ref
               {REFERRAL_CHIP.label}
             </span>
           )}
-          {accepted && quality.verdict === 'enhance' && (
-            <span className="px-2 py-0.5 bg-indigo-100 text-indigo-800 border border-indigo-200 rounded-md text-[10px] font-extrabold uppercase">Poor lighting</span>
+          {accepted && quality.verdict === 'warn' && (
+            <span className="px-2 py-0.5 bg-indigo-100 text-indigo-800 border border-indigo-200 rounded-md text-[10px] font-extrabold uppercase" title={quality.reason}>
+              Lower image quality
+            </span>
           )}
         </div>
 
+        {accepted && quality.verdict === 'warn' && (
+          <p className="text-[11px] font-semibold text-indigo-900 bg-indigo-50 border border-indigo-200 rounded-lg px-2.5 py-1.5" role="status">
+            {quality.reason}
+          </p>
+        )}
         {quality.status === 'checking' && <p className="text-[11px] font-semibold text-slate-500" role="status">Checking image quality…</p>}
         {(quality.status === 'rejected' || quality.status === 'error') && (
           <p className="text-[11px] font-semibold text-rose-700 bg-rose-50 border border-rose-200 rounded-lg px-2.5 py-1.5" role="alert">

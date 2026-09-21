@@ -116,8 +116,10 @@ Gmail limits how much a personal account may send (about 500 messages/day), so u
 intervals, threshold behaviour, a data-leakage audit, and a plain statement of what it does *not* show). It found and fixed two
 problems in the app: the wrong image preprocessing, and a decision rule that ignored the model's tuned referral threshold.
 Headline: on 548 unseen images the referral decision flags 92.4% of referable patients at 89.8% specificity; the exact stage is
-much less reliable (78% correct). This is an internal technical validation, **not** clinical validation. Reproduce it with
-`validation/README.md`.
+much less reliable (78% correct). On a second public dataset (IDRiD) sensitivity held (94.4%) but specificity fell to 46%, so performance depends on
+the camera and population. `validation/QUALITY.md` covers the Stage 1 photo-quality gate, which was rebuilt after validation showed the old one
+rejected good full-resolution photos and claimed to "enhance" images it never touched. This is an internal technical validation, **not** clinical
+validation. Reproduce it with `validation/README.md`.
 
 ## Clinical wording review
 

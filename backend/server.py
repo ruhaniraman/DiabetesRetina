@@ -32,6 +32,7 @@ from fastapi.concurrency import run_in_threadpool
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 
+import quality
 from clinical_text import (  # noqa: F401  (re-exported: tests and callers use server.build_summary, server.DISCLAIMER, ...)
     DISCLAIMER,
     GRADE_ORDER,
@@ -308,34 +309,27 @@ def png_data_url(img: np.ndarray) -> str:
 # --------------------------------------------------------------------------- #
 # Stage 1 - quality
 # --------------------------------------------------------------------------- #
-BLUR_THRESHOLD = 12.0
-DARK_LIMIT, BRIGHT_LIMIT = 45.0, 210.0
+def assess_quality(img_bgr: np.ndarray) -> dict:
+    """Stage 1: decide whether a photo is fit to grade. See quality.py and validation/QUALITY.md for the evidence behind it.
 
-
-def assess_quality(gray: np.ndarray) -> dict:
-    sharpness = float(cv2.Laplacian(gray, cv2.CV_64F).var())
-    brightness = float(np.mean(gray))
-    if sharpness < BLUR_THRESHOLD:
-        return {
-            "verdict": "reject",
-            "status": "rejected",
-            "reason": "Image rejected: too blurry for a reliable assessment. Please retake the photo.",
-            "score": sharpness,
-        }
-    if brightness < DARK_LIMIT or brightness > BRIGHT_LIMIT:
-        return {
-            "verdict": "enhance",
-            "status": "accepted",
-            "reason": "Image is poorly illuminated; contrast enhancement will be applied.",
-            "score": sharpness,
-        }
-    return {"verdict": "accept", "status": "accepted", "reason": "Quality check passed.", "score": sharpness}
+    verdict "reject": ask for a new photo; "warn": accept, but tell the user results may be less reliable; "accept".
+    Nothing is "enhanced": the classifier was validated on unprocessed photographs, so the image is never altered.
+    """
+    m = quality.measures(img_bgr)
+    v = quality.verdict(m)
+    return {
+        "verdict": v["verdict"],
+        "status": "rejected" if v["verdict"] == "reject" else "accepted",
+        "reason": v["message"],
+        "reasons": v["reasons"],
+        "score": m.get("lap_var_norm"),
+    }
 
 
 @app.post("/api/stage1-quality", dependencies=[Depends(require_user)])
 async def check_image_quality(file: UploadFile = File(...)):
-    gray = await read_image(file, cv2.IMREAD_GRAYSCALE)
-    return await run_in_threadpool(assess_quality, gray)
+    img = await read_image(file)
+    return await run_in_threadpool(assess_quality, img)
 
 
 # --------------------------------------------------------------------------- #
