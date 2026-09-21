@@ -68,7 +68,7 @@ Override the API addresses with `frontend/.env.local` (see `frontend/.env.exampl
    you'll get a 6-digit code by email, choose a new password, and every existing session is signed out.
 2. Complete the patient profile (edit icon in "My Health Record"). It is saved to your account, so it is there next time you sign in.
 3. Upload a fundus photo for each eye. Each is quality-checked; rejected images must be replaced.
-4. **Run AI Assessment**, then open **Detailed Report** (it has **Download PDF Report** for both eyes, and a browser print button) for per-eye grades and a heatmap of the regions that raised the referral score (a rough guide, not a lesion detector: `validation/results/gradcam.md`).
+4. **Run AI Assessment**, then open **Detailed Report** (its **Download PDF Report** button makes a report for both eyes) for per-eye grades and a heatmap of the regions that raised the referral score (a rough guide, not a lesion detector: `validation/results/gradcam.md`).
    Each assessment is saved to **Exam History** on the dashboard.
 
 ## The PDF report

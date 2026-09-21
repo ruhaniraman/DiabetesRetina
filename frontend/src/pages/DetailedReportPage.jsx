@@ -5,7 +5,7 @@ import { downloadReportPdf, fetchHeatmap } from '../api/ml';
 import { saveBlob } from '../utils/download';
 import { bannerConfig, reportThemes } from '../utils/drStyles';
 import { LESION_OVERLAY_ENABLED } from '../config';
-import { CONFIDENCE, HEATMAP_BELOW_NOTE, HEATMAP_EMPTY_NOTE, HEATMAP_NOTE, PDF_PRIVACY_NOTE, REPORT_LABELS, STAGE_NOTE, TRIAGE, basisText } from '../clinicalText';
+import { CONFIDENCE, HEATMAP_BELOW_NOTE, HEATMAP_EMPTY_NOTE, HEATMAP_NOTE, PDF_NEEDS_ASSESSMENT, PDF_NEEDS_PHOTOS, PDF_PRIVACY_NOTE, REPORT_LABELS, STAGE_NOTE, TRIAGE, basisText } from '../clinicalText';
 
 const LESION_ROWS = [
   ['microaneurysms', 'Microaneurysm-like spots'],
@@ -47,6 +47,9 @@ export default function DetailedReportPage({ patient, session, onBack }) {
       setHeatmaps((h) => ({ ...h, [key]: { status: 'error', error: err.message } }));
     }
   };
+
+  const hasPhotos = Boolean(session.left.file && session.right.file);
+  const canDownload = Boolean(assessment) && hasPhotos;
 
   const downloadPdf = async () => {
     setPdf({ status: 'working', error: '' });
@@ -286,28 +289,25 @@ export default function DetailedReportPage({ patient, session, onBack }) {
               )}
             </div>
 
-            {assessment && session.left.file && session.right.file && (
-              <div className="space-y-1.5 print:hidden">
-                <button
-                  type="button"
-                  disabled={pdf.status === 'working'}
-                  onClick={downloadPdf}
-                  className="w-full bg-amber-500 hover:bg-amber-600 disabled:opacity-60 text-white font-bold py-3.5 rounded-2xl shadow-sm transition text-xs uppercase tracking-wider cursor-pointer"
-                >
-                  {pdf.status === 'working' ? 'Preparing report…' : 'Download PDF Report'}
-                </button>
-                <p className="text-[11px] text-slate-500 leading-snug">{PDF_PRIVACY_NOTE}</p>
-                {pdf.status === 'error' && (
-                  <p role="alert" className="text-[11px] font-semibold text-rose-600">
-                    {pdf.error}
-                  </p>
-                )}
-              </div>
-            )}
-
-            <button type="button" onClick={() => window.print()} className="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-3.5 rounded-2xl shadow-sm transition text-xs uppercase tracking-wider cursor-pointer print:hidden">
-              Print Report
-            </button>
+            {/* The report button takes the place the print button had. It is always shown; it is disabled, with the reason, until a report can be made. */}
+            <div className="space-y-1.5 print:hidden">
+              <button
+                type="button"
+                disabled={!canDownload || pdf.status === 'working'}
+                onClick={downloadPdf}
+                className="w-full bg-slate-900 hover:bg-slate-800 disabled:opacity-50 disabled:hover:bg-slate-900 disabled:cursor-not-allowed text-white font-bold py-3.5 rounded-2xl shadow-sm transition text-xs uppercase tracking-wider cursor-pointer"
+              >
+                {pdf.status === 'working' ? 'Preparing report…' : 'Download PDF Report'}
+              </button>
+              <p className="text-[11px] text-slate-500 leading-snug">
+                {!assessment ? PDF_NEEDS_ASSESSMENT : !hasPhotos ? PDF_NEEDS_PHOTOS : PDF_PRIVACY_NOTE}
+              </p>
+              {pdf.status === 'error' && (
+                <p role="alert" className="text-[11px] font-semibold text-rose-600">
+                  {pdf.error}
+                </p>
+              )}
+            </div>
           </div>
         </div>
       </div>

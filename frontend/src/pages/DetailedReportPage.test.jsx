@@ -123,11 +123,21 @@ describe('DetailedReportPage PDF download', () => {
     saveBlob.mockReset();
   });
 
-  it('offers the download only once an assessment exists and both photographs are still available', () => {
-    render(<DetailedReportPage patient={profile} session={session(null)} onBack={() => {}} />);
-    expect(screen.queryByRole('button', { name: /download pdf/i })).not.toBeInTheDocument();
+  it('is the only report button: there is no print-the-page option any more', () => {
+    setup();
+    expect(screen.queryByRole('button', { name: /print/i })).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /download pdf/i })).toBeInTheDocument();
+  });
+
+  it('is disabled, with the reason, until an assessment exists and both photographs are still available', () => {
+    const { unmount } = render(<DetailedReportPage patient={profile} session={session(null)} onBack={() => {}} />);
+    expect(screen.getByRole('button', { name: /download pdf/i })).toBeDisabled();
+    expect(screen.getByText(/run the ai assessment first/i)).toBeInTheDocument();
+    unmount();
     render(<DetailedReportPage patient={profile} session={session(assessment('Moderate', 'Stage 2', 'Stage 0'))} onBack={() => {}} />);
-    expect(screen.queryByRole('button', { name: /download pdf/i })).not.toBeInTheDocument();     // no files kept in this session
+    expect(screen.getByRole('button', { name: /download pdf/i })).toBeDisabled();     // no photographs kept in this session
+    expect(screen.getByText(/no longer in this session/i)).toBeInTheDocument();
+    expect(downloadReportPdf).not.toHaveBeenCalled();
   });
 
   it('tells the user what is printed and that the server keeps nothing', () => {
