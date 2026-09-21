@@ -4,7 +4,9 @@
   "type": "module",
   "scripts": {
     "start": "node --disable-warning=ExperimentalWarning index.js",
-    "dev": "node --disable-warning=ExperimentalWarning --watch index.js"
+    "dev": "node --disable-warning=ExperimentalWarning --watch index.js",
+    "test": "node --disable-warning=ExperimentalWarning --test test/auth.test.js",
+    "check-email": "node scripts/check-email.js"
   },
   "dependencies": {
     "bcryptjs": "^3.0.3",

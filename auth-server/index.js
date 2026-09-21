@@ -7,7 +7,7 @@ import rateLimit from 'express-rate-limit';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import db from './db.js';
-import { sendVerificationEmail } from './mailer.js';
+import { isMailConfigured, sendPasswordResetEmail, sendVerificationEmail } from './mailer.js';
 
 /* ------------------------------ Config ------------------------------ */
 
@@ -21,7 +21,13 @@ if (!JWT_SECRET) {
   process.exit(1);
 }
 
-const CODE_TTL_MS = 10 * 60 * 1000; // verification code lifetime
+// In production, refuse to start rather than fail on the first sign-up.
+if (process.env.NODE_ENV === 'production' && !isMailConfigured()) {
+  console.error('GMAIL_USER and GMAIL_APP_PASSWORD must be set when NODE_ENV=production.');
+  process.exit(1);
+}
+
+const CODE_TTL_MS = 10 * 60 * 1000; // verification / reset code lifetime
 const RESEND_COOLDOWN_MS = 60 * 1000; // minimum gap between emails
 const MAX_CODE_ATTEMPTS = 5;
 
@@ -49,8 +55,9 @@ const publicUser = (u) => ({ id: u.id, fullName: u.full_name, email: u.email });
 const signToken = (user) =>
   jwt.sign({ sub: String(user.id), v: user.token_version ?? 0 }, JWT_SECRET, { expiresIn: '7d' });
 
-const hashCode = (email, code) =>
-  crypto.createHmac('sha256', JWT_SECRET).update(`${email}:${code}`).digest('hex');
+// `purpose` keeps verification and reset codes from being interchangeable.
+const hashCode = (email, code, purpose = '') =>
+  crypto.createHmac('sha256', JWT_SECRET).update(`${purpose}${email}:${code}`).digest('hex');
 
 function safeEqual(a, b) {
   const bufA = Buffer.from(a);
@@ -72,8 +79,23 @@ async function issueVerificationCode(user) {
   await sendVerificationEmail(user.email, user.full_name, code);
 }
 
+// Same idea for password reset, stored in the reset_* columns.
+async function issueResetCode(user) {
+  const code = crypto.randomInt(0, 1_000_000).toString().padStart(6, '0');
+  const now = Date.now();
+  db.prepare(
+    `UPDATE users
+        SET reset_code_hash = ?, reset_expires_at = ?, reset_attempts = 0, reset_sent_at = ?
+      WHERE id = ?`
+  ).run(hashCode(user.email, code, 'reset:'), now + CODE_TTL_MS, now, user.id);
+
+  await sendPasswordResetEmail(user.email, user.full_name, code);
+}
+
 const cooldownRemainingMs = (user) =>
   Math.max(0, (user.verification_sent_at || 0) + RESEND_COOLDOWN_MS - Date.now());
+const resetCooldownRemainingMs = (user) =>
+  Math.max(0, (user.reset_sent_at || 0) + RESEND_COOLDOWN_MS - Date.now());
 
 function requireAuth(req, res, next) {
   const header = req.headers.authorization || '';
@@ -112,6 +134,8 @@ const signupLimiter = makeLimiter(20);
 const verifyLimiter = makeLimiter(30);
 const resendLimiter = makeLimiter(20);
 const loginLimiter = makeLimiter(30);
+const forgotLimiter = makeLimiter(10);
+const resetLimiter = makeLimiter(20);
 
 app.get('/api/health', (_req, res) => res.json({ ok: true }));
 
@@ -274,6 +298,68 @@ app.post('/api/auth/login', loginLimiter, async (req, res) => {
   res.json({ token: signToken(user), user: publicUser(user) });
 });
 
+/* ------------------------- Forgot / reset password ------------------------ */
+
+const FORGOT_REPLY = { message: 'If an account exists for that email, a reset code has been sent.' };
+
+// Always answers the same way, so the endpoint can't be used to discover which emails are registered.
+app.post('/api/auth/forgot-password', forgotLimiter, async (req, res) => {
+  const email = normalizeEmail(req.body?.email);
+  if (!EMAIL_RE.test(email)) return res.status(400).json({ message: 'Enter a valid email address.' });
+
+  const user = db.prepare('SELECT * FROM users WHERE email = ?').get(email);
+  if (user && resetCooldownRemainingMs(user) === 0) {
+    try {
+      await issueResetCode(user);
+    } catch (err) {
+      console.error('Failed to send password reset email:', err); // logged, but not revealed to the caller
+    }
+  }
+  res.json(FORGOT_REPLY);
+});
+
+app.post('/api/auth/reset-password', resetLimiter, async (req, res) => {
+  const email = normalizeEmail(req.body?.email);
+  const code = String(req.body?.code ?? '').trim();
+  const password = String(req.body?.password ?? '');
+
+  if (!/^\d{6}$/.test(code)) {
+    return res.status(400).json({ message: 'Enter the 6-digit code from your email.' });
+  }
+  const pwErr = passwordError(password);
+  if (pwErr) return res.status(400).json({ message: pwErr, errors: { password: pwErr } });
+
+  const INVALID = { message: 'Invalid or expired code. Request a new one.' };
+  const user = db.prepare('SELECT * FROM users WHERE email = ?').get(email);
+  if (!user || !user.reset_code_hash || Date.now() > (user.reset_expires_at || 0)) {
+    return res.status(400).json(INVALID);
+  }
+  if (user.reset_attempts >= MAX_CODE_ATTEMPTS) {
+    return res.status(429).json({ message: 'Too many incorrect attempts. Request a new code.' });
+  }
+
+  if (!safeEqual(hashCode(email, code, 'reset:'), user.reset_code_hash)) {
+    db.prepare('UPDATE users SET reset_attempts = reset_attempts + 1 WHERE id = ?').run(user.id);
+    const left = MAX_CODE_ATTEMPTS - user.reset_attempts - 1;
+    return res.status(400).json({
+      message: left > 0 ? `Incorrect code. ${left} attempt${left === 1 ? '' : 's'} left.` : 'Incorrect code. Request a new one.',
+    });
+  }
+
+  // The code proves control of the mailbox, so this also verifies an account that never finished sign-up.
+  // Bumping token_version signs the account out everywhere (e.g. after a suspected compromise).
+  const passwordHash = await bcrypt.hash(password, 12);
+  db.prepare(
+    `UPDATE users
+        SET password_hash = ?, is_verified = 1, token_version = token_version + 1,
+            reset_code_hash = NULL, reset_expires_at = NULL, reset_attempts = 0,
+            verification_code_hash = NULL, verification_expires_at = NULL, verification_attempts = 0
+      WHERE id = ?`
+  ).run(passwordHash, user.id);
+
+  res.json({ message: 'Password updated. Please sign in with your new password.' });
+});
+
 /* -------------------------- Current session ------------------------- */
 
 app.get('/api/auth/me', requireAuth, (req, res) => {
@@ -295,4 +381,11 @@ app.use((err, _req, res, _next) => {
   res.status(500).json({ message: 'Something went wrong on the server.' });
 });
 
-app.listen(PORT, () => console.log(`Retina Rescue API running on http://localhost:${PORT}`));
+app.listen(PORT, () => {
+  console.log(`Retina Rescue API running on http://localhost:${PORT}`);
+  console.log(
+    isMailConfigured()
+      ? `Email: sending through Gmail as ${process.env.GMAIL_USER}`
+      : 'Email: NOT configured. Codes are printed to this console instead of being emailed (development only).'
+  );
+});

@@ -24,10 +24,17 @@ db.exec(`
   );
 `);
 
-// Migration for databases created before logout/revocation existed.
-const columns = db.prepare('PRAGMA table_info(users)').all().map((c) => c.name);
-if (!columns.includes('token_version')) {
-  db.exec('ALTER TABLE users ADD COLUMN token_version INTEGER NOT NULL DEFAULT 0');
+// Migrations for databases created before these columns existed (fresh databases get them here too).
+const columns = new Set(db.prepare('PRAGMA table_info(users)').all().map((c) => c.name));
+const addedColumns = [
+  ['token_version', 'INTEGER NOT NULL DEFAULT 0'], // bumped on logout / password change to revoke old tokens
+  ['reset_code_hash', 'TEXT'],
+  ['reset_expires_at', 'INTEGER'],
+  ['reset_attempts', 'INTEGER NOT NULL DEFAULT 0'],
+  ['reset_sent_at', 'INTEGER'],
+];
+for (const [name, definition] of addedColumns) {
+  if (!columns.has(name)) db.exec(`ALTER TABLE users ADD COLUMN ${name} ${definition}`);
 }
 
 export default db;
