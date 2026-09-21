@@ -41,3 +41,17 @@ results/
 *.png
 *.jpg
 *.jpeg
+
+# Python
+__pycache__/
+*.pyc
+.pytest_cache/
+.venv/
+
+# Secrets / local config (examples are named env.example / .env.example and stay tracked)
+.env
+.env.local
+
+# Web app assets are source, not generated output (the *.png rule above is for MATLAB result images)
+!frontend/src/assets/*.png
+!frontend/public/**
