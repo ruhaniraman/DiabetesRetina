@@ -9,4 +9,12 @@ export const MAX_UPLOAD_MB = 15;
 // The Stage 2 lesion overlay is EXPERIMENTAL and off by default. validation/LESIONS.md shows it does not detect lesions:
 // it paints about 2.7% of every retina (healthy or not) and misses annotated lesions on real ground truth.
 // Turn it on only for research (VITE_ENABLE_LESION_OVERLAY=true, and ENABLE_LESION_OVERLAY=true on the backend).
+// Reading the result aloud uses voices built into the device. Some browsers also offer "online" voices that send the text to a service to be spoken; the result is
+// health information, so those are NOT used unless this is set (VITE_ALLOW_NETWORK_VOICES=true). See src/speech/voices.js.
+export const ALLOW_NETWORK_VOICES = import.meta.env.VITE_ALLOW_NETWORK_VOICES === 'true';
+
+// Hindi and Kannada speech uses fixed sentences (src/speech/translations.json) that are DRAFTS until a qualified person has reviewed them; speech in a language is off until
+// reviewed[lang] is true. Set VITE_ALLOW_UNREVIEWED_SPEECH=true only for a demo or pilot that knowingly accepts unreviewed wording (the draft is announced aloud first).
+export const ALLOW_UNREVIEWED_SPEECH = import.meta.env.VITE_ALLOW_UNREVIEWED_SPEECH === 'true';
+
 export const LESION_OVERLAY_ENABLED = import.meta.env.VITE_ENABLE_LESION_OVERLAY === 'true';

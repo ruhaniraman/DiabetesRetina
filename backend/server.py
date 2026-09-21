@@ -41,6 +41,8 @@ from clinical_text import (  # noqa: F401  (re-exported: tests and callers use s
     STAGE_LABELS,
     STAGE_TEXT,
     build_summary,
+    render_summary,
+    summary_parts,
     confidence_band,
 )
 
@@ -584,6 +586,7 @@ async def assess_pair(left_img: np.ndarray, right_img: np.ndarray) -> dict:
         "escalated": d["escalated"],
         "overallRisk": d["overall"],
         "overallSummary": build_summary(d["overall"], d["left"], d["right"], decision=d),
+        "summaryParts": summary_parts(d["overall"], d["left"], d["right"], decision=d),
         "qualityWarnings": checks,
     }
 

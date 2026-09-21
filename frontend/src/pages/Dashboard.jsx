@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { FiEye, FiGlobe, FiAlertTriangle, FiLogOut, FiRefreshCw, FiPlay, FiArrowRight, FiUser, FiX, FiEdit2 } from 'react-icons/fi';
 import Logo from '../components/Logo';
+import ListenToReport from '../components/ListenToReport';
+import { LANGUAGES } from '../languages';
 import EyePanel from '../components/EyePanel';
 import Disclaimer from '../components/Disclaimer';
 import ExamHistory from '../components/ExamHistory';
@@ -12,11 +14,6 @@ import { calcAge, formatDob } from '../utils/patient';
 import { LESION_OVERLAY_ENABLED } from '../config';
 import { IDLE_NOTE, TRANSLATION_NOTICE } from '../clinicalText';
 
-const LANGUAGES = [
-  { code: 'en', label: 'EN' },
-  { code: 'hi', label: 'हिंदी' },
-  { code: 'kn', label: 'ಕನ್ನಡ' },
-];
 
 
 // What to show in an eye's status tag, in order of precedence.
@@ -123,6 +120,7 @@ export default function Dashboard({ user, patient, session, history, onEditPatie
               <h2 className="text-base md:text-lg font-bold text-slate-900 tracking-tight">{activeBanner.title}</h2>
               <p className="text-xs md:text-sm text-slate-600 font-medium">{note}</p>
               {translated && <p className="text-[11px] text-slate-500 font-semibold">{TRANSLATION_NOTICE}</p>}
+              {assessment && <ListenToReport assessment={assessment} compact />}
             </div>
           </div>
         </div>

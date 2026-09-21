@@ -128,6 +128,18 @@ Basis line: "Basis: referral score compared with a 20% threshold".
 - **Confidence note (report):** "Lower confidence means the grade is less likely to be right. In testing, the referral decision was wrong in about 1% of high-confidence results and about 15% of the rest."
 - **Sign-in page:** "AI-assisted retinal screening to help catch diabetic eye disease early."
 
+### 3b-1. Listen (the result read aloud)
+
+Source: `frontend/src/speech/reportScript.js`, fixed lines in `frontend/src/clinicalText.js` (`SPEECH`). A "Listen to the result" button on the dashboard and the report page reads the result aloud for people who cannot read it. **Nothing plays until the person taps.** The script is, in order: the introduction, the summary sentence(s) shown in 3a, one line per eye (the stage label, then "Referral flagged." or "No referral flagged.") and any photograph-quality warning. Percentages and scores are not read out. The voice is one built into the phone or browser: only voices that run on the device are used (online voices, which send the text to a service, are refused so the result stays private). In Hindi and Kannada the button reads **fixed sentences** (`frontend/src/speech/translations.json`), chosen by which result the server produced, and never machine translation (the machine translator has no Kannada model, and its Hindi mistranslated safety-critical sentences). Those sentences are drafts, so **speech in Hindi and Kannada is switched off until a qualified person has reviewed them**; the sheet for that person is `docs/SPOKEN_TRANSLATIONS_FOR_REVIEW.md`. The words being read are always shown on the page, with the current sentence highlighted.
+
+- **Introduction:** "This is your diabetic retinopathy screening result."
+- **Before the left eye line:** "Left eye"
+- **Before the right eye line:** "Right eye"
+- **When an eye is flagged:** "Referral recommended."
+- **When an eye is not flagged:** "No referral flagged."
+- **Before each photograph-quality warning:** "About the photographs:"
+- **Question for the reviewer:** are the fixed Hindi and Kannada sentences (`docs/SPOKEN_TRANSLATIONS_FOR_REVIEW.md`) correct and clear enough to be read aloud to someone who cannot read them to check? Would recordings by a person be safer than a phone's synthetic voice?
+
 ### 3c. Image-quality messages (shown when a photo is checked)
 
 Source: `backend/quality.py`. A photo is **rejected** (the user is asked to retake it) or **accepted with a warning**. The image is never altered: nothing is "enhanced". Thresholds and their evidence: `validation/QUALITY.md`.
@@ -255,7 +267,7 @@ The PDF header reads "AI SCREENING AID", the badge reads "REFERRAL RECOMMENDED" 
 
 ### 3f. Not covered by this packet
 
-- **Hindi and Kannada.** The dashboard summary is machine-translated (Argos Translate) on demand and labelled as such; it has not been reviewed by a clinician or a medical translator. The fixed interface labels in `frontend/src/locales/` are also unreviewed. Machine translation of medical advice can be wrong; consider disabling it, or having translations professionally reviewed, before use with patients.
+- **Hindi and Kannada.** The dashboard summary is machine-translated (Argos Translate, which has **no Kannada model**, so Kannada stays English) on demand; it has not been reviewed by a clinician or a medical translator. The fixed interface labels in `frontend/src/locales/` are also unreviewed. Machine translation of medical advice can be wrong; consider disabling it, or having translations professionally reviewed, before use with patients.
 - **Anything typed by staff or patients**, and email text (sign-in codes only).
 
 ## 4. Wording principles applied, and what changed

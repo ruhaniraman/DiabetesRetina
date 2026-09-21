@@ -11,7 +11,8 @@ export function useTranslatedText(text, lang) {
     let cancelled = false;
     translateText(text, lang)
       .then((value) => {
-        if (!cancelled) setResult({ key, value });
+        // The server hands back the original text when it cannot translate (Kannada has no translation model). That is not a translation: do not say it is.
+        if (!cancelled && value && value !== text) setResult({ key, value });
       })
       .catch(() => {
         /* keep showing the original text */

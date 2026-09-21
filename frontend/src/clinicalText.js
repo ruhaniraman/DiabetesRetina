@@ -95,6 +95,16 @@ export const HEATMAP_EMPTY_NOTE = "No region raised this eye's referral score, s
 export const PDF_PRIVACY_NOTE =
   "The PDF prints the patient's name and date of birth from their profile. To create it, the photographs are sent to the server again; the server does not keep the photographs or the report file.";
 
+// Read aloud by the Listen button (src/speech/reportScript.js). Only these fixed lines are new wording; everything else spoken is text the app already shows.
+export const SPEECH = {
+  intro: 'This is your diabetic retinopathy screening result.',
+  left: 'Left eye',
+  right: 'Right eye',
+  flagged: 'Referral recommended.', // the same words as the PDF's result badge (backend/clinical_text.py, PDF_TEXT)
+  notFlagged: 'No referral flagged.',
+  photos: 'About the photographs:',
+};
+
 export const PDF_NEEDS_ASSESSMENT = 'Run the AI assessment first; the PDF report is made from its result.';
 
 export const PDF_NEEDS_PHOTOS = 'The photographs are no longer in this session. Upload them and run the assessment again to make a PDF report.';

@@ -176,6 +176,20 @@ def build():
     add(f"- **Confidence note (report):** \"{web['CONFIDENCE']['note']}\"")
     add(f"- **Sign-in page:** \"{web['LOGIN_HERO']['text']}\"\n")
 
+    add("### 3b-1. Listen (the result read aloud)\n")
+    add("Source: `frontend/src/speech/reportScript.js`, fixed lines in `frontend/src/clinicalText.js` (`SPEECH`). A \"Listen to the result\" button on the dashboard and the report page reads the result aloud "
+        "for people who cannot read it. **Nothing plays until the person taps.** The script is, in order: the introduction, the summary sentence(s) shown in 3a, one line per eye "
+        "(the stage label, then \"Referral flagged.\" or \"No referral flagged.\") and any photograph-quality warning. Percentages and scores are not read out. The voice is one built into the phone "
+        "or browser: only voices that run on the device are used (online voices, which send the text to a service, are refused so the result stays private). "
+        "In Hindi and Kannada the button reads **fixed sentences** (`frontend/src/speech/translations.json`), chosen by which result the server produced, and never machine translation "
+        "(the machine translator has no Kannada model, and its Hindi mistranslated safety-critical sentences). Those sentences are drafts, so **speech in Hindi and Kannada is switched off "
+        "until a qualified person has reviewed them**; the sheet for that person is `docs/SPOKEN_TRANSLATIONS_FOR_REVIEW.md`. The words being read are always shown on the page, with the current sentence highlighted.\n")
+    for label, key in [("Introduction", "intro"), ("Before the left eye line", "left"), ("Before the right eye line", "right"),
+                       ("When an eye is flagged", "flagged"), ("When an eye is not flagged", "notFlagged"), ("Before each photograph-quality warning", "photos")]:
+        add(f"- **{label}:** \"{web['SPEECH'][key]}\"")
+    add("- **Question for the reviewer:** are the fixed Hindi and Kannada sentences (`docs/SPOKEN_TRANSLATIONS_FOR_REVIEW.md`) correct and clear enough to be read aloud to someone who cannot read them to check? "
+        "Would recordings by a person be safer than a phone's synthetic voice?\n")
+
     add("### 3c. Image-quality messages (shown when a photo is checked)\n")
     add("Source: `backend/quality.py`. A photo is **rejected** (the user is asked to retake it) or **accepted with a warning**. "
         "The image is never altered: nothing is \"enhanced\". Thresholds and their evidence: `validation/QUALITY.md`.\n")
@@ -250,7 +264,7 @@ def build():
         add("- **Question for the reviewer:** is a coarse \"regions that raised the score\" picture appropriate to show to patients, or only to clinicians?\n")
 
     add("### 3f. Not covered by this packet\n")
-    add("- **Hindi and Kannada.** The dashboard summary is machine-translated (Argos Translate) on demand and labelled as such; it has not been reviewed by a "
+    add("- **Hindi and Kannada.** The dashboard summary is machine-translated (Argos Translate, which has **no Kannada model**, so Kannada stays English) on demand; it has not been reviewed by a "
         "clinician or a medical translator. The fixed interface labels in `frontend/src/locales/` are also unreviewed. Machine translation of medical advice can be "
         "wrong; consider disabling it, or having translations professionally reviewed, before use with patients.")
     add("- **Anything typed by staff or patients**, and email text (sign-in codes only).\n")

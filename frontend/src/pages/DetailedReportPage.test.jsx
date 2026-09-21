@@ -54,7 +54,7 @@ describe('DetailedReportPage', () => {
   it('reports the grades and confidences it was given, not canned text', () => {
     renderReport(assessment('Moderate', 'Stage 2 - Moderate', 'Stage 0 - No DR detected'));
     expect(screen.getByText(/Left eye \(OS\): Stage 2 - Moderate/)).toHaveTextContent('High confidence');
-    expect(screen.getByText('Summary text.')).toBeInTheDocument();
+    expect(screen.getAllByText('Summary text.')).toHaveLength(2); // the summary, and the same sentence in the list of words the Listen button reads
   });
 });
 

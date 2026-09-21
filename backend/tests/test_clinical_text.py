@@ -86,3 +86,22 @@ def test_stage_labels_never_call_a_result_clear():
 
 def test_confidence_is_reported_as_a_band():
     assert [ct.confidence_band(p) for p in (0.99, 0.90, 0.89, 0.70, 0.69, 0.2)] == ["High", "High", "Moderate", "Moderate", "Low", "Low"]
+
+
+# ---- the summary as parts + a renderer: the web app reads the summary aloud in Hindi/Kannada from reviewed sentences chosen by these parts
+def test_the_english_summary_is_exactly_what_the_parts_render():
+    for name, text in ALL.items():
+        assert isinstance(text, str) and text
+    for left, right in itertools.product(ct.GRADE_ORDER, repeat=2):
+        overall = max(left, right, key=ct.GRADE_ORDER.index)
+        parts = ct.summary_parts(overall, left, right)
+        assert ct.render_summary(parts) == ct.build_summary(overall, left, right)
+        assert parts["kind"] == overall and (overall == "No_DR" or parts["eyes"])
+    d = {"escalated": True, "threshold": 0.2, "left_ref": 0.35, "right_ref": 0.31, "left_flagged": True, "right_flagged": True}
+    parts = ct.summary_parts("Moderate", "Mild", "Mild", decision=d)
+    assert parts == {"kind": "escalated", "worst": "Mild", "eyes": ["left", "right"], "thresholdPercent": 20, "scorePercents": [35, 31]}
+    assert ct.render_summary(parts) == ct.build_summary("Moderate", "Mild", "Mild", decision=d)
+
+
+def test_an_unknown_grade_is_a_fallback_part_so_the_web_app_never_guesses_a_translation():
+    assert ct.summary_parts("Mystery", "Mystery", "No_DR") == {"kind": "fallback", "overall": "Mystery"}

@@ -124,20 +124,37 @@ def _eyes(names: list[str]) -> str:
     return " and ".join(names) + (" eye" if len(names) == 1 else " eyes")
 
 
-def build_summary(overall: str, left: str, right: str, *, decision: dict | None = None) -> str:
-    """Grade- and threshold-based wording only: it never claims lesions the model was not asked about."""
+def _percent(x: float) -> int:
+    return int(format(x, ".0%")[:-1])
+
+
+def summary_parts(overall: str, left: str, right: str, *, decision: dict | None = None) -> dict:
+    """WHICH sentence the summary is, and its blanks, without the English words. The web app uses this to read the summary aloud from reviewed
+    Hindi/Kannada sentences (frontend/src/speech/translations.json) instead of machine-translating it. render_summary(parts) gives back the English text."""
     if decision and decision["escalated"]:
         worst = left if GRADE_ORDER.index(left) >= GRADE_ORDER.index(right) else right
         flagged = [e for e in ("left", "right") if decision[f"{e}_flagged"]]
-        return ESCALATED_TEMPLATE.format(
-            worst=STAGE_TEXT[worst],
-            threshold=f"{decision['threshold']:.0%}",
-            eyes=_eyes(flagged),
-            probabilities=", ".join(f"{decision[f'{e}_ref']:.0%}" for e in flagged),
-        ) + DISCLAIMER
+        return {"kind": "escalated", "worst": worst, "eyes": flagged, "thresholdPercent": _percent(decision["threshold"]),
+                "scorePercents": [_percent(decision[f"{e}_ref"]) for e in flagged]}
+    if overall not in SUMMARY_TEMPLATES:
+        return {"kind": "fallback", "overall": overall}
+    return {"kind": overall, "eyes": [name for name, grade in (("left", left), ("right", right)) if grade == overall]}
 
-    affected = [name for name, grade in (("left", left), ("right", right)) if grade == overall]
-    template = SUMMARY_TEMPLATES.get(overall)
-    if template is None:
-        return FALLBACK_TEMPLATE.format(overall=overall) + DISCLAIMER
-    return template.format(eyes=_eyes(affected)) + DISCLAIMER
+
+def render_summary(parts: dict) -> str:
+    """The English summary for summary_parts()."""
+    if parts["kind"] == "escalated":
+        return ESCALATED_TEMPLATE.format(
+            worst=STAGE_TEXT[parts["worst"]],
+            threshold=f"{parts['thresholdPercent']}%",
+            eyes=_eyes(parts["eyes"]),
+            probabilities=", ".join(f"{p}%" for p in parts["scorePercents"]),
+        ) + DISCLAIMER
+    if parts["kind"] == "fallback":
+        return FALLBACK_TEMPLATE.format(overall=parts["overall"]) + DISCLAIMER
+    return SUMMARY_TEMPLATES[parts["kind"]].format(eyes=_eyes(parts["eyes"])) + DISCLAIMER
+
+
+def build_summary(overall: str, left: str, right: str, *, decision: dict | None = None) -> str:
+    """Grade- and threshold-based wording only: it never claims lesions the model was not asked about."""
+    return render_summary(summary_parts(overall, left, right, decision=decision))

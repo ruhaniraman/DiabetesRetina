@@ -1,6 +1,7 @@
 import { useRef, useState } from 'react';
 import { FiArrowLeft, FiLayers, FiCheckCircle, FiEye, FiInfo } from 'react-icons/fi';
 import Disclaimer from '../components/Disclaimer';
+import ListenToReport from '../components/ListenToReport';
 import { downloadReportPdf, fetchHeatmap } from '../api/ml';
 import { saveBlob } from '../utils/download';
 import { bannerConfig, reportThemes } from '../utils/drStyles';
@@ -140,6 +141,7 @@ export default function DetailedReportPage({ patient, session, onBack }) {
                   </p>
                 )}
                 <p>{assessment.overallSummary}</p>
+                <ListenToReport assessment={assessment} />
                 <p className="text-[11px] text-slate-500">{CONFIDENCE.note}</p>
                 <p className="text-[11px] text-slate-500">{STAGE_NOTE}</p>
               </>

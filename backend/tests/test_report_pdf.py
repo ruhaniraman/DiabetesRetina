@@ -136,6 +136,17 @@ def test_sentences_shared_with_the_web_app_have_not_drifted(key):
     assert re.sub(r"['\"`+\s]", "", ct.PDF_TEXT[key]) in _js_strings(), f"{key} differs from frontend/src/clinicalText.js"
 
 
+def test_the_spoken_result_words_match_the_pdf_result_badges():
+    """What the Listen button says for an eye is the same wording as the PDF's per-eye result (frontend/src/clinicalText.js, SPEECH)."""
+    src = (ROOT / "frontend" / "src" / "clinicalText.js").read_text(encoding="utf-8")
+    block = re.search(r"export const SPEECH = \{(.*?)\n\};", src, re.S).group(1)
+    flagged = re.search(r"flagged: '([^']*)'", block).group(1)
+    not_flagged = re.search(r"notFlagged: '([^']*)'", block).group(1)
+    clean = lambda s: re.sub(r"[^a-z ]", "", s.lower()).strip()
+    assert clean(flagged) == clean(ct.PDF_TEXT["badge_referral"])
+    assert clean(not_flagged) == clean(ct.PDF_TEXT["badge_no_referral"])
+
+
 # ----------------------------------------------------------------------------------------------------- endpoint
 @pytest.fixture()
 def client(monkeypatch):

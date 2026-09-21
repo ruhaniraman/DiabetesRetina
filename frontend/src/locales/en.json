@@ -25,5 +25,17 @@
   "deleteAccountFailed": "Could not delete the account. Please try again.",
   "deleteAccountConfirm": "Delete permanently",
   "deleteAccountBusy": "Deleting…",
-  "cancel": "Cancel"
+  "cancel": "Cancel",
+  "listen": "Listen to the result",
+  "listenStop": "Stop",
+  "listenPreparing": "Getting ready…",
+  "listenSpeaking": "Reading aloud…",
+  "listenEnglish": "Listen in English",
+  "listenNoVoice": "This phone has no {{language}} voice installed. Open Settings > Language > Text-to-speech and add {{language}}, or listen in English.",
+  "listenOnlineOnly": "Only online voices are available for {{language}}. They are not used, to keep your result private.",
+  "listenUnsupported": "This browser cannot read text aloud. Try Chrome on Android.",
+  "listenError": "The result could not be read aloud. Please try again.",
+  "listenTranslationFailed": "This result cannot be read in the chosen language yet, so it is being read in English.",
+  "listenShowText": "Show the words that are read",
+  "listenNotReviewed": "Spoken {{language}} is not switched on yet: the {{language}} sentences are waiting for a doctor or medical translator to check them. You can listen in English."
 }

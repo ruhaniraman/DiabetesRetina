@@ -148,6 +148,13 @@ def two_images():
     }
 
 
+def test_the_assessment_carries_the_parts_of_the_summary_for_reviewed_translations(client, monkeypatch):
+    monkeypatch.setattr(server, "grade_eyes", lambda l, r: raw("Moderate", "Moderate", "No_DR", 0.9, 0.8, 0.85, 0.03))
+    body = client.post("/api/stage3-assessment", files=two_images()).json()
+    assert body["summaryParts"] == {"kind": "Moderate", "eyes": ["left"]}
+    assert server.render_summary(body["summaryParts"]) == body["overallSummary"]
+
+
 def test_heatmap_endpoint_explains_the_referral_score(client, monkeypatch):
     monkeypatch.setattr(server, "render_gradcam", lambda img: (np.zeros((224, 224, 3), np.uint8), 0.42, False))
     body = client.post("/api/stage4-heatmap", files=upload("a.png", realistic_fundus(seed=1))).json()
