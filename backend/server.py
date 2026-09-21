@@ -41,6 +41,8 @@ logging.basicConfig(level=logging.INFO)
 
 CLIENT_ORIGINS = [o.strip() for o in os.getenv("CLIENT_ORIGINS", "http://localhost:5173").split(",") if o.strip()]
 AUTH_SERVER_URL = os.getenv("AUTH_SERVER_URL", "http://localhost:4000").rstrip("/")
+# Shared secret (same value as the auth-server's SERVICE_KEY) that lets this service record exam results.
+SERVICE_KEY = os.getenv("SERVICE_KEY", "")
 MAX_UPLOAD_BYTES = int(os.getenv("MAX_UPLOAD_MB", "15")) * 1024 * 1024
 MATLAB_ENABLED = os.getenv("DISABLE_MATLAB", "").lower() not in ("1", "true", "yes")
 
@@ -63,11 +65,11 @@ MATLAB_PATHS = [
 # Seconds a verified token is trusted without re-asking the auth-server. This is also the longest a
 # logged-out token keeps working here, so it is kept short: it only needs to absorb bursts of requests.
 _AUTH_CACHE_TTL = 5.0
-_auth_cache: dict[str, float] = {}
+_auth_cache: dict[str, tuple[float, dict]] = {}  # token hash -> (expires_at, user)
 
 
-async def require_user(authorization: str | None = Header(default=None)) -> None:
-    """Reject the request unless the auth-server accepts its bearer token."""
+async def require_user(authorization: str | None = Header(default=None)) -> dict:
+    """Reject the request unless the auth-server accepts its bearer token. Returns the user ({id, fullName, email})."""
     if not authorization or not authorization.startswith("Bearer "):
         raise HTTPException(status_code=401, detail="Not signed in.")
     token = authorization[7:].strip()
@@ -76,8 +78,9 @@ async def require_user(authorization: str | None = Header(default=None)) -> None
 
     key = hashlib.sha256(token.encode()).hexdigest()
     now = time.monotonic()
-    if _auth_cache.get(key, 0.0) > now:
-        return
+    cached = _auth_cache.get(key)
+    if cached and cached[0] > now:
+        return cached[1]
 
     try:
         async with httpx.AsyncClient(timeout=5.0) as client:
@@ -90,10 +93,12 @@ async def require_user(authorization: str | None = Header(default=None)) -> None
         _auth_cache.pop(key, None)
         raise HTTPException(status_code=401, detail="Session expired. Please sign in again.")
 
+    user = resp.json().get("user") or {}
     if len(_auth_cache) > 1000:
-        for k in [k for k, exp in _auth_cache.items() if exp <= now]:
+        for k in [k for k, (exp, _) in _auth_cache.items() if exp <= now]:
             del _auth_cache[k]
-    _auth_cache[key] = now + _AUTH_CACHE_TTL
+    _auth_cache[key] = (now + _AUTH_CACHE_TTL, user)
+    return user
 
 
 # --------------------------------------------------------------------------- #
@@ -395,8 +400,33 @@ def grade_eyes(left_img: np.ndarray, right_img: np.ndarray) -> tuple[str, str, s
     return str(overall), str(left), str(right), float(left_conf), float(right_conf)
 
 
-@app.post("/api/stage3-assessment", dependencies=[Depends(require_user)])
-async def run_stage3_assessment(leftEye: UploadFile = File(...), rightEye: UploadFile = File(...)):
+async def record_exam(user_id: int, exam: dict) -> int | None:
+    """Save an assessment result to the user's history via the auth-server. Returns the exam id, or None if it
+    could not be saved. Saving is best-effort: a failure must never hide a result the clinician needs."""
+    if not SERVICE_KEY:
+        log.warning("SERVICE_KEY is not set; exam results are not being saved to patient history.")
+        return None
+    try:
+        async with httpx.AsyncClient(timeout=5.0) as client:
+            resp = await client.post(
+                f"{AUTH_SERVER_URL}/api/internal/exams",
+                headers={"X-Service-Key": SERVICE_KEY},
+                json={"userId": user_id, "exam": exam},
+            )
+        if resp.status_code == 201:
+            return int(resp.json()["id"])
+        log.warning("Auth server refused to save the exam (%s): %s", resp.status_code, resp.text[:200])
+    except (httpx.HTTPError, ValueError, KeyError):
+        log.exception("Could not save the exam to patient history")
+    return None
+
+
+@app.post("/api/stage3-assessment")
+async def run_stage3_assessment(
+    leftEye: UploadFile = File(...),
+    rightEye: UploadFile = File(...),
+    user: dict = Depends(require_user),
+):
     left_img = await read_image(leftEye)
     right_img = await read_image(rightEye)
     try:
@@ -407,7 +437,7 @@ async def run_stage3_assessment(leftEye: UploadFile = File(...), rightEye: Uploa
         log.exception("Stage 3 assessment failed")
         raise HTTPException(status_code=500, detail="Assessment failed.")
 
-    return {
+    result = {
         "status": "success",
         "leftGrade": STAGE_LABELS.get(left, left),
         "rightGrade": STAGE_LABELS.get(right, right),
@@ -416,6 +446,13 @@ async def run_stage3_assessment(leftEye: UploadFile = File(...), rightEye: Uploa
         "overallRisk": overall,
         "overallSummary": build_summary(overall, left, right),
     }
+
+    exam_id = None
+    if user.get("id") is not None:
+        exam = {k: result[k] for k in ("overallRisk", "leftGrade", "rightGrade", "leftConfidence", "rightConfidence")}
+        exam["summary"] = result["overallSummary"]
+        exam_id = await record_exam(user["id"], exam)
+    return result | {"saved": exam_id is not None, "examId": exam_id}
 
 
 # --------------------------------------------------------------------------- #

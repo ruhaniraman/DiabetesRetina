@@ -13,7 +13,7 @@ import server  # noqa: E402
 
 @pytest.fixture()
 def client():
-    server.app.dependency_overrides[server.require_user] = lambda: None
+    server.app.dependency_overrides[server.require_user] = lambda: {"id": 7, "fullName": "T", "email": "t@example.com"}
     yield TestClient(server.app)
     server.app.dependency_overrides.clear()
 
@@ -118,3 +118,74 @@ def test_translation_passthrough_for_english(client):
 
 def test_translation_rejects_unknown_language(client):
     assert client.post("/api/translate-dynamic", json={"text": "hi", "targetLang": "xx"}).status_code == 422
+
+
+# --- exam history recording -------------------------------------------------------------------------
+def two_images():
+    return {
+        "leftEye": ("l.png", png_bytes(fake_fundus()), "image/png"),
+        "rightEye": ("r.png", png_bytes(fake_fundus()), "image/png"),
+    }
+
+
+def test_stage3_saves_the_exam_for_the_calling_user(client, monkeypatch):
+    saved = {}
+
+    async def fake_record(user_id, exam):
+        saved["user_id"], saved["exam"] = user_id, exam
+        return 42
+
+    monkeypatch.setattr(server, "grade_eyes", lambda l, r: ("Moderate", "Moderate", "No_DR", 0.9, 0.8))
+    monkeypatch.setattr(server, "record_exam", fake_record)
+    body = client.post("/api/stage3-assessment", files=two_images()).json()
+
+    assert body["saved"] is True and body["examId"] == 42
+    assert saved["user_id"] == 7
+    assert saved["exam"]["overallRisk"] == "Moderate" and saved["exam"]["leftGrade"] == "Stage 2 - Moderate"
+    assert "screening aid" in saved["exam"]["summary"]
+
+
+def test_a_failed_save_never_hides_the_result(client, monkeypatch):
+    async def failing_record(user_id, exam):
+        return None
+
+    monkeypatch.setattr(server, "grade_eyes", lambda l, r: ("Severe", "Severe", "Mild", 0.9, 0.8))
+    monkeypatch.setattr(server, "record_exam", failing_record)
+    body = client.post("/api/stage3-assessment", files=two_images()).json()
+    assert body["overallRisk"] == "Severe" and body["saved"] is False and body["examId"] is None
+
+
+def test_record_exam_sends_the_service_key_and_handles_failures(monkeypatch):
+    import asyncio
+
+    calls = []
+
+    class FakeResp:
+        status_code = 201
+        text = ""
+
+        def json(self):
+            return {"id": 9}
+
+    class FakeClient:
+        def __init__(self, *a, **k): ...
+        async def __aenter__(self): return self
+        async def __aexit__(self, *a): return False
+
+        async def post(self, url, headers=None, json=None):
+            calls.append((url, headers, json))
+            return FakeResp()
+
+    monkeypatch.setattr(server.httpx, "AsyncClient", FakeClient)
+
+    monkeypatch.setattr(server, "SERVICE_KEY", "")
+    assert asyncio.run(server.record_exam(1, {})) is None and not calls  # no key configured: skipped
+
+    monkeypatch.setattr(server, "SERVICE_KEY", "secret")
+    assert asyncio.run(server.record_exam(1, {"a": 1})) == 9
+    url, headers, payload = calls[0]
+    assert url.endswith("/api/internal/exams") and headers == {"X-Service-Key": "secret"}
+    assert payload == {"userId": 1, "exam": {"a": 1}}
+
+    FakeResp.status_code = 401
+    assert asyncio.run(server.record_exam(1, {})) is None  # refused: reported as not saved, not raised
