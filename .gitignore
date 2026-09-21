@@ -55,3 +55,7 @@ __pycache__/
 # Web app assets are source, not generated output (the *.png rule above is for MATLAB result images)
 !frontend/src/assets/*.png
 !frontend/public/**
+
+# Validation evidence is source, not generated MATLAB output
+!validation/results/
+!validation/results/**
