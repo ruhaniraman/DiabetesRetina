@@ -66,9 +66,28 @@ Override the API addresses with `frontend/.env.local` (see `frontend/.env.exampl
 
 1. Create an account and verify your email, then sign in. Forgot your password? Use **Forgot password?** on the sign-in page:
    you'll get a 6-digit code by email, choose a new password, and every existing session is signed out.
-2. Optionally complete the patient profile (edit icon in "My Health Record"). It is kept only for the browser session.
+2. Complete the patient profile (edit icon in "My Health Record"). It is saved to your account, so it is there next time you sign in.
 3. Upload a fundus photo for each eye. Each is quality-checked; rejected images must be replaced.
 4. **Run AI Assessment**, then open **Detailed Report** for per-eye grades, lesion candidates and the Grad-CAM heatmap.
+   Each assessment is saved to **Exam History** on the dashboard.
+
+## Health data: what is stored
+
+| Stored (per user) | Not stored |
+|---|---|
+| Patient profile: name, date of birth, gender, blood group, diabetes duration, blood pressure, HbA1c, fasting sugar | Retinal photographs (they are analysed in memory and discarded) |
+| Each assessment: date, per-eye grade and confidence, overall grade, summary text | Grad-CAM heatmaps and lesion overlays |
+
+- **Encrypted at rest.** Profile and exam payloads are AES-256-GCM encrypted with `DATA_KEY` before they reach SQLite, so a
+  copied database file is unreadable without the key (and tampering is detected). The account name, email and login data are
+  ordinary columns. **Back up `DATA_KEY` and never change it:** existing data cannot be decrypted without it.
+- **Exam results come from the model, not the browser.** The ML backend saves each result itself using `SERVICE_KEY`
+  (the same value in `auth-server/.env` and `backend/.env`); a signed-in user cannot write to their own history.
+- **Users control their data.** They can delete a single exam, or all their health data, from the app
+  (`DELETE /api/patient/exams/:id`, `DELETE /api/patient/data`).
+- If `SERVICE_KEY` is unset, assessments still work but are not saved (the dashboard says so).
+- This is not a compliance certification. For real patient data you still need consent, an access/audit policy, backups,
+  TLS, and a legal review for your jurisdiction (e.g. HIPAA, GDPR, India's DPDP Act).
 
 ## Email setup
 
@@ -104,6 +123,7 @@ CI (`.github/workflows/ci.yml`) runs the frontend, backend and auth-server check
 ## Notes and limitations
 
 - Stage 2 lesion counts come from classic image processing and are unverified candidates, not neural-network findings.
-- Patient details are not stored server-side; nothing about exam history persists between sessions yet.
+- Exam history keeps grades and summaries only; there is no image storage, so a past exam cannot be re-opened visually.
+- Health data has one owner (the account). There is no clinician/patient sharing model or audit log yet.
 - The model files (`*.mat`) are large binaries tracked directly in git. Consider Git LFS.
 - The datasets (`data/`) are not included.
