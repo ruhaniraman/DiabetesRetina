@@ -92,7 +92,7 @@ will be false alarms even though the model is good. Using the leakage-adjusted r
   Performance may differ across them.
 - **Rare, sight-threatening cases are few** (44 proliferative, 29 severe in the test set), so their estimates are wide and
   the two proliferative misses are a real signal, not noise.
-- **The lesion overlay (Stage 2) is not the neural network** and is not evaluated here.
+- **The lesion overlay (Stage 2) is not the neural network.** It is evaluated separately in [`LESIONS.md`](LESIONS.md): it does not detect lesions, and is off by default.
 - **Thresholds are a policy choice.** 0.2 favours sensitivity at the cost of false alarms. Your clinical lead should decide
   the acceptable balance for your setting and population; the threshold table lets them see the trade-off.
 

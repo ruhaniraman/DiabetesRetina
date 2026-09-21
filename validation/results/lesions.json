@@ -1,0 +1,5385 @@
+{
+ "idrid_images": [
+  {
+   "image": "IDRiD_01",
+   "split": "train",
+   "types": {
+    "exudates": {
+     "gt_pixels": 113286,
+     "pred_pixels": 4689,
+     "tp_pixels": 3753,
+     "fov_pixels": 8440418,
+     "gt_lesions": 106,
+     "gt_lesions_found": 4,
+     "pred_regions": 5,
+     "pred_regions_on_lesion": 4
+    },
+    "hemorrhages": {
+     "gt_pixels": 35430,
+     "pred_pixels": 0,
+     "tp_pixels": 0,
+     "fov_pixels": 8440418,
+     "gt_lesions": 15,
+     "gt_lesions_found": 0,
+     "pred_regions": 0,
+     "pred_regions_on_lesion": 0
+    },
+    "microaneurysms": {
+     "gt_pixels": 6941,
+     "pred_pixels": 0,
+     "tp_pixels": 0,
+     "fov_pixels": 8440418,
+     "gt_lesions": 18,
+     "gt_lesions_found": 0,
+     "pred_regions": 0,
+     "pred_regions_on_lesion": 0
+    }
+   }
+  },
+  {
+   "image": "IDRiD_02",
+   "split": "train",
+   "types": {
+    "exudates": {
+     "gt_pixels": 135394,
+     "pred_pixels": 24927,
+     "tp_pixels": 15624,
+     "fov_pixels": 8428496,
+     "gt_lesions": 166,
+     "gt_lesions_found": 9,
+     "pred_regions": 21,
+     "pred_regions_on_lesion": 12
+    },
+    "hemorrhages": {
+     "gt_pixels": 17356,
+     "pred_pixels": 2537,
+     "tp_pixels": 0,
+     "fov_pixels": 8428496,
+     "gt_lesions": 22,
+     "gt_lesions_found": 0,
+     "pred_regions": 1,
+     "pred_regions_on_lesion": 0
+    },
+    "microaneurysms": {
+     "gt_pixels": 9446,
+     "pred_pixels": 0,
+     "tp_pixels": 0,
+     "fov_pixels": 8428496,
+     "gt_lesions": 41,
+     "gt_lesions_found": 0,
+     "pred_regions": 0,
+     "pred_regions_on_lesion": 0
+    }
+   }
+  },
+  {
+   "image": "IDRiD_03",
+   "split": "train",
+   "types": {
+    "exudates": {
+     "gt_pixels": 301586,
+     "pred_pixels": 8754,
+     "tp_pixels": 6888,
+     "fov_pixels": 8435919,
+     "gt_lesions": 347,
+     "gt_lesions_found": 7,
+     "pred_regions": 9,
+     "pred_regions_on_lesion": 7
+    },
+    "hemorrhages": {
+     "gt_pixels": 162605,
+     "pred_pixels": 0,
+     "tp_pixels": 0,
+     "fov_pixels": 8435919,
+     "gt_lesions": 77,
+     "gt_lesions_found": 0,
+     "pred_regions": 0,
+     "pred_regions_on_lesion": 0
+    },
+    "microaneurysms": {
+     "gt_pixels": 11288,
+     "pred_pixels": 0,
+     "tp_pixels": 0,
+     "fov_pixels": 8435919,
+     "gt_lesions": 63,
+     "gt_lesions_found": 0,
+     "pred_regions": 0,
+     "pred_regions_on_lesion": 0
+    }
+   }
+  },
+  {
+   "image": "IDRiD_04",
+   "split": "train",
+   "types": {
+    "exudates": {
+     "gt_pixels": 5557,
+     "pred_pixels": 24377,
+     "tp_pixels": 0,
+     "fov_pixels": 9701996,
+     "gt_lesions": 45,
+     "gt_lesions_found": 0,
+     "pred_regions": 19,
+     "pred_regions_on_lesion": 0
+    },
+    "hemorrhages": {
+     "gt_pixels": 59383,
+     "pred_pixels": 6105,
+     "tp_pixels": 0,
+     "fov_pixels": 9701996,
+     "gt_lesions": 10,
+     "gt_lesions_found": 0,
+     "pred_regions": 3,
+     "pred_regions_on_lesion": 0
+    },
+    "microaneurysms": {
+     "gt_pixels": 804,
+     "pred_pixels": 0,
+     "tp_pixels": 0,
+     "fov_pixels": 9701996,
+     "gt_lesions": 3,
+     "gt_lesions_found": 0,
+     "pred_regions": 0,
+     "pred_regions_on_lesion": 0
+    }
+   }
+  },
+  {
+   "image": "IDRiD_05",
+   "split": "train",
+   "types": {
+    "exudates": {
+     "gt_pixels": 8286,
+     "pred_pixels": 3370,
+     "tp_pixels": 931,
+     "fov_pixels": 8438262,
+     "gt_lesions": 23,
+     "gt_lesions_found": 1,
+     "pred_regions": 4,
+     "pred_regions_on_lesion": 1
+    },
+    "hemorrhages": {
+     "gt_pixels": 9850,
+     "pred_pixels": 0,
+     "tp_pixels": 0,
+     "fov_pixels": 8438262,
+     "gt_lesions": 6,
+     "gt_lesions_found": 0,
+     "pred_regions": 0,
+     "pred_regions_on_lesion": 0
+    },
+    "microaneurysms": {
+     "gt_pixels": 3994,
+     "pred_pixels": 0,
+     "tp_pixels": 0,
+     "fov_pixels": 8438262,
+     "gt_lesions": 8,
+     "gt_lesions_found": 0,
+     "pred_regions": 0,
+     "pred_regions_on_lesion": 0
+    }
+   }
+  },
+  {
+   "image": "IDRiD_06",
+   "split": "train",
+   "types": {
+    "exudates": {
+     "gt_pixels": 59053,
+     "pred_pixels": 14940,
+     "tp_pixels": 10090,
+     "fov_pixels": 8435047,
+     "gt_lesions": 105,
+     "gt_lesions_found": 5,
+     "pred_regions": 11,
+     "pred_regions_on_lesion": 6
+    },
+    "hemorrhages": {
+     "gt_pixels": 25507,
+     "pred_pixels": 0,
+     "tp_pixels": 0,
+     "fov_pixels": 8435047,
+     "gt_lesions": 12,
+     "gt_lesions_found": 0,
+     "pred_regions": 0,
+     "pred_regions_on_lesion": 0
+    },
+    "microaneurysms": {
+     "gt_pixels": 9923,
+     "pred_pixels": 0,
+     "tp_pixels": 0,
+     "fov_pixels": 8435047,
+     "gt_lesions": 35,
+     "gt_lesions_found": 0,
+     "pred_regions": 0,
+     "pred_regions_on_lesion": 0
+    }
+   }
+  },
+  {
+   "image": "IDRiD_07",
+   "split": "train",
+   "types": {
+    "exudates": {
+     "gt_pixels": 167489,
+     "pred_pixels": 11078,
+     "tp_pixels": 11071,
+     "fov_pixels": 8432858,
+     "gt_lesions": 332,
+     "gt_lesions_found": 12,
+     "pred_regions": 12,
+     "pred_regions_on_lesion": 12
+    },
+    "hemorrhages": {
+     "gt_pixels": 31951,
+     "pred_pixels": 0,
+     "tp_pixels": 0,
+     "fov_pixels": 8432858,
+     "gt_lesions": 16,
+     "gt_lesions_found": 0,
+     "pred_regions": 0,
+     "pred_regions_on_lesion": 0
+    },
+    "microaneurysms": {
+     "gt_pixels": 12623,
+     "pred_pixels": 0,
+     "tp_pixels": 0,
+     "fov_pixels": 8432858,
+     "gt_lesions": 43,
+     "gt_lesions_found": 0,
+     "pred_regions": 0,
+     "pred_regions_on_lesion": 0
+    }
+   }
+  },
+  {
+   "image": "IDRiD_08",
+   "split": "train",
+   "types": {
+    "exudates": {
+     "gt_pixels": 20368,
+     "pred_pixels": 9456,
+     "tp_pixels": 1923,
+     "fov_pixels": 8435090,
+     "gt_lesions": 57,
+     "gt_lesions_found": 1,
+     "pred_regions": 10,
+     "pred_regions_on_lesion": 2
+    },
+    "hemorrhages": {
+     "gt_pixels": 37203,
+     "pred_pixels": 4856,
+     "tp_pixels": 0,
+     "fov_pixels": 8435090,
+     "gt_lesions": 12,
+     "gt_lesions_found": 0,
+     "pred_regions": 3,
+     "pred_regions_on_lesion": 0
+    },
+    "microaneurysms": {
+     "gt_pixels": 4188,
+     "pred_pixels": 0,
+     "tp_pixels": 0,
+     "fov_pixels": 8435090,
+     "gt_lesions": 16,
+     "gt_lesions_found": 0,
+     "pred_regions": 0,
+     "pred_regions_on_lesion": 0
+    }
+   }
+  },
+  {
+   "image": "IDRiD_09",
+   "split": "train",
+   "types": {
+    "exudates": {
+     "gt_pixels": 254276,
+     "pred_pixels": 10327,
+     "tp_pixels": 10301,
+     "fov_pixels": 8426842,
+     "gt_lesions": 143,
+     "gt_lesions_found": 8,
+     "pred_regions": 9,
+     "pred_regions_on_lesion": 9
+    },
+    "hemorrhages": {
+     "gt_pixels": 84849,
+     "pred_pixels": 0,
+     "tp_pixels": 0,
+     "fov_pixels": 8426842,
+     "gt_lesions": 25,
+     "gt_lesions_found": 0,
+     "pred_regions": 0,
+     "pred_regions_on_lesion": 0
+    },
+    "microaneurysms": {
+     "gt_pixels": 35141,
+     "pred_pixels": 0,
+     "tp_pixels": 0,
+     "fov_pixels": 8426842,
+     "gt_lesions": 54,
+     "gt_lesions_found": 0,
+     "pred_regions": 0,
+     "pred_regions_on_lesion": 0
+    }
+   }
+  },
+  {
+   "image": "IDRiD_10",
+   "split": "train",
+   "types": {
+    "exudates": {
+     "gt_pixels": 805250,
+     "pred_pixels": 6234,
+     "tp_pixels": 6184,
+     "fov_pixels": 8427879,
+     "gt_lesions": 418,
+     "gt_lesions_found": 7,
+     "pred_regions": 8,
+     "pred_regions_on_lesion": 8
+    },
+    "hemorrhages": {
+     "gt_pixels": 92658,
+     "pred_pixels": 0,
+     "tp_pixels": 0,
+     "fov_pixels": 8427879,
+     "gt_lesions": 32,
+     "gt_lesions_found": 0,
+     "pred_regions": 0,
+     "pred_regions_on_lesion": 0
+    },
+    "microaneurysms": {
+     "gt_pixels": 33484,
+     "pred_pixels": 0,
+     "tp_pixels": 0,
+     "fov_pixels": 8427879,
+     "gt_lesions": 89,
+     "gt_lesions_found": 0,
+     "pred_regions": 0,
+     "pred_regions_on_lesion": 0
+    }
+   }
+  },
+  {
+   "image": "IDRiD_11",
+   "split": "train",
+   "types": {
+    "exudates": {
+     "gt_pixels": 291123,
+     "pred_pixels": 49358,
+     "tp_pixels": 43957,
+     "fov_pixels": 8424223,
+     "gt_lesions": 472,
+     "gt_lesions_found": 35,
+     "pred_regions": 46,
+     "pred_regions_on_lesion": 41
+    },
+    "hemorrhages": {
+     "gt_pixels": 56797,
+     "pred_pixels": 0,
+     "tp_pixels": 0,
+     "fov_pixels": 8424223,
+     "gt_lesions": 24,
+     "gt_lesions_found": 0,
+     "pred_regions": 0,
+     "pred_regions_on_lesion": 0
+    },
+    "microaneurysms": {
+     "gt_pixels": 21345,
+     "pred_pixels": 0,
+     "tp_pixels": 0,
+     "fov_pixels": 8424223,
+     "gt_lesions": 70,
+     "gt_lesions_found": 0,
+     "pred_regions": 0,
+     "pred_regions_on_lesion": 0
+    }
+   }
+  },
+  {
+   "image": "IDRiD_12",
+   "split": "train",
+   "types": {
+    "exudates": {
+     "gt_pixels": 6626,
+     "pred_pixels": 29582,
+     "tp_pixels": 1302,
+     "fov_pixels": 9707985,
+     "gt_lesions": 12,
+     "gt_lesions_found": 1,
+     "pred_regions": 19,
+     "pred_regions_on_lesion": 1
+    },
+    "hemorrhages": {
+     "gt_pixels": 26843,
+     "pred_pixels": 5464,
+     "tp_pixels": 0,
+     "fov_pixels": 9707985,
+     "gt_lesions": 7,
+     "gt_lesions_found": 0,
+     "pred_regions": 3,
+     "pred_regions_on_lesion": 0
+    },
+    "microaneurysms": {
+     "gt_pixels": 3952,
+     "pred_pixels": 0,
+     "tp_pixels": 0,
+     "fov_pixels": 9707985,
+     "gt_lesions": 17,
+     "gt_lesions_found": 0,
+     "pred_regions": 0,
+     "pred_regions_on_lesion": 0
+    }
+   }
+  },
+  {
+   "image": "IDRiD_13",
+   "split": "train",
+   "types": {
+    "exudates": {
+     "gt_pixels": 214397,
+     "pred_pixels": 26013,
+     "tp_pixels": 11784,
+     "fov_pixels": 8429111,
+     "gt_lesions": 239,
+     "gt_lesions_found": 9,
+     "pred_regions": 22,
+     "pred_regions_on_lesion": 11
+    },
+    "hemorrhages": {
+     "gt_pixels": 37412,
+     "pred_pixels": 4543,
+     "tp_pixels": 0,
+     "fov_pixels": 8429111,
+     "gt_lesions": 36,
+     "gt_lesions_found": 0,
+     "pred_regions": 2,
+     "pred_regions_on_lesion": 0
+    },
+    "microaneurysms": {
+     "gt_pixels": 34267,
+     "pred_pixels": 0,
+     "tp_pixels": 0,
+     "fov_pixels": 8429111,
+     "gt_lesions": 125,
+     "gt_lesions_found": 0,
+     "pred_regions": 0,
+     "pred_regions_on_lesion": 0
+    }
+   }
+  },
+  {
+   "image": "IDRiD_14",
+   "split": "train",
+   "types": {
+    "exudates": {
+     "gt_pixels": 165659,
+     "pred_pixels": 15943,
+     "tp_pixels": 12459,
+     "fov_pixels": 8429631,
+     "gt_lesions": 297,
+     "gt_lesions_found": 12,
+     "pred_regions": 16,
+     "pred_regions_on_lesion": 13
+    },
+    "hemorrhages": {
+     "gt_pixels": 62616,
+     "pred_pixels": 0,
+     "tp_pixels": 0,
+     "fov_pixels": 8429631,
+     "gt_lesions": 36,
+     "gt_lesions_found": 0,
+     "pred_regions": 0,
+     "pred_regions_on_lesion": 0
+    },
+    "microaneurysms": {
+     "gt_pixels": 25362,
+     "pred_pixels": 0,
+     "tp_pixels": 0,
+     "fov_pixels": 8429631,
+     "gt_lesions": 97,
+     "gt_lesions_found": 0,
+     "pred_regions": 0,
+     "pred_regions_on_lesion": 0
+    }
+   }
+  },
+  {
+   "image": "IDRiD_15",
+   "split": "train",
+   "types": {
+    "exudates": {
+     "gt_pixels": 42697,
+     "pred_pixels": 1171,
+     "tp_pixels": 0,
+     "fov_pixels": 8431892,
+     "gt_lesions": 37,
+     "gt_lesions_found": 0,
+     "pred_regions": 1,
+     "pred_regions_on_lesion": 0
+    },
+    "hemorrhages": {
+     "gt_pixels": 3215,
+     "pred_pixels": 0,
+     "tp_pixels": 0,
+     "fov_pixels": 8431892,
+     "gt_lesions": 2,
+     "gt_lesions_found": 0,
+     "pred_regions": 0,
+     "pred_regions_on_lesion": 0
+    },
+    "microaneurysms": {
+     "gt_pixels": 2042,
+     "pred_pixels": 0,
+     "tp_pixels": 0,
+     "fov_pixels": 8431892,
+     "gt_lesions": 7,
+     "gt_lesions_found": 0,
+     "pred_regions": 0,
+     "pred_regions_on_lesion": 0
+    }
+   }
+  },
+  {
+   "image": "IDRiD_16",
+   "split": "train",
+   "types": {
+    "exudates": {
+     "gt_pixels": 115804,
+     "pred_pixels": 1538,
+     "tp_pixels": 1538,
+     "fov_pixels": 8430120,
+     "gt_lesions": 75,
+     "gt_lesions_found": 2,
+     "pred_regions": 2,
+     "pred_regions_on_lesion": 2
+    },
+    "hemorrhages": {
+     "gt_pixels": 18663,
+     "pred_pixels": 0,
+     "tp_pixels": 0,
+     "fov_pixels": 8430120,
+     "gt_lesions": 3,
+     "gt_lesions_found": 0,
+     "pred_regions": 0,
+     "pred_regions_on_lesion": 0
+    },
+    "microaneurysms": {
+     "gt_pixels": 3872,
+     "pred_pixels": 0,
+     "tp_pixels": 0,
+     "fov_pixels": 8430120,
+     "gt_lesions": 10,
+     "gt_lesions_found": 0,
+     "pred_regions": 0,
+     "pred_regions_on_lesion": 0
+    }
+   }
+  },
+  {
+   "image": "IDRiD_17",
+   "split": "train",
+   "types": {
+    "exudates": {
+     "gt_pixels": 201316,
+     "pred_pixels": 12117,
+     "tp_pixels": 9365,
+     "fov_pixels": 8425112,
+     "gt_lesions": 234,
+     "gt_lesions_found": 11,
+     "pred_regions": 12,
+     "pred_regions_on_lesion": 11
+    },
+    "hemorrhages": {
+     "gt_pixels": 1821322,
+     "pred_pixels": 0,
+     "tp_pixels": 0,
+     "fov_pixels": 8425112,
+     "gt_lesions": 53,
+     "gt_lesions_found": 0,
+     "pred_regions": 0,
+     "pred_regions_on_lesion": 0
+    },
+    "microaneurysms": {
+     "gt_pixels": 14207,
+     "pred_pixels": 0,
+     "tp_pixels": 0,
+     "fov_pixels": 8425112,
+     "gt_lesions": 39,
+     "gt_lesions_found": 0,
+     "pred_regions": 0,
+     "pred_regions_on_lesion": 0
+    }
+   }
+  },
+  {
+   "image": "IDRiD_18",
+   "split": "train",
+   "types": {
+    "exudates": {
+     "gt_pixels": 106281,
+     "pred_pixels": 7939,
+     "tp_pixels": 5947,
+     "fov_pixels": 8427768,
+     "gt_lesions": 208,
+     "gt_lesions_found": 7,
+     "pred_regions": 9,
+     "pred_regions_on_lesion": 7
+    },
+    "hemorrhages": {
+     "gt_pixels": 89854,
+     "pred_pixels": 0,
+     "tp_pixels": 0,
+     "fov_pixels": 8427768,
+     "gt_lesions": 53,
+     "gt_lesions_found": 0,
+     "pred_regions": 0,
+     "pred_regions_on_lesion": 0
+    },
+    "microaneurysms": {
+     "gt_pixels": 24706,
+     "pred_pixels": 0,
+     "tp_pixels": 0,
+     "fov_pixels": 8427768,
+     "gt_lesions": 80,
+     "gt_lesions_found": 0,
+     "pred_regions": 0,
+     "pred_regions_on_lesion": 0
+    }
+   }
+  },
+  {
+   "image": "IDRiD_19",
+   "split": "train",
+   "types": {
+    "exudates": {
+     "gt_pixels": 17431,
+     "pred_pixels": 8528,
+     "tp_pixels": 2249,
+     "fov_pixels": 8429508,
+     "gt_lesions": 51,
+     "gt_lesions_found": 2,
+     "pred_regions": 9,
+     "pred_regions_on_lesion": 2
+    },
+    "hemorrhages": {
+     "gt_pixels": 62604,
+     "pred_pixels": 0,
+     "tp_pixels": 0,
+     "fov_pixels": 8429508,
+     "gt_lesions": 25,
+     "gt_lesions_found": 0,
+     "pred_regions": 0,
+     "pred_regions_on_lesion": 0
+    },
+    "microaneurysms": {
+     "gt_pixels": 6092,
+     "pred_pixels": 0,
+     "tp_pixels": 0,
+     "fov_pixels": 8429508,
+     "gt_lesions": 23,
+     "gt_lesions_found": 0,
+     "pred_regions": 0,
+     "pred_regions_on_lesion": 0
+    }
+   }
+  },
+  {
+   "image": "IDRiD_20",
+   "split": "train",
+   "types": {
+    "exudates": {
+     "gt_pixels": 183732,
+     "pred_pixels": 32343,
+     "tp_pixels": 17468,
+     "fov_pixels": 8428963,
+     "gt_lesions": 406,
+     "gt_lesions_found": 12,
+     "pred_regions": 26,
+     "pred_regions_on_lesion": 15
+    },
+    "hemorrhages": {
+     "gt_pixels": 66672,
+     "pred_pixels": 3758,
+     "tp_pixels": 0,
+     "fov_pixels": 8428963,
+     "gt_lesions": 46,
+     "gt_lesions_found": 0,
+     "pred_regions": 1,
+     "pred_regions_on_lesion": 0
+    },
+    "microaneurysms": {
+     "gt_pixels": 26027,
+     "pred_pixels": 0,
+     "tp_pixels": 0,
+     "fov_pixels": 8428963,
+     "gt_lesions": 104,
+     "gt_lesions_found": 0,
+     "pred_regions": 0,
+     "pred_regions_on_lesion": 0
+    }
+   }
+  },
+  {
+   "image": "IDRiD_21",
+   "split": "train",
+   "types": {
+    "exudates": {
+     "gt_pixels": 192428,
+     "pred_pixels": 13209,
+     "tp_pixels": 6593,
+     "fov_pixels": 8428485,
+     "gt_lesions": 297,
+     "gt_lesions_found": 7,
+     "pred_regions": 15,
+     "pred_regions_on_lesion": 8
+    },
+    "hemorrhages": {
+     "gt_pixels": 102308,
+     "pred_pixels": 0,
+     "tp_pixels": 0,
+     "fov_pixels": 8428485,
+     "gt_lesions": 49,
+     "gt_lesions_found": 0,
+     "pred_regions": 0,
+     "pred_regions_on_lesion": 0
+    },
+    "microaneurysms": {
+     "gt_pixels": 21573,
+     "pred_pixels": 0,
+     "tp_pixels": 0,
+     "fov_pixels": 8428485,
+     "gt_lesions": 80,
+     "gt_lesions_found": 0,
+     "pred_regions": 0,
+     "pred_regions_on_lesion": 0
+    }
+   }
+  },
+  {
+   "image": "IDRiD_22",
+   "split": "train",
+   "types": {
+    "exudates": {
+     "gt_pixels": 94020,
+     "pred_pixels": 49326,
+     "tp_pixels": 2496,
+     "fov_pixels": 8432967,
+     "gt_lesions": 117,
+     "gt_lesions_found": 2,
+     "pred_regions": 25,
+     "pred_regions_on_lesion": 2
+    },
+    "hemorrhages": {
+     "gt_pixels": 254991,
+     "pred_pixels": 5357,
+     "tp_pixels": 0,
+     "fov_pixels": 8432967,
+     "gt_lesions": 31,
+     "gt_lesions_found": 0,
+     "pred_regions": 2,
+     "pred_regions_on_lesion": 0
+    },
+    "microaneurysms": {
+     "gt_pixels": 10367,
+     "pred_pixels": 0,
+     "tp_pixels": 0,
+     "fov_pixels": 8432967,
+     "gt_lesions": 29,
+     "gt_lesions_found": 0,
+     "pred_regions": 0,
+     "pred_regions_on_lesion": 0
+    }
+   }
+  },
+  {
+   "image": "IDRiD_23",
+   "split": "train",
+   "types": {
+    "exudates": {
+     "gt_pixels": 14812,
+     "pred_pixels": 10982,
+     "tp_pixels": 0,
+     "fov_pixels": 8426552,
+     "gt_lesions": 64,
+     "gt_lesions_found": 0,
+     "pred_regions": 11,
+     "pred_regions_on_lesion": 0
+    },
+    "hemorrhages": {
+     "gt_pixels": 111482,
+     "pred_pixels": 0,
+     "tp_pixels": 0,
+     "fov_pixels": 8426552,
+     "gt_lesions": 19,
+     "gt_lesions_found": 0,
+     "pred_regions": 0,
+     "pred_regions_on_lesion": 0
+    },
+    "microaneurysms": {
+     "gt_pixels": 4531,
+     "pred_pixels": 0,
+     "tp_pixels": 0,
+     "fov_pixels": 8426552,
+     "gt_lesions": 14,
+     "gt_lesions_found": 0,
+     "pred_regions": 0,
+     "pred_regions_on_lesion": 0
+    }
+   }
+  },
+  {
+   "image": "IDRiD_24",
+   "split": "train",
+   "types": {
+    "exudates": {
+     "gt_pixels": 8245,
+     "pred_pixels": 909,
+     "tp_pixels": 0,
+     "fov_pixels": 8429931,
+     "gt_lesions": 18,
+     "gt_lesions_found": 0,
+     "pred_regions": 1,
+     "pred_regions_on_lesion": 0
+    },
+    "hemorrhages": {
+     "gt_pixels": 27085,
+     "pred_pixels": 0,
+     "tp_pixels": 0,
+     "fov_pixels": 8429931,
+     "gt_lesions": 5,
+     "gt_lesions_found": 0,
+     "pred_regions": 0,
+     "pred_regions_on_lesion": 0
+    },
+    "microaneurysms": {
+     "gt_pixels": 1354,
+     "pred_pixels": 0,
+     "tp_pixels": 0,
+     "fov_pixels": 8429931,
+     "gt_lesions": 4,
+     "gt_lesions_found": 0,
+     "pred_regions": 0,
+     "pred_regions_on_lesion": 0
+    }
+   }
+  },
+  {
+   "image": "IDRiD_25",
+   "split": "train",
+   "types": {
+    "exudates": {
+     "gt_pixels": 616742,
+     "pred_pixels": 58990,
+     "tp_pixels": 58966,
+     "fov_pixels": 8427050,
+     "gt_lesions": 411,
+     "gt_lesions_found": 34,
+     "pred_regions": 47,
+     "pred_regions_on_lesion": 47
+    },
+    "hemorrhages": {
+     "gt_pixels": 332458,
+     "pred_pixels": 0,
+     "tp_pixels": 0,
+     "fov_pixels": 8427050,
+     "gt_lesions": 54,
+     "gt_lesions_found": 0,
+     "pred_regions": 0,
+     "pred_regions_on_lesion": 0
+    },
+    "microaneurysms": {
+     "gt_pixels": 23423,
+     "pred_pixels": 0,
+     "tp_pixels": 0,
+     "fov_pixels": 8427050,
+     "gt_lesions": 67,
+     "gt_lesions_found": 0,
+     "pred_regions": 0,
+     "pred_regions_on_lesion": 0
+    }
+   }
+  },
+  {
+   "image": "IDRiD_26",
+   "split": "train",
+   "types": {
+    "exudates": {
+     "gt_pixels": 2506,
+     "pred_pixels": 3560,
+     "tp_pixels": 0,
+     "fov_pixels": 8430255,
+     "gt_lesions": 5,
+     "gt_lesions_found": 0,
+     "pred_regions": 4,
+     "pred_regions_on_lesion": 0
+    },
+    "hemorrhages": {
+     "gt_pixels": 104527,
+     "pred_pixels": 0,
+     "tp_pixels": 0,
+     "fov_pixels": 8430255,
+     "gt_lesions": 26,
+     "gt_lesions_found": 0,
+     "pred_regions": 0,
+     "pred_regions_on_lesion": 0
+    },
+    "microaneurysms": {
+     "gt_pixels": 19627,
+     "pred_pixels": 0,
+     "tp_pixels": 0,
+     "fov_pixels": 8430255,
+     "gt_lesions": 62,
+     "gt_lesions_found": 0,
+     "pred_regions": 0,
+     "pred_regions_on_lesion": 0
+    }
+   }
+  },
+  {
+   "image": "IDRiD_27",
+   "split": "train",
+   "types": {
+    "exudates": {
+     "gt_pixels": 69734,
+     "pred_pixels": 10587,
+     "tp_pixels": 2833,
+     "fov_pixels": 8429569,
+     "gt_lesions": 214,
+     "gt_lesions_found": 2,
+     "pred_regions": 9,
+     "pred_regions_on_lesion": 3
+    },
+    "hemorrhages": {
+     "gt_pixels": 65344,
+     "pred_pixels": 0,
+     "tp_pixels": 0,
+     "fov_pixels": 8429569,
+     "gt_lesions": 34,
+     "gt_lesions_found": 0,
+     "pred_regions": 0,
+     "pred_regions_on_lesion": 0
+    },
+    "microaneurysms": {
+     "gt_pixels": 25746,
+     "pred_pixels": 0,
+     "tp_pixels": 0,
+     "fov_pixels": 8429569,
+     "gt_lesions": 106,
+     "gt_lesions_found": 0,
+     "pred_regions": 0,
+     "pred_regions_on_lesion": 0
+    }
+   }
+  },
+  {
+   "image": "IDRiD_28",
+   "split": "train",
+   "types": {
+    "exudates": {
+     "gt_pixels": 4725,
+     "pred_pixels": 9884,
+     "tp_pixels": 0,
+     "fov_pixels": 8427635,
+     "gt_lesions": 34,
+     "gt_lesions_found": 0,
+     "pred_regions": 10,
+     "pred_regions_on_lesion": 0
+    },
+    "hemorrhages": {
+     "gt_pixels": 32395,
+     "pred_pixels": 0,
+     "tp_pixels": 0,
+     "fov_pixels": 8427635,
+     "gt_lesions": 22,
+     "gt_lesions_found": 0,
+     "pred_regions": 0,
+     "pred_regions_on_lesion": 0
+    },
+    "microaneurysms": {
+     "gt_pixels": 4805,
+     "pred_pixels": 0,
+     "tp_pixels": 0,
+     "fov_pixels": 8427635,
+     "gt_lesions": 23,
+     "gt_lesions_found": 0,
+     "pred_regions": 0,
+     "pred_regions_on_lesion": 0
+    }
+   }
+  },
+  {
+   "image": "IDRiD_29",
+   "split": "train",
+   "types": {
+    "exudates": {
+     "gt_pixels": 2343,
+     "pred_pixels": 21772,
+     "tp_pixels": 0,
+     "fov_pixels": 8432682,
+     "gt_lesions": 5,
+     "gt_lesions_found": 0,
+     "pred_regions": 17,
+     "pred_regions_on_lesion": 0
+    },
+    "hemorrhages": {
+     "gt_pixels": 2149,
+     "pred_pixels": 3437,
+     "tp_pixels": 0,
+     "fov_pixels": 8432682,
+     "gt_lesions": 4,
+     "gt_lesions_found": 0,
+     "pred_regions": 2,
+     "pred_regions_on_lesion": 0
+    },
+    "microaneurysms": {
+     "gt_pixels": 4525,
+     "pred_pixels": 0,
+     "tp_pixels": 0,
+     "fov_pixels": 8432682,
+     "gt_lesions": 26,
+     "gt_lesions_found": 0,
+     "pred_regions": 0,
+     "pred_regions_on_lesion": 0
+    }
+   }
+  },
+  {
+   "image": "IDRiD_30",
+   "split": "train",
+   "types": {
+    "exudates": {
+     "gt_pixels": 22501,
+     "pred_pixels": 16873,
+     "tp_pixels": 713,
+     "fov_pixels": 8427863,
+     "gt_lesions": 41,
+     "gt_lesions_found": 1,
+     "pred_regions": 13,
+     "pred_regions_on_lesion": 1
+    },
+    "hemorrhages": {
+     "gt_pixels": 53438,
+     "pred_pixels": 0,
+     "tp_pixels": 0,
+     "fov_pixels": 8427863,
+     "gt_lesions": 14,
+     "gt_lesions_found": 0,
+     "pred_regions": 0,
+     "pred_regions_on_lesion": 0
+    },
+    "microaneurysms": {
+     "gt_pixels": 7308,
+     "pred_pixels": 0,
+     "tp_pixels": 0,
+     "fov_pixels": 8427863,
+     "gt_lesions": 22,
+     "gt_lesions_found": 0,
+     "pred_regions": 0,
+     "pred_regions_on_lesion": 0
+    }
+   }
+  },
+  {
+   "image": "IDRiD_31",
+   "split": "train",
+   "types": {
+    "exudates": {
+     "gt_pixels": 48998,
+     "pred_pixels": 24858,
+     "tp_pixels": 1595,
+     "fov_pixels": 8432698,
+     "gt_lesions": 102,
+     "gt_lesions_found": 3,
+     "pred_regions": 17,
+     "pred_regions_on_lesion": 2
+    },
+    "hemorrhages": {
+     "gt_pixels": 216935,
+     "pred_pixels": 0,
+     "tp_pixels": 0,
+     "fov_pixels": 8432698,
+     "gt_lesions": 27,
+     "gt_lesions_found": 0,
+     "pred_regions": 0,
+     "pred_regions_on_lesion": 0
+    },
+    "microaneurysms": {
+     "gt_pixels": 8156,
+     "pred_pixels": 0,
+     "tp_pixels": 0,
+     "fov_pixels": 8432698,
+     "gt_lesions": 28,
+     "gt_lesions_found": 0,
+     "pred_regions": 0,
+     "pred_regions_on_lesion": 0
+    }
+   }
+  },
+  {
+   "image": "IDRiD_32",
+   "split": "train",
+   "types": {
+    "exudates": {
+     "gt_pixels": 84975,
+     "pred_pixels": 9444,
+     "tp_pixels": 1636,
+     "fov_pixels": 8426602,
+     "gt_lesions": 103,
+     "gt_lesions_found": 2,
+     "pred_regions": 9,
+     "pred_regions_on_lesion": 2
+    },
+    "hemorrhages": {
+     "gt_pixels": 86486,
+     "pred_pixels": 0,
+     "tp_pixels": 0,
+     "fov_pixels": 8426602,
+     "gt_lesions": 12,
+     "gt_lesions_found": 0,
+     "pred_regions": 0,
+     "pred_regions_on_lesion": 0
+    },
+    "microaneurysms": {
+     "gt_pixels": 6068,
+     "pred_pixels": 0,
+     "tp_pixels": 0,
+     "fov_pixels": 8426602,
+     "gt_lesions": 13,
+     "gt_lesions_found": 0,
+     "pred_regions": 0,
+     "pred_regions_on_lesion": 0
+    }
+   }
+  },
+  {
+   "image": "IDRiD_33",
+   "split": "train",
+   "types": {
+    "exudates": {
+     "gt_pixels": 58229,
+     "pred_pixels": 7480,
+     "tp_pixels": 1269,
+     "fov_pixels": 8425457,
+     "gt_lesions": 397,
+     "gt_lesions_found": 1,
+     "pred_regions": 5,
+     "pred_regions_on_lesion": 1
+    },
+    "hemorrhages": {
+     "gt_pixels": 330744,
+     "pred_pixels": 0,
+     "tp_pixels": 0,
+     "fov_pixels": 8425457,
+     "gt_lesions": 106,
+     "gt_lesions_found": 0,
+     "pred_regions": 0,
+     "pred_regions_on_lesion": 0
+    },
+    "microaneurysms": {
+     "gt_pixels": 36212,
+     "pred_pixels": 0,
+     "tp_pixels": 0,
+     "fov_pixels": 8425457,
+     "gt_lesions": 126,
+     "gt_lesions_found": 0,
+     "pred_regions": 0,
+     "pred_regions_on_lesion": 0
+    }
+   }
+  },
+  {
+   "image": "IDRiD_34",
+   "split": "train",
+   "types": {
+    "exudates": {
+     "gt_pixels": 26720,
+     "pred_pixels": 10479,
+     "tp_pixels": 724,
+     "fov_pixels": 8427169,
+     "gt_lesions": 52,
+     "gt_lesions_found": 1,
+     "pred_regions": 7,
+     "pred_regions_on_lesion": 1
+    },
+    "hemorrhages": {
+     "gt_pixels": 415359,
+     "pred_pixels": 1629,
+     "tp_pixels": 0,
+     "fov_pixels": 8427169,
+     "gt_lesions": 43,
+     "gt_lesions_found": 0,
+     "pred_regions": 1,
+     "pred_regions_on_lesion": 0
+    },
+    "microaneurysms": {
+     "gt_pixels": 12563,
+     "pred_pixels": 0,
+     "tp_pixels": 0,
+     "fov_pixels": 8427169,
+     "gt_lesions": 44,
+     "gt_lesions_found": 0,
+     "pred_regions": 0,
+     "pred_regions_on_lesion": 0
+    }
+   }
+  },
+  {
+   "image": "IDRiD_35",
+   "split": "train",
+   "types": {
+    "exudates": {
+     "gt_pixels": 19873,
+     "pred_pixels": 5864,
+     "tp_pixels": 1551,
+     "fov_pixels": 8424429,
+     "gt_lesions": 49,
+     "gt_lesions_found": 2,
+     "pred_regions": 6,
+     "pred_regions_on_lesion": 2
+    },
+    "hemorrhages": {
+     "gt_pixels": 368997,
+     "pred_pixels": 0,
+     "tp_pixels": 0,
+     "fov_pixels": 8424429,
+     "gt_lesions": 34,
+     "gt_lesions_found": 0,
+     "pred_regions": 0,
+     "pred_regions_on_lesion": 0
+    },
+    "microaneurysms": {
+     "gt_pixels": 13997,
+     "pred_pixels": 0,
+     "tp_pixels": 0,
+     "fov_pixels": 8424429,
+     "gt_lesions": 42,
+     "gt_lesions_found": 0,
+     "pred_regions": 0,
+     "pred_regions_on_lesion": 0
+    }
+   }
+  },
+  {
+   "image": "IDRiD_36",
+   "split": "train",
+   "types": {
+    "exudates": {
+     "gt_pixels": 5893,
+     "pred_pixels": 10145,
+     "tp_pixels": 0,
+     "fov_pixels": 8426976,
+     "gt_lesions": 43,
+     "gt_lesions_found": 0,
+     "pred_regions": 8,
+     "pred_regions_on_lesion": 0
+    },
+    "hemorrhages": {
+     "gt_pixels": 58339,
+     "pred_pixels": 0,
+     "tp_pixels": 0,
+     "fov_pixels": 8426976,
+     "gt_lesions": 10,
+     "gt_lesions_found": 0,
+     "pred_regions": 0,
+     "pred_regions_on_lesion": 0
+    },
+    "microaneurysms": {
+     "gt_pixels": 9857,
+     "pred_pixels": 0,
+     "tp_pixels": 0,
+     "fov_pixels": 8426976,
+     "gt_lesions": 43,
+     "gt_lesions_found": 0,
+     "pred_regions": 0,
+     "pred_regions_on_lesion": 0
+    }
+   }
+  },
+  {
+   "image": "IDRiD_37",
+   "split": "train",
+   "types": {
+    "exudates": {
+     "gt_pixels": 25759,
+     "pred_pixels": 11773,
+     "tp_pixels": 2579,
+     "fov_pixels": 8426627,
+     "gt_lesions": 59,
+     "gt_lesions_found": 3,
+     "pred_regions": 12,
+     "pred_regions_on_lesion": 3
+    },
+    "hemorrhages": {
+     "gt_pixels": 50017,
+     "pred_pixels": 0,
+     "tp_pixels": 0,
+     "fov_pixels": 8426627,
+     "gt_lesions": 9,
+     "gt_lesions_found": 0,
+     "pred_regions": 0,
+     "pred_regions_on_lesion": 0
+    },
+    "microaneurysms": {
+     "gt_pixels": 6464,
+     "pred_pixels": 0,
+     "tp_pixels": 0,
+     "fov_pixels": 8426627,
+     "gt_lesions": 27,
+     "gt_lesions_found": 0,
+     "pred_regions": 0,
+     "pred_regions_on_lesion": 0
+    }
+   }
+  },
+  {
+   "image": "IDRiD_38",
+   "split": "train",
+   "types": {
+    "exudates": {
+     "gt_pixels": 12551,
+     "pred_pixels": 2534,
+     "tp_pixels": 0,
+     "fov_pixels": 8432688,
+     "gt_lesions": 74,
+     "gt_lesions_found": 0,
+     "pred_regions": 3,
+     "pred_regions_on_lesion": 0
+    },
+    "hemorrhages": {
+     "gt_pixels": 14028,
+     "pred_pixels": 0,
+     "tp_pixels": 0,
+     "fov_pixels": 8432688,
+     "gt_lesions": 5,
+     "gt_lesions_found": 0,
+     "pred_regions": 0,
+     "pred_regions_on_lesion": 0
+    },
+    "microaneurysms": {
+     "gt_pixels": 9359,
+     "pred_pixels": 0,
+     "tp_pixels": 0,
+     "fov_pixels": 8432688,
+     "gt_lesions": 34,
+     "gt_lesions_found": 0,
+     "pred_regions": 0,
+     "pred_regions_on_lesion": 0
+    }
+   }
+  },
+  {
+   "image": "IDRiD_39",
+   "split": "train",
+   "types": {
+    "exudates": {
+     "gt_pixels": 18733,
+     "pred_pixels": 5250,
+     "tp_pixels": 0,
+     "fov_pixels": 8424010,
+     "gt_lesions": 71,
+     "gt_lesions_found": 0,
+     "pred_regions": 5,
+     "pred_regions_on_lesion": 0
+    },
+    "hemorrhages": {
+     "gt_pixels": 250350,
+     "pred_pixels": 0,
+     "tp_pixels": 0,
+     "fov_pixels": 8424010,
+     "gt_lesions": 80,
+     "gt_lesions_found": 0,
+     "pred_regions": 0,
+     "pred_regions_on_lesion": 0
+    },
+    "microaneurysms": {
+     "gt_pixels": 38066,
+     "pred_pixels": 0,
+     "tp_pixels": 0,
+     "fov_pixels": 8424010,
+     "gt_lesions": 119,
+     "gt_lesions_found": 0,
+     "pred_regions": 0,
+     "pred_regions_on_lesion": 0
+    }
+   }
+  },
+  {
+   "image": "IDRiD_40",
+   "split": "train",
+   "types": {
+    "exudates": {
+     "gt_pixels": 7779,
+     "pred_pixels": 17517,
+     "tp_pixels": 1163,
+     "fov_pixels": 8428771,
+     "gt_lesions": 19,
+     "gt_lesions_found": 1,
+     "pred_regions": 17,
+     "pred_regions_on_lesion": 1
+    },
+    "hemorrhages": {
+     "gt_pixels": 3642,
+     "pred_pixels": 14068,
+     "tp_pixels": 0,
+     "fov_pixels": 8428771,
+     "gt_lesions": 3,
+     "gt_lesions_found": 0,
+     "pred_regions": 4,
+     "pred_regions_on_lesion": 0
+    },
+    "microaneurysms": {
+     "gt_pixels": 6592,
+     "pred_pixels": 0,
+     "tp_pixels": 0,
+     "fov_pixels": 8428771,
+     "gt_lesions": 35,
+     "gt_lesions_found": 0,
+     "pred_regions": 0,
+     "pred_regions_on_lesion": 0
+    }
+   }
+  },
+  {
+   "image": "IDRiD_41",
+   "split": "train",
+   "types": {
+    "exudates": {
+     "gt_pixels": 8250,
+     "pred_pixels": 7446,
+     "tp_pixels": 0,
+     "fov_pixels": 8427002,
+     "gt_lesions": 19,
+     "gt_lesions_found": 0,
+     "pred_regions": 6,
+     "pred_regions_on_lesion": 0
+    },
+    "hemorrhages": {
+     "gt_pixels": 4266,
+     "pred_pixels": 0,
+     "tp_pixels": 0,
+     "fov_pixels": 8427002,
+     "gt_lesions": 4,
+     "gt_lesions_found": 0,
+     "pred_regions": 0,
+     "pred_regions_on_lesion": 0
+    },
+    "microaneurysms": {
+     "gt_pixels": 5486,
+     "pred_pixels": 0,
+     "tp_pixels": 0,
+     "fov_pixels": 8427002,
+     "gt_lesions": 13,
+     "gt_lesions_found": 0,
+     "pred_regions": 0,
+     "pred_regions_on_lesion": 0
+    }
+   }
+  },
+  {
+   "image": "IDRiD_42",
+   "split": "train",
+   "types": {
+    "exudates": {
+     "gt_pixels": 25201,
+     "pred_pixels": 2739,
+     "tp_pixels": 899,
+     "fov_pixels": 8427483,
+     "gt_lesions": 53,
+     "gt_lesions_found": 1,
+     "pred_regions": 3,
+     "pred_regions_on_lesion": 1
+    },
+    "hemorrhages": {
+     "gt_pixels": 4404,
+     "pred_pixels": 0,
+     "tp_pixels": 0,
+     "fov_pixels": 8427483,
+     "gt_lesions": 4,
+     "gt_lesions_found": 0,
+     "pred_regions": 0,
+     "pred_regions_on_lesion": 0
+    },
+    "microaneurysms": {
+     "gt_pixels": 2522,
+     "pred_pixels": 0,
+     "tp_pixels": 0,
+     "fov_pixels": 8427483,
+     "gt_lesions": 10,
+     "gt_lesions_found": 0,
+     "pred_regions": 0,
+     "pred_regions_on_lesion": 0
+    }
+   }
+  },
+  {
+   "image": "IDRiD_43",
+   "split": "train",
+   "types": {
+    "exudates": {
+     "gt_pixels": 61341,
+     "pred_pixels": 14168,
+     "tp_pixels": 1672,
+     "fov_pixels": 8427859,
+     "gt_lesions": 82,
+     "gt_lesions_found": 2,
+     "pred_regions": 14,
+     "pred_regions_on_lesion": 2
+    },
+    "hemorrhages": {
+     "gt_pixels": 0,
+     "pred_pixels": 0,
+     "tp_pixels": 0,
+     "fov_pixels": 8427859,
+     "gt_lesions": 0,
+     "gt_lesions_found": 0,
+     "pred_regions": 0,
+     "pred_regions_on_lesion": 0
+    },
+    "microaneurysms": {
+     "gt_pixels": 914,
+     "pred_pixels": 0,
+     "tp_pixels": 0,
+     "fov_pixels": 8427859,
+     "gt_lesions": 3,
+     "gt_lesions_found": 0,
+     "pred_regions": 0,
+     "pred_regions_on_lesion": 0
+    }
+   }
+  },
+  {
+   "image": "IDRiD_44",
+   "split": "train",
+   "types": {
+    "exudates": {
+     "gt_pixels": 24798,
+     "pred_pixels": 17866,
+     "tp_pixels": 752,
+     "fov_pixels": 8426252,
+     "gt_lesions": 74,
+     "gt_lesions_found": 1,
+     "pred_regions": 13,
+     "pred_regions_on_lesion": 1
+    },
+    "hemorrhages": {
+     "gt_pixels": 5906,
+     "pred_pixels": 0,
+     "tp_pixels": 0,
+     "fov_pixels": 8426252,
+     "gt_lesions": 4,
+     "gt_lesions_found": 0,
+     "pred_regions": 0,
+     "pred_regions_on_lesion": 0
+    },
+    "microaneurysms": {
+     "gt_pixels": 1932,
+     "pred_pixels": 0,
+     "tp_pixels": 0,
+     "fov_pixels": 8426252,
+     "gt_lesions": 9,
+     "gt_lesions_found": 0,
+     "pred_regions": 0,
+     "pred_regions_on_lesion": 0
+    }
+   }
+  },
+  {
+   "image": "IDRiD_45",
+   "split": "train",
+   "types": {
+    "exudates": {
+     "gt_pixels": 47341,
+     "pred_pixels": 20734,
+     "tp_pixels": 722,
+     "fov_pixels": 8429252,
+     "gt_lesions": 168,
+     "gt_lesions_found": 1,
+     "pred_regions": 16,
+     "pred_regions_on_lesion": 1
+    },
+    "hemorrhages": {
+     "gt_pixels": 13236,
+     "pred_pixels": 6982,
+     "tp_pixels": 0,
+     "fov_pixels": 8429252,
+     "gt_lesions": 4,
+     "gt_lesions_found": 0,
+     "pred_regions": 3,
+     "pred_regions_on_lesion": 0
+    },
+    "microaneurysms": {
+     "gt_pixels": 2548,
+     "pred_pixels": 0,
+     "tp_pixels": 0,
+     "fov_pixels": 8429252,
+     "gt_lesions": 12,
+     "gt_lesions_found": 0,
+     "pred_regions": 0,
+     "pred_regions_on_lesion": 0
+    }
+   }
+  },
+  {
+   "image": "IDRiD_46",
+   "split": "train",
+   "types": {
+    "exudates": {
+     "gt_pixels": 21191,
+     "pred_pixels": 44356,
+     "tp_pixels": 1977,
+     "fov_pixels": 8428511,
+     "gt_lesions": 93,
+     "gt_lesions_found": 2,
+     "pred_regions": 27,
+     "pred_regions_on_lesion": 2
+    },
+    "hemorrhages": {
+     "gt_pixels": 192856,
+     "pred_pixels": 7248,
+     "tp_pixels": 0,
+     "fov_pixels": 8428511,
+     "gt_lesions": 44,
+     "gt_lesions_found": 0,
+     "pred_regions": 3,
+     "pred_regions_on_lesion": 0
+    },
+    "microaneurysms": {
+     "gt_pixels": 11628,
+     "pred_pixels": 0,
+     "tp_pixels": 0,
+     "fov_pixels": 8428511,
+     "gt_lesions": 39,
+     "gt_lesions_found": 0,
+     "pred_regions": 0,
+     "pred_regions_on_lesion": 0
+    }
+   }
+  },
+  {
+   "image": "IDRiD_47",
+   "split": "train",
+   "types": {
+    "exudates": {
+     "gt_pixels": 38582,
+     "pred_pixels": 11795,
+     "tp_pixels": 720,
+     "fov_pixels": 8432868,
+     "gt_lesions": 69,
+     "gt_lesions_found": 1,
+     "pred_regions": 9,
+     "pred_regions_on_lesion": 1
+    },
+    "hemorrhages": {
+     "gt_pixels": 68527,
+     "pred_pixels": 0,
+     "tp_pixels": 0,
+     "fov_pixels": 8432868,
+     "gt_lesions": 9,
+     "gt_lesions_found": 0,
+     "pred_regions": 0,
+     "pred_regions_on_lesion": 0
+    },
+    "microaneurysms": {
+     "gt_pixels": 3986,
+     "pred_pixels": 0,
+     "tp_pixels": 0,
+     "fov_pixels": 8432868,
+     "gt_lesions": 13,
+     "gt_lesions_found": 0,
+     "pred_regions": 0,
+     "pred_regions_on_lesion": 0
+    }
+   }
+  },
+  {
+   "image": "IDRiD_48",
+   "split": "train",
+   "types": {
+    "exudates": {
+     "gt_pixels": 154434,
+     "pred_pixels": 8394,
+     "tp_pixels": 8377,
+     "fov_pixels": 8435073,
+     "gt_lesions": 256,
+     "gt_lesions_found": 6,
+     "pred_regions": 8,
+     "pred_regions_on_lesion": 8
+    },
+    "hemorrhages": {
+     "gt_pixels": 133197,
+     "pred_pixels": 0,
+     "tp_pixels": 0,
+     "fov_pixels": 8435073,
+     "gt_lesions": 52,
+     "gt_lesions_found": 0,
+     "pred_regions": 0,
+     "pred_regions_on_lesion": 0
+    },
+    "microaneurysms": {
+     "gt_pixels": 22353,
+     "pred_pixels": 0,
+     "tp_pixels": 0,
+     "fov_pixels": 8435073,
+     "gt_lesions": 81,
+     "gt_lesions_found": 0,
+     "pred_regions": 0,
+     "pred_regions_on_lesion": 0
+    }
+   }
+  },
+  {
+   "image": "IDRiD_49",
+   "split": "train",
+   "types": {
+    "exudates": {
+     "gt_pixels": 221897,
+     "pred_pixels": 21648,
+     "tp_pixels": 3489,
+     "fov_pixels": 8428469,
+     "gt_lesions": 416,
+     "gt_lesions_found": 4,
+     "pred_regions": 16,
+     "pred_regions_on_lesion": 4
+    },
+    "hemorrhages": {
+     "gt_pixels": 178309,
+     "pred_pixels": 1612,
+     "tp_pixels": 0,
+     "fov_pixels": 8428469,
+     "gt_lesions": 44,
+     "gt_lesions_found": 0,
+     "pred_regions": 1,
+     "pred_regions_on_lesion": 0
+    },
+    "microaneurysms": {
+     "gt_pixels": 16520,
+     "pred_pixels": 0,
+     "tp_pixels": 0,
+     "fov_pixels": 8428469,
+     "gt_lesions": 82,
+     "gt_lesions_found": 0,
+     "pred_regions": 0,
+     "pred_regions_on_lesion": 0
+    }
+   }
+  },
+  {
+   "image": "IDRiD_50",
+   "split": "train",
+   "types": {
+    "exudates": {
+     "gt_pixels": 120675,
+     "pred_pixels": 0,
+     "tp_pixels": 0,
+     "fov_pixels": 8429984,
+     "gt_lesions": 207,
+     "gt_lesions_found": 0,
+     "pred_regions": 0,
+     "pred_regions_on_lesion": 0
+    },
+    "hemorrhages": {
+     "gt_pixels": 34176,
+     "pred_pixels": 0,
+     "tp_pixels": 0,
+     "fov_pixels": 8429984,
+     "gt_lesions": 9,
+     "gt_lesions_found": 0,
+     "pred_regions": 0,
+     "pred_regions_on_lesion": 0
+    },
+    "microaneurysms": {
+     "gt_pixels": 5202,
+     "pred_pixels": 0,
+     "tp_pixels": 0,
+     "fov_pixels": 8429984,
+     "gt_lesions": 11,
+     "gt_lesions_found": 0,
+     "pred_regions": 0,
+     "pred_regions_on_lesion": 0
+    }
+   }
+  },
+  {
+   "image": "IDRiD_51",
+   "split": "train",
+   "types": {
+    "exudates": {
+     "gt_pixels": 19228,
+     "pred_pixels": 18378,
+     "tp_pixels": 0,
+     "fov_pixels": 8429195,
+     "gt_lesions": 53,
+     "gt_lesions_found": 0,
+     "pred_regions": 15,
+     "pred_regions_on_lesion": 0
+    },
+    "hemorrhages": {
+     "gt_pixels": 48296,
+     "pred_pixels": 0,
+     "tp_pixels": 0,
+     "fov_pixels": 8429195,
+     "gt_lesions": 16,
+     "gt_lesions_found": 0,
+     "pred_regions": 0,
+     "pred_regions_on_lesion": 0
+    },
+    "microaneurysms": {
+     "gt_pixels": 14362,
+     "pred_pixels": 0,
+     "tp_pixels": 0,
+     "fov_pixels": 8429195,
+     "gt_lesions": 46,
+     "gt_lesions_found": 0,
+     "pred_regions": 0,
+     "pred_regions_on_lesion": 0
+    }
+   }
+  },
+  {
+   "image": "IDRiD_52",
+   "split": "train",
+   "types": {
+    "exudates": {
+     "gt_pixels": 2974,
+     "pred_pixels": 16309,
+     "tp_pixels": 0,
+     "fov_pixels": 8428978,
+     "gt_lesions": 13,
+     "gt_lesions_found": 0,
+     "pred_regions": 12,
+     "pred_regions_on_lesion": 0
+    },
+    "hemorrhages": {
+     "gt_pixels": 3354,
+     "pred_pixels": 0,
+     "tp_pixels": 0,
+     "fov_pixels": 8428978,
+     "gt_lesions": 4,
+     "gt_lesions_found": 0,
+     "pred_regions": 0,
+     "pred_regions_on_lesion": 0
+    },
+    "microaneurysms": {
+     "gt_pixels": 6671,
+     "pred_pixels": 0,
+     "tp_pixels": 0,
+     "fov_pixels": 8428978,
+     "gt_lesions": 23,
+     "gt_lesions_found": 0,
+     "pred_regions": 0,
+     "pred_regions_on_lesion": 0
+    }
+   }
+  },
+  {
+   "image": "IDRiD_53",
+   "split": "train",
+   "types": {
+    "exudates": {
+     "gt_pixels": 10985,
+     "pred_pixels": 14828,
+     "tp_pixels": 0,
+     "fov_pixels": 8447491,
+     "gt_lesions": 57,
+     "gt_lesions_found": 0,
+     "pred_regions": 10,
+     "pred_regions_on_lesion": 0
+    },
+    "hemorrhages": {
+     "gt_pixels": 91360,
+     "pred_pixels": 0,
+     "tp_pixels": 0,
+     "fov_pixels": 8447491,
+     "gt_lesions": 46,
+     "gt_lesions_found": 0,
+     "pred_regions": 0,
+     "pred_regions_on_lesion": 0
+    },
+    "microaneurysms": {
+     "gt_pixels": 26531,
+     "pred_pixels": 0,
+     "tp_pixels": 0,
+     "fov_pixels": 8447491,
+     "gt_lesions": 118,
+     "gt_lesions_found": 0,
+     "pred_regions": 0,
+     "pred_regions_on_lesion": 0
+    }
+   }
+  },
+  {
+   "image": "IDRiD_54",
+   "split": "train",
+   "types": {
+    "exudates": {
+     "gt_pixels": 9450,
+     "pred_pixels": 10275,
+     "tp_pixels": 0,
+     "fov_pixels": 8428511,
+     "gt_lesions": 18,
+     "gt_lesions_found": 0,
+     "pred_regions": 10,
+     "pred_regions_on_lesion": 0
+    },
+    "hemorrhages": {
+     "gt_pixels": 38734,
+     "pred_pixels": 0,
+     "tp_pixels": 0,
+     "fov_pixels": 8428511,
+     "gt_lesions": 26,
+     "gt_lesions_found": 0,
+     "pred_regions": 0,
+     "pred_regions_on_lesion": 0
+    },
+    "microaneurysms": {
+     "gt_pixels": 24011,
+     "pred_pixels": 0,
+     "tp_pixels": 0,
+     "fov_pixels": 8428511,
+     "gt_lesions": 66,
+     "gt_lesions_found": 0,
+     "pred_regions": 0,
+     "pred_regions_on_lesion": 0
+    }
+   }
+  },
+  {
+   "image": "IDRiD_55",
+   "split": "test",
+   "types": {
+    "exudates": {
+     "gt_pixels": 497671,
+     "pred_pixels": 26244,
+     "tp_pixels": 24248,
+     "fov_pixels": 8428772,
+     "gt_lesions": 388,
+     "gt_lesions_found": 18,
+     "pred_regions": 24,
+     "pred_regions_on_lesion": 22
+    },
+    "hemorrhages": {
+     "gt_pixels": 102377,
+     "pred_pixels": 0,
+     "tp_pixels": 0,
+     "fov_pixels": 8428772,
+     "gt_lesions": 10,
+     "gt_lesions_found": 0,
+     "pred_regions": 0,
+     "pred_regions_on_lesion": 0
+    },
+    "microaneurysms": {
+     "gt_pixels": 10410,
+     "pred_pixels": 0,
+     "tp_pixels": 0,
+     "fov_pixels": 8428772,
+     "gt_lesions": 33,
+     "gt_lesions_found": 0,
+     "pred_regions": 0,
+     "pred_regions_on_lesion": 0
+    }
+   }
+  },
+  {
+   "image": "IDRiD_56",
+   "split": "test",
+   "types": {
+    "exudates": {
+     "gt_pixels": 13370,
+     "pred_pixels": 3863,
+     "tp_pixels": 1345,
+     "fov_pixels": 8437603,
+     "gt_lesions": 29,
+     "gt_lesions_found": 1,
+     "pred_regions": 4,
+     "pred_regions_on_lesion": 1
+    },
+    "hemorrhages": {
+     "gt_pixels": 204479,
+     "pred_pixels": 0,
+     "tp_pixels": 0,
+     "fov_pixels": 8437603,
+     "gt_lesions": 21,
+     "gt_lesions_found": 0,
+     "pred_regions": 0,
+     "pred_regions_on_lesion": 0
+    },
+    "microaneurysms": {
+     "gt_pixels": 10726,
+     "pred_pixels": 0,
+     "tp_pixels": 0,
+     "fov_pixels": 8437603,
+     "gt_lesions": 21,
+     "gt_lesions_found": 0,
+     "pred_regions": 0,
+     "pred_regions_on_lesion": 0
+    }
+   }
+  },
+  {
+   "image": "IDRiD_57",
+   "split": "test",
+   "types": {
+    "exudates": {
+     "gt_pixels": 43380,
+     "pred_pixels": 9807,
+     "tp_pixels": 792,
+     "fov_pixels": 9711886,
+     "gt_lesions": 124,
+     "gt_lesions_found": 1,
+     "pred_regions": 10,
+     "pred_regions_on_lesion": 1
+    },
+    "hemorrhages": {
+     "gt_pixels": 2795,
+     "pred_pixels": 0,
+     "tp_pixels": 0,
+     "fov_pixels": 9711886,
+     "gt_lesions": 4,
+     "gt_lesions_found": 0,
+     "pred_regions": 0,
+     "pred_regions_on_lesion": 0
+    },
+    "microaneurysms": {
+     "gt_pixels": 2101,
+     "pred_pixels": 0,
+     "tp_pixels": 0,
+     "fov_pixels": 9711886,
+     "gt_lesions": 10,
+     "gt_lesions_found": 0,
+     "pred_regions": 0,
+     "pred_regions_on_lesion": 0
+    }
+   }
+  },
+  {
+   "image": "IDRiD_58",
+   "split": "test",
+   "types": {
+    "exudates": {
+     "gt_pixels": 69235,
+     "pred_pixels": 2712,
+     "tp_pixels": 0,
+     "fov_pixels": 8432412,
+     "gt_lesions": 62,
+     "gt_lesions_found": 0,
+     "pred_regions": 2,
+     "pred_regions_on_lesion": 0
+    },
+    "hemorrhages": {
+     "gt_pixels": 80671,
+     "pred_pixels": 0,
+     "tp_pixels": 0,
+     "fov_pixels": 8432412,
+     "gt_lesions": 14,
+     "gt_lesions_found": 0,
+     "pred_regions": 0,
+     "pred_regions_on_lesion": 0
+    },
+    "microaneurysms": {
+     "gt_pixels": 7408,
+     "pred_pixels": 0,
+     "tp_pixels": 0,
+     "fov_pixels": 8432412,
+     "gt_lesions": 22,
+     "gt_lesions_found": 0,
+     "pred_regions": 0,
+     "pred_regions_on_lesion": 0
+    }
+   }
+  },
+  {
+   "image": "IDRiD_59",
+   "split": "test",
+   "types": {
+    "exudates": {
+     "gt_pixels": 89348,
+     "pred_pixels": 18507,
+     "tp_pixels": 12493,
+     "fov_pixels": 8439159,
+     "gt_lesions": 121,
+     "gt_lesions_found": 10,
+     "pred_regions": 17,
+     "pred_regions_on_lesion": 12
+    },
+    "hemorrhages": {
+     "gt_pixels": 72209,
+     "pred_pixels": 0,
+     "tp_pixels": 0,
+     "fov_pixels": 8439159,
+     "gt_lesions": 16,
+     "gt_lesions_found": 0,
+     "pred_regions": 0,
+     "pred_regions_on_lesion": 0
+    },
+    "microaneurysms": {
+     "gt_pixels": 11551,
+     "pred_pixels": 0,
+     "tp_pixels": 0,
+     "fov_pixels": 8439159,
+     "gt_lesions": 33,
+     "gt_lesions_found": 0,
+     "pred_regions": 0,
+     "pred_regions_on_lesion": 0
+    }
+   }
+  },
+  {
+   "image": "IDRiD_60",
+   "split": "test",
+   "types": {
+    "exudates": {
+     "gt_pixels": 52629,
+     "pred_pixels": 11920,
+     "tp_pixels": 3710,
+     "fov_pixels": 8437591,
+     "gt_lesions": 174,
+     "gt_lesions_found": 4,
+     "pred_regions": 11,
+     "pred_regions_on_lesion": 4
+    },
+    "hemorrhages": {
+     "gt_pixels": 39814,
+     "pred_pixels": 0,
+     "tp_pixels": 0,
+     "fov_pixels": 8437591,
+     "gt_lesions": 15,
+     "gt_lesions_found": 0,
+     "pred_regions": 0,
+     "pred_regions_on_lesion": 0
+    },
+    "microaneurysms": {
+     "gt_pixels": 10137,
+     "pred_pixels": 0,
+     "tp_pixels": 0,
+     "fov_pixels": 8437591,
+     "gt_lesions": 34,
+     "gt_lesions_found": 0,
+     "pred_regions": 0,
+     "pred_regions_on_lesion": 0
+    }
+   }
+  },
+  {
+   "image": "IDRiD_61",
+   "split": "test",
+   "types": {
+    "exudates": {
+     "gt_pixels": 32900,
+     "pred_pixels": 2374,
+     "tp_pixels": 664,
+     "fov_pixels": 8435799,
+     "gt_lesions": 63,
+     "gt_lesions_found": 1,
+     "pred_regions": 3,
+     "pred_regions_on_lesion": 1
+    },
+    "hemorrhages": {
+     "gt_pixels": 1186642,
+     "pred_pixels": 0,
+     "tp_pixels": 0,
+     "fov_pixels": 8435799,
+     "gt_lesions": 52,
+     "gt_lesions_found": 0,
+     "pred_regions": 0,
+     "pred_regions_on_lesion": 0
+    },
+    "microaneurysms": {
+     "gt_pixels": 18568,
+     "pred_pixels": 0,
+     "tp_pixels": 0,
+     "fov_pixels": 8435799,
+     "gt_lesions": 29,
+     "gt_lesions_found": 0,
+     "pred_regions": 0,
+     "pred_regions_on_lesion": 0
+    }
+   }
+  },
+  {
+   "image": "IDRiD_62",
+   "split": "test",
+   "types": {
+    "exudates": {
+     "gt_pixels": 44427,
+     "pred_pixels": 18538,
+     "tp_pixels": 2233,
+     "fov_pixels": 8444219,
+     "gt_lesions": 68,
+     "gt_lesions_found": 3,
+     "pred_regions": 17,
+     "pred_regions_on_lesion": 3
+    },
+    "hemorrhages": {
+     "gt_pixels": 10829,
+     "pred_pixels": 0,
+     "tp_pixels": 0,
+     "fov_pixels": 8444219,
+     "gt_lesions": 2,
+     "gt_lesions_found": 0,
+     "pred_regions": 0,
+     "pred_regions_on_lesion": 0
+    },
+    "microaneurysms": {
+     "gt_pixels": 3233,
+     "pred_pixels": 0,
+     "tp_pixels": 0,
+     "fov_pixels": 8444219,
+     "gt_lesions": 11,
+     "gt_lesions_found": 0,
+     "pred_regions": 0,
+     "pred_regions_on_lesion": 0
+    }
+   }
+  },
+  {
+   "image": "IDRiD_63",
+   "split": "test",
+   "types": {
+    "exudates": {
+     "gt_pixels": 92542,
+     "pred_pixels": 19985,
+     "tp_pixels": 2732,
+     "fov_pixels": 8431384,
+     "gt_lesions": 54,
+     "gt_lesions_found": 3,
+     "pred_regions": 14,
+     "pred_regions_on_lesion": 3
+    },
+    "hemorrhages": {
+     "gt_pixels": 12603,
+     "pred_pixels": 0,
+     "tp_pixels": 0,
+     "fov_pixels": 8431384,
+     "gt_lesions": 5,
+     "gt_lesions_found": 0,
+     "pred_regions": 0,
+     "pred_regions_on_lesion": 0
+    },
+    "microaneurysms": {
+     "gt_pixels": 2173,
+     "pred_pixels": 0,
+     "tp_pixels": 0,
+     "fov_pixels": 8431384,
+     "gt_lesions": 3,
+     "gt_lesions_found": 0,
+     "pred_regions": 0,
+     "pred_regions_on_lesion": 0
+    }
+   }
+  },
+  {
+   "image": "IDRiD_64",
+   "split": "test",
+   "types": {
+    "exudates": {
+     "gt_pixels": 68089,
+     "pred_pixels": 16297,
+     "tp_pixels": 3182,
+     "fov_pixels": 8431985,
+     "gt_lesions": 192,
+     "gt_lesions_found": 6,
+     "pred_regions": 12,
+     "pred_regions_on_lesion": 4
+    },
+    "hemorrhages": {
+     "gt_pixels": 23818,
+     "pred_pixels": 0,
+     "tp_pixels": 0,
+     "fov_pixels": 8431985,
+     "gt_lesions": 8,
+     "gt_lesions_found": 0,
+     "pred_regions": 0,
+     "pred_regions_on_lesion": 0
+    },
+    "microaneurysms": {
+     "gt_pixels": 12343,
+     "pred_pixels": 0,
+     "tp_pixels": 0,
+     "fov_pixels": 8431985,
+     "gt_lesions": 40,
+     "gt_lesions_found": 0,
+     "pred_regions": 0,
+     "pred_regions_on_lesion": 0
+    }
+   }
+  },
+  {
+   "image": "IDRiD_65",
+   "split": "test",
+   "types": {
+    "exudates": {
+     "gt_pixels": 70528,
+     "pred_pixels": 9601,
+     "tp_pixels": 0,
+     "fov_pixels": 9711274,
+     "gt_lesions": 122,
+     "gt_lesions_found": 0,
+     "pred_regions": 8,
+     "pred_regions_on_lesion": 0
+    },
+    "hemorrhages": {
+     "gt_pixels": 42485,
+     "pred_pixels": 0,
+     "tp_pixels": 0,
+     "fov_pixels": 9711274,
+     "gt_lesions": 23,
+     "gt_lesions_found": 0,
+     "pred_regions": 0,
+     "pred_regions_on_lesion": 0
+    },
+    "microaneurysms": {
+     "gt_pixels": 16973,
+     "pred_pixels": 0,
+     "tp_pixels": 0,
+     "fov_pixels": 9711274,
+     "gt_lesions": 67,
+     "gt_lesions_found": 0,
+     "pred_regions": 0,
+     "pred_regions_on_lesion": 0
+    }
+   }
+  },
+  {
+   "image": "IDRiD_66",
+   "split": "test",
+   "types": {
+    "exudates": {
+     "gt_pixels": 917148,
+     "pred_pixels": 11986,
+     "tp_pixels": 10711,
+     "fov_pixels": 8438945,
+     "gt_lesions": 405,
+     "gt_lesions_found": 10,
+     "pred_regions": 13,
+     "pred_regions_on_lesion": 12
+    },
+    "hemorrhages": {
+     "gt_pixels": 24156,
+     "pred_pixels": 0,
+     "tp_pixels": 0,
+     "fov_pixels": 8438945,
+     "gt_lesions": 8,
+     "gt_lesions_found": 0,
+     "pred_regions": 0,
+     "pred_regions_on_lesion": 0
+    },
+    "microaneurysms": {
+     "gt_pixels": 9144,
+     "pred_pixels": 0,
+     "tp_pixels": 0,
+     "fov_pixels": 8438945,
+     "gt_lesions": 49,
+     "gt_lesions_found": 0,
+     "pred_regions": 0,
+     "pred_regions_on_lesion": 0
+    }
+   }
+  },
+  {
+   "image": "IDRiD_67",
+   "split": "test",
+   "types": {
+    "exudates": {
+     "gt_pixels": 31950,
+     "pred_pixels": 2448,
+     "tp_pixels": 1178,
+     "fov_pixels": 8431958,
+     "gt_lesions": 40,
+     "gt_lesions_found": 1,
+     "pred_regions": 2,
+     "pred_regions_on_lesion": 1
+    },
+    "hemorrhages": {
+     "gt_pixels": 329922,
+     "pred_pixels": 0,
+     "tp_pixels": 0,
+     "fov_pixels": 8431958,
+     "gt_lesions": 37,
+     "gt_lesions_found": 0,
+     "pred_regions": 0,
+     "pred_regions_on_lesion": 0
+    },
+    "microaneurysms": {
+     "gt_pixels": 13242,
+     "pred_pixels": 0,
+     "tp_pixels": 0,
+     "fov_pixels": 8431958,
+     "gt_lesions": 30,
+     "gt_lesions_found": 0,
+     "pred_regions": 0,
+     "pred_regions_on_lesion": 0
+    }
+   }
+  },
+  {
+   "image": "IDRiD_68",
+   "split": "test",
+   "types": {
+    "exudates": {
+     "gt_pixels": 18689,
+     "pred_pixels": 6499,
+     "tp_pixels": 2104,
+     "fov_pixels": 8435606,
+     "gt_lesions": 14,
+     "gt_lesions_found": 2,
+     "pred_regions": 7,
+     "pred_regions_on_lesion": 2
+    },
+    "hemorrhages": {
+     "gt_pixels": 296560,
+     "pred_pixels": 0,
+     "tp_pixels": 0,
+     "fov_pixels": 8435606,
+     "gt_lesions": 29,
+     "gt_lesions_found": 0,
+     "pred_regions": 0,
+     "pred_regions_on_lesion": 0
+    },
+    "microaneurysms": {
+     "gt_pixels": 7450,
+     "pred_pixels": 0,
+     "tp_pixels": 0,
+     "fov_pixels": 8435606,
+     "gt_lesions": 15,
+     "gt_lesions_found": 0,
+     "pred_regions": 0,
+     "pred_regions_on_lesion": 0
+    }
+   }
+  },
+  {
+   "image": "IDRiD_69",
+   "split": "test",
+   "types": {
+    "exudates": {
+     "gt_pixels": 57400,
+     "pred_pixels": 3342,
+     "tp_pixels": 2240,
+     "fov_pixels": 8432295,
+     "gt_lesions": 64,
+     "gt_lesions_found": 2,
+     "pred_regions": 3,
+     "pred_regions_on_lesion": 2
+    },
+    "hemorrhages": {
+     "gt_pixels": 292747,
+     "pred_pixels": 0,
+     "tp_pixels": 0,
+     "fov_pixels": 8432295,
+     "gt_lesions": 51,
+     "gt_lesions_found": 0,
+     "pred_regions": 0,
+     "pred_regions_on_lesion": 0
+    },
+    "microaneurysms": {
+     "gt_pixels": 10767,
+     "pred_pixels": 0,
+     "tp_pixels": 0,
+     "fov_pixels": 8432295,
+     "gt_lesions": 43,
+     "gt_lesions_found": 0,
+     "pred_regions": 0,
+     "pred_regions_on_lesion": 0
+    }
+   }
+  },
+  {
+   "image": "IDRiD_70",
+   "split": "test",
+   "types": {
+    "exudates": {
+     "gt_pixels": 62285,
+     "pred_pixels": 10327,
+     "tp_pixels": 0,
+     "fov_pixels": 8437893,
+     "gt_lesions": 20,
+     "gt_lesions_found": 0,
+     "pred_regions": 7,
+     "pred_regions_on_lesion": 0
+    },
+    "hemorrhages": {
+     "gt_pixels": 101922,
+     "pred_pixels": 0,
+     "tp_pixels": 0,
+     "fov_pixels": 8437893,
+     "gt_lesions": 22,
+     "gt_lesions_found": 0,
+     "pred_regions": 0,
+     "pred_regions_on_lesion": 0
+    },
+    "microaneurysms": {
+     "gt_pixels": 8693,
+     "pred_pixels": 0,
+     "tp_pixels": 0,
+     "fov_pixels": 8437893,
+     "gt_lesions": 17,
+     "gt_lesions_found": 0,
+     "pred_regions": 0,
+     "pred_regions_on_lesion": 0
+    }
+   }
+  },
+  {
+   "image": "IDRiD_71",
+   "split": "test",
+   "types": {
+    "exudates": {
+     "gt_pixels": 282256,
+     "pred_pixels": 16263,
+     "tp_pixels": 4575,
+     "fov_pixels": 8435395,
+     "gt_lesions": 393,
+     "gt_lesions_found": 5,
+     "pred_regions": 16,
+     "pred_regions_on_lesion": 5
+    },
+    "hemorrhages": {
+     "gt_pixels": 50940,
+     "pred_pixels": 0,
+     "tp_pixels": 0,
+     "fov_pixels": 8435395,
+     "gt_lesions": 16,
+     "gt_lesions_found": 0,
+     "pred_regions": 0,
+     "pred_regions_on_lesion": 0
+    },
+    "microaneurysms": {
+     "gt_pixels": 21182,
+     "pred_pixels": 0,
+     "tp_pixels": 0,
+     "fov_pixels": 8435395,
+     "gt_lesions": 59,
+     "gt_lesions_found": 0,
+     "pred_regions": 0,
+     "pred_regions_on_lesion": 0
+    }
+   }
+  },
+  {
+   "image": "IDRiD_72",
+   "split": "test",
+   "types": {
+    "exudates": {
+     "gt_pixels": 164636,
+     "pred_pixels": 9993,
+     "tp_pixels": 4363,
+     "fov_pixels": 8428748,
+     "gt_lesions": 210,
+     "gt_lesions_found": 3,
+     "pred_regions": 11,
+     "pred_regions_on_lesion": 5
+    },
+    "hemorrhages": {
+     "gt_pixels": 8454,
+     "pred_pixels": 0,
+     "tp_pixels": 0,
+     "fov_pixels": 8428748,
+     "gt_lesions": 7,
+     "gt_lesions_found": 0,
+     "pred_regions": 0,
+     "pred_regions_on_lesion": 0
+    },
+    "microaneurysms": {
+     "gt_pixels": 8355,
+     "pred_pixels": 0,
+     "tp_pixels": 0,
+     "fov_pixels": 8428748,
+     "gt_lesions": 38,
+     "gt_lesions_found": 0,
+     "pred_regions": 0,
+     "pred_regions_on_lesion": 0
+    }
+   }
+  },
+  {
+   "image": "IDRiD_73",
+   "split": "test",
+   "types": {
+    "exudates": {
+     "gt_pixels": 10821,
+     "pred_pixels": 4435,
+     "tp_pixels": 0,
+     "fov_pixels": 8439392,
+     "gt_lesions": 20,
+     "gt_lesions_found": 0,
+     "pred_regions": 5,
+     "pred_regions_on_lesion": 0
+    },
+    "hemorrhages": {
+     "gt_pixels": 25636,
+     "pred_pixels": 0,
+     "tp_pixels": 0,
+     "fov_pixels": 8439392,
+     "gt_lesions": 8,
+     "gt_lesions_found": 0,
+     "pred_regions": 0,
+     "pred_regions_on_lesion": 0
+    },
+    "microaneurysms": {
+     "gt_pixels": 10305,
+     "pred_pixels": 0,
+     "tp_pixels": 0,
+     "fov_pixels": 8439392,
+     "gt_lesions": 31,
+     "gt_lesions_found": 0,
+     "pred_regions": 0,
+     "pred_regions_on_lesion": 0
+    }
+   }
+  },
+  {
+   "image": "IDRiD_74",
+   "split": "test",
+   "types": {
+    "exudates": {
+     "gt_pixels": 26025,
+     "pred_pixels": 9072,
+     "tp_pixels": 0,
+     "fov_pixels": 8439370,
+     "gt_lesions": 113,
+     "gt_lesions_found": 0,
+     "pred_regions": 9,
+     "pred_regions_on_lesion": 0
+    },
+    "hemorrhages": {
+     "gt_pixels": 101462,
+     "pred_pixels": 0,
+     "tp_pixels": 0,
+     "fov_pixels": 8439370,
+     "gt_lesions": 44,
+     "gt_lesions_found": 0,
+     "pred_regions": 0,
+     "pred_regions_on_lesion": 0
+    },
+    "microaneurysms": {
+     "gt_pixels": 17343,
+     "pred_pixels": 0,
+     "tp_pixels": 0,
+     "fov_pixels": 8439370,
+     "gt_lesions": 77,
+     "gt_lesions_found": 0,
+     "pred_regions": 0,
+     "pred_regions_on_lesion": 0
+    }
+   }
+  },
+  {
+   "image": "IDRiD_75",
+   "split": "test",
+   "types": {
+    "exudates": {
+     "gt_pixels": 20253,
+     "pred_pixels": 1914,
+     "tp_pixels": 1901,
+     "fov_pixels": 8433888,
+     "gt_lesions": 65,
+     "gt_lesions_found": 2,
+     "pred_regions": 2,
+     "pred_regions_on_lesion": 2
+    },
+    "hemorrhages": {
+     "gt_pixels": 144770,
+     "pred_pixels": 0,
+     "tp_pixels": 0,
+     "fov_pixels": 8433888,
+     "gt_lesions": 32,
+     "gt_lesions_found": 0,
+     "pred_regions": 0,
+     "pred_regions_on_lesion": 0
+    },
+    "microaneurysms": {
+     "gt_pixels": 25490,
+     "pred_pixels": 0,
+     "tp_pixels": 0,
+     "fov_pixels": 8433888,
+     "gt_lesions": 96,
+     "gt_lesions_found": 0,
+     "pred_regions": 0,
+     "pred_regions_on_lesion": 0
+    }
+   }
+  },
+  {
+   "image": "IDRiD_76",
+   "split": "test",
+   "types": {
+    "exudates": {
+     "gt_pixels": 71267,
+     "pred_pixels": 7380,
+     "tp_pixels": 4968,
+     "fov_pixels": 8430228,
+     "gt_lesions": 97,
+     "gt_lesions_found": 3,
+     "pred_regions": 5,
+     "pred_regions_on_lesion": 3
+    },
+    "hemorrhages": {
+     "gt_pixels": 81162,
+     "pred_pixels": 1570,
+     "tp_pixels": 0,
+     "fov_pixels": 8430228,
+     "gt_lesions": 31,
+     "gt_lesions_found": 0,
+     "pred_regions": 1,
+     "pred_regions_on_lesion": 0
+    },
+    "microaneurysms": {
+     "gt_pixels": 25151,
+     "pred_pixels": 0,
+     "tp_pixels": 0,
+     "fov_pixels": 8430228,
+     "gt_lesions": 75,
+     "gt_lesions_found": 0,
+     "pred_regions": 0,
+     "pred_regions_on_lesion": 0
+    }
+   }
+  },
+  {
+   "image": "IDRiD_77",
+   "split": "test",
+   "types": {
+    "exudates": {
+     "gt_pixels": 99236,
+     "pred_pixels": 12632,
+     "tp_pixels": 2470,
+     "fov_pixels": 8437528,
+     "gt_lesions": 339,
+     "gt_lesions_found": 1,
+     "pred_regions": 11,
+     "pred_regions_on_lesion": 1
+    },
+    "hemorrhages": {
+     "gt_pixels": 37789,
+     "pred_pixels": 0,
+     "tp_pixels": 0,
+     "fov_pixels": 8437528,
+     "gt_lesions": 18,
+     "gt_lesions_found": 0,
+     "pred_regions": 0,
+     "pred_regions_on_lesion": 0
+    },
+    "microaneurysms": {
+     "gt_pixels": 12850,
+     "pred_pixels": 0,
+     "tp_pixels": 0,
+     "fov_pixels": 8437528,
+     "gt_lesions": 65,
+     "gt_lesions_found": 0,
+     "pred_regions": 0,
+     "pred_regions_on_lesion": 0
+    }
+   }
+  },
+  {
+   "image": "IDRiD_78",
+   "split": "test",
+   "types": {
+    "exudates": {
+     "gt_pixels": 94566,
+     "pred_pixels": 6935,
+     "tp_pixels": 816,
+     "fov_pixels": 8424761,
+     "gt_lesions": 185,
+     "gt_lesions_found": 1,
+     "pred_regions": 7,
+     "pred_regions_on_lesion": 1
+    },
+    "hemorrhages": {
+     "gt_pixels": 64753,
+     "pred_pixels": 0,
+     "tp_pixels": 0,
+     "fov_pixels": 8424761,
+     "gt_lesions": 17,
+     "gt_lesions_found": 0,
+     "pred_regions": 0,
+     "pred_regions_on_lesion": 0
+    },
+    "microaneurysms": {
+     "gt_pixels": 14364,
+     "pred_pixels": 0,
+     "tp_pixels": 0,
+     "fov_pixels": 8424761,
+     "gt_lesions": 57,
+     "gt_lesions_found": 0,
+     "pred_regions": 0,
+     "pred_regions_on_lesion": 0
+    }
+   }
+  },
+  {
+   "image": "IDRiD_79",
+   "split": "test",
+   "types": {
+    "exudates": {
+     "gt_pixels": 327387,
+     "pred_pixels": 17764,
+     "tp_pixels": 11985,
+     "fov_pixels": 8428302,
+     "gt_lesions": 436,
+     "gt_lesions_found": 11,
+     "pred_regions": 15,
+     "pred_regions_on_lesion": 12
+    },
+    "hemorrhages": {
+     "gt_pixels": 114139,
+     "pred_pixels": 0,
+     "tp_pixels": 0,
+     "fov_pixels": 8428302,
+     "gt_lesions": 31,
+     "gt_lesions_found": 0,
+     "pred_regions": 0,
+     "pred_regions_on_lesion": 0
+    },
+    "microaneurysms": {
+     "gt_pixels": 20921,
+     "pred_pixels": 0,
+     "tp_pixels": 0,
+     "fov_pixels": 8428302,
+     "gt_lesions": 79,
+     "gt_lesions_found": 0,
+     "pred_regions": 0,
+     "pred_regions_on_lesion": 0
+    }
+   }
+  },
+  {
+   "image": "IDRiD_80",
+   "split": "test",
+   "types": {
+    "exudates": {
+     "gt_pixels": 6964,
+     "pred_pixels": 712,
+     "tp_pixels": 0,
+     "fov_pixels": 8427036,
+     "gt_lesions": 18,
+     "gt_lesions_found": 0,
+     "pred_regions": 1,
+     "pred_regions_on_lesion": 0
+    },
+    "hemorrhages": {
+     "gt_pixels": 17227,
+     "pred_pixels": 0,
+     "tp_pixels": 0,
+     "fov_pixels": 8427036,
+     "gt_lesions": 1,
+     "gt_lesions_found": 0,
+     "pred_regions": 0,
+     "pred_regions_on_lesion": 0
+    },
+    "microaneurysms": {
+     "gt_pixels": 689,
+     "pred_pixels": 0,
+     "tp_pixels": 0,
+     "fov_pixels": 8427036,
+     "gt_lesions": 4,
+     "gt_lesions_found": 0,
+     "pred_regions": 0,
+     "pred_regions_on_lesion": 0
+    }
+   }
+  },
+  {
+   "image": "IDRiD_81",
+   "split": "test",
+   "types": {
+    "exudates": {
+     "gt_pixels": 0,
+     "pred_pixels": 20482,
+     "tp_pixels": 0,
+     "fov_pixels": 8428948,
+     "gt_lesions": 0,
+     "gt_lesions_found": 0,
+     "pred_regions": 20,
+     "pred_regions_on_lesion": 0
+    },
+    "hemorrhages": {
+     "gt_pixels": 46158,
+     "pred_pixels": 0,
+     "tp_pixels": 0,
+     "fov_pixels": 8428948,
+     "gt_lesions": 13,
+     "gt_lesions_found": 0,
+     "pred_regions": 0,
+     "pred_regions_on_lesion": 0
+    },
+    "microaneurysms": {
+     "gt_pixels": 12327,
+     "pred_pixels": 0,
+     "tp_pixels": 0,
+     "fov_pixels": 8428948,
+     "gt_lesions": 47,
+     "gt_lesions_found": 0,
+     "pred_regions": 0,
+     "pred_regions_on_lesion": 0
+    }
+   }
+  }
+ ],
+ "idrid": {
+  "all 81 images": {
+   "exudates": {
+    "pixel_precision": 0.3399452829361659,
+    "pixel_recall": 0.04336523647316113,
+    "dice": 0.07691835645512311,
+    "chance_precision": 0.012476876879553254,
+    "lift_over_chance": 27.246023681876544,
+    "lesion_sensitivity": 0.027332040204549463,
+    "lesion_count": 11342,
+    "region_precision": 0.38228941684665224,
+    "regions_drawn": 926,
+    "regions_per_true_lesion": 0.08164344912713807
+   },
+   "hemorrhages": {
+    "pixel_precision": 0.0,
+    "pixel_recall": 0.0,
+    "dice": 0.0,
+    "chance_precision": 0.014558861562070226,
+    "lift_over_chance": 0.0,
+    "lesion_sensitivity": 0.0,
+    "lesion_count": 1900,
+    "region_precision": 0.0,
+    "regions_drawn": 30,
+    "regions_per_true_lesion": 0.015789473684210527
+   },
+   "microaneurysms": {
+    "pixel_precision": 0.0,
+    "pixel_recall": 0.0,
+    "dice": 0.0,
+    "chance_precision": 0.0014953588665722816,
+    "lift_over_chance": 0.0,
+    "lesion_sensitivity": 0.0,
+    "lesion_count": 3497,
+    "region_precision": 0.0,
+    "regions_drawn": 0,
+    "regions_per_true_lesion": 0.0
+   }
+  },
+  "test set (27)": {
+   "exudates": {
+    "pixel_precision": 0.3499957451636694,
+    "pixel_recall": 0.030232753303060765,
+    "dice": 0.05565776927991105,
+    "chance_precision": 0.014178869574095724,
+    "lift_over_chance": 24.684319390531584,
+    "lesion_sensitivity": 0.023060796645702306,
+    "lesion_count": 3816,
+    "region_precision": 0.37890625,
+    "regions_drawn": 256,
+    "regions_per_true_lesion": 0.06708595387840671
+   },
+   "hemorrhages": {
+    "pixel_precision": 0.0,
+    "pixel_recall": 0.0,
+    "dice": 0.0,
+    "chance_precision": 0.015271128243054528,
+    "lift_over_chance": 0.0,
+    "lesion_sensitivity": 0.0,
+    "lesion_count": 535,
+    "region_precision": 0.0,
+    "regions_drawn": 1,
+    "regions_per_true_lesion": 0.001869158878504673
+   },
+   "microaneurysms": {
+    "pixel_precision": 0.0,
+    "pixel_recall": 0.0,
+    "dice": 0.0,
+    "chance_precision": 0.0014065777416281241,
+    "lift_over_chance": 0.0,
+    "lesion_sensitivity": 0.0,
+    "lesion_count": 1085,
+    "region_precision": 0.0,
+    "regions_drawn": 0,
+    "regions_per_true_lesion": 0.0
+   }
+  }
+ },
+ "aptos_images": [
+  {
+   "label": "No_DR",
+   "id": "a07d9a5045cb",
+   "microaneurysms": 101,
+   "hemorrhages": 27,
+   "exudates": 26,
+   "total": 154,
+   "flagged_share": 0.029393954685371145
+  },
+  {
+   "label": "No_DR",
+   "id": "fefded6bf135",
+   "microaneurysms": 163,
+   "hemorrhages": 30,
+   "exudates": 17,
+   "total": 210,
+   "flagged_share": 0.03458245056497175
+  },
+  {
+   "label": "No_DR",
+   "id": "94076a9fb9b5",
+   "microaneurysms": 95,
+   "hemorrhages": 22,
+   "exudates": 16,
+   "total": 133,
+   "flagged_share": 0.027664193043566057
+  },
+  {
+   "label": "No_DR",
+   "id": "991a0b7a8c87",
+   "microaneurysms": 30,
+   "hemorrhages": 11,
+   "exudates": 5,
+   "total": 46,
+   "flagged_share": 0.01979035639412998
+  },
+  {
+   "label": "No_DR",
+   "id": "521b5377a727",
+   "microaneurysms": 87,
+   "hemorrhages": 6,
+   "exudates": 7,
+   "total": 100,
+   "flagged_share": 0.01801212548111997
+  },
+  {
+   "label": "No_DR",
+   "id": "6324d77cf926",
+   "microaneurysms": 130,
+   "hemorrhages": 24,
+   "exudates": 15,
+   "total": 169,
+   "flagged_share": 0.027703419364614373
+  },
+  {
+   "label": "No_DR",
+   "id": "ee36ca728641",
+   "microaneurysms": 52,
+   "hemorrhages": 9,
+   "exudates": 2,
+   "total": 63,
+   "flagged_share": 0.01810315860215054
+  },
+  {
+   "label": "No_DR",
+   "id": "d26bc6e1230d",
+   "microaneurysms": 135,
+   "hemorrhages": 20,
+   "exudates": 15,
+   "total": 170,
+   "flagged_share": 0.02990116982654296
+  },
+  {
+   "label": "No_DR",
+   "id": "97f290d31813",
+   "microaneurysms": 149,
+   "hemorrhages": 21,
+   "exudates": 23,
+   "total": 193,
+   "flagged_share": 0.03476730113323798
+  },
+  {
+   "label": "No_DR",
+   "id": "12b57dac703e",
+   "microaneurysms": 156,
+   "hemorrhages": 26,
+   "exudates": 28,
+   "total": 210,
+   "flagged_share": 0.033890684878717166
+  },
+  {
+   "label": "No_DR",
+   "id": "150f92b45349",
+   "microaneurysms": 128,
+   "hemorrhages": 19,
+   "exudates": 13,
+   "total": 160,
+   "flagged_share": 0.029976592585135034
+  },
+  {
+   "label": "No_DR",
+   "id": "e79e10907295",
+   "microaneurysms": 137,
+   "hemorrhages": 17,
+   "exudates": 28,
+   "total": 182,
+   "flagged_share": 0.027913538570060965
+  },
+  {
+   "label": "No_DR",
+   "id": "f002ce614c59",
+   "microaneurysms": 135,
+   "hemorrhages": 22,
+   "exudates": 17,
+   "total": 174,
+   "flagged_share": 0.022856638573886954
+  },
+  {
+   "label": "No_DR",
+   "id": "4bcee3cbe232",
+   "microaneurysms": 118,
+   "hemorrhages": 34,
+   "exudates": 25,
+   "total": 177,
+   "flagged_share": 0.02789981315962228
+  },
+  {
+   "label": "No_DR",
+   "id": "f9e1c439d4c8",
+   "microaneurysms": 153,
+   "hemorrhages": 20,
+   "exudates": 26,
+   "total": 199,
+   "flagged_share": 0.03138831072513697
+  },
+  {
+   "label": "No_DR",
+   "id": "3286073a976e",
+   "microaneurysms": 54,
+   "hemorrhages": 8,
+   "exudates": 14,
+   "total": 76,
+   "flagged_share": 0.020258103241296517
+  },
+  {
+   "label": "No_DR",
+   "id": "fdbc252813b1",
+   "microaneurysms": 33,
+   "hemorrhages": 12,
+   "exudates": 9,
+   "total": 54,
+   "flagged_share": 0.02350624319115059
+  },
+  {
+   "label": "No_DR",
+   "id": "ae61e19fb766",
+   "microaneurysms": 45,
+   "hemorrhages": 9,
+   "exudates": 5,
+   "total": 59,
+   "flagged_share": 0.020256668344237543
+  },
+  {
+   "label": "No_DR",
+   "id": "5f51192841f7",
+   "microaneurysms": 124,
+   "hemorrhages": 25,
+   "exudates": 21,
+   "total": 170,
+   "flagged_share": 0.027411755813660527
+  },
+  {
+   "label": "No_DR",
+   "id": "09662e462531",
+   "microaneurysms": 164,
+   "hemorrhages": 20,
+   "exudates": 3,
+   "total": 187,
+   "flagged_share": 0.031281898604967676
+  },
+  {
+   "label": "No_DR",
+   "id": "e322acd46152",
+   "microaneurysms": 58,
+   "hemorrhages": 14,
+   "exudates": 3,
+   "total": 75,
+   "flagged_share": 0.016415523192187895
+  },
+  {
+   "label": "No_DR",
+   "id": "97fdee242fea",
+   "microaneurysms": 80,
+   "hemorrhages": 12,
+   "exudates": 5,
+   "total": 97,
+   "flagged_share": 0.026373681315934202
+  },
+  {
+   "label": "No_DR",
+   "id": "1b862fb6f65d",
+   "microaneurysms": 115,
+   "hemorrhages": 20,
+   "exudates": 11,
+   "total": 146,
+   "flagged_share": 0.02399474641341685
+  },
+  {
+   "label": "No_DR",
+   "id": "26cd40b57ad1",
+   "microaneurysms": 120,
+   "hemorrhages": 20,
+   "exudates": 21,
+   "total": 161,
+   "flagged_share": 0.0303022657314427
+  },
+  {
+   "label": "No_DR",
+   "id": "28dc010a0780",
+   "microaneurysms": 121,
+   "hemorrhages": 16,
+   "exudates": 8,
+   "total": 145,
+   "flagged_share": 0.026993617397007997
+  },
+  {
+   "label": "No_DR",
+   "id": "a45c30da0c72",
+   "microaneurysms": 39,
+   "hemorrhages": 12,
+   "exudates": 9,
+   "total": 60,
+   "flagged_share": 0.015007128385983342
+  },
+  {
+   "label": "No_DR",
+   "id": "c38dec54a9f7",
+   "microaneurysms": 162,
+   "hemorrhages": 15,
+   "exudates": 5,
+   "total": 182,
+   "flagged_share": 0.022850376640717505
+  },
+  {
+   "label": "No_DR",
+   "id": "15c24478ac72",
+   "microaneurysms": 107,
+   "hemorrhages": 25,
+   "exudates": 14,
+   "total": 146,
+   "flagged_share": 0.025274033009953383
+  },
+  {
+   "label": "No_DR",
+   "id": "484dbeb9bf2a",
+   "microaneurysms": 56,
+   "hemorrhages": 9,
+   "exudates": 3,
+   "total": 68,
+   "flagged_share": 0.019305019305019305
+  },
+  {
+   "label": "No_DR",
+   "id": "7bc00e58d419",
+   "microaneurysms": 147,
+   "hemorrhages": 23,
+   "exudates": 6,
+   "total": 176,
+   "flagged_share": 0.024801311971742148
+  },
+  {
+   "label": "No_DR",
+   "id": "682312e82ee3",
+   "microaneurysms": 130,
+   "hemorrhages": 16,
+   "exudates": 12,
+   "total": 158,
+   "flagged_share": 0.01745465751012502
+  },
+  {
+   "label": "No_DR",
+   "id": "a8aed92940fb",
+   "microaneurysms": 40,
+   "hemorrhages": 7,
+   "exudates": 0,
+   "total": 47,
+   "flagged_share": 0.01775395695502889
+  },
+  {
+   "label": "No_DR",
+   "id": "0182152c50de",
+   "microaneurysms": 139,
+   "hemorrhages": 20,
+   "exudates": 10,
+   "total": 169,
+   "flagged_share": 0.023296271083881704
+  },
+  {
+   "label": "No_DR",
+   "id": "7ed4128b2a4e",
+   "microaneurysms": 121,
+   "hemorrhages": 22,
+   "exudates": 8,
+   "total": 151,
+   "flagged_share": 0.027959322718211412
+  },
+  {
+   "label": "No_DR",
+   "id": "73d40ce06a67",
+   "microaneurysms": 128,
+   "hemorrhages": 26,
+   "exudates": 28,
+   "total": 182,
+   "flagged_share": 0.03042401576792844
+  },
+  {
+   "label": "No_DR",
+   "id": "a3132c8828e4",
+   "microaneurysms": 60,
+   "hemorrhages": 9,
+   "exudates": 6,
+   "total": 75,
+   "flagged_share": 0.017370872319892587
+  },
+  {
+   "label": "No_DR",
+   "id": "5bf6f2958e53",
+   "microaneurysms": 83,
+   "hemorrhages": 19,
+   "exudates": 15,
+   "total": 117,
+   "flagged_share": 0.02763446002063776
+  },
+  {
+   "label": "No_DR",
+   "id": "d667af5742f6",
+   "microaneurysms": 111,
+   "hemorrhages": 16,
+   "exudates": 11,
+   "total": 138,
+   "flagged_share": 0.026714091115483576
+  },
+  {
+   "label": "No_DR",
+   "id": "afc744fad65e",
+   "microaneurysms": 113,
+   "hemorrhages": 25,
+   "exudates": 9,
+   "total": 147,
+   "flagged_share": 0.023353172601634217
+  },
+  {
+   "label": "No_DR",
+   "id": "26d60db3bbfd",
+   "microaneurysms": 84,
+   "hemorrhages": 12,
+   "exudates": 11,
+   "total": 107,
+   "flagged_share": 0.02805656363408835
+  },
+  {
+   "label": "No_DR",
+   "id": "09f1111a388a",
+   "microaneurysms": 49,
+   "hemorrhages": 14,
+   "exudates": 9,
+   "total": 72,
+   "flagged_share": 0.02128644146228598
+  },
+  {
+   "label": "No_DR",
+   "id": "883ddb650967",
+   "microaneurysms": 112,
+   "hemorrhages": 21,
+   "exudates": 24,
+   "total": 157,
+   "flagged_share": 0.027084279013466484
+  },
+  {
+   "label": "No_DR",
+   "id": "af7a36454670",
+   "microaneurysms": 151,
+   "hemorrhages": 24,
+   "exudates": 22,
+   "total": 197,
+   "flagged_share": 0.03080879386849536
+  },
+  {
+   "label": "No_DR",
+   "id": "87d46b1cc4e9",
+   "microaneurysms": 67,
+   "hemorrhages": 11,
+   "exudates": 14,
+   "total": 92,
+   "flagged_share": 0.02595622563926843
+  },
+  {
+   "label": "No_DR",
+   "id": "42985aa2e32f",
+   "microaneurysms": 132,
+   "hemorrhages": 13,
+   "exudates": 19,
+   "total": 164,
+   "flagged_share": 0.026052008325159685
+  },
+  {
+   "label": "No_DR",
+   "id": "40dd4e6e4444",
+   "microaneurysms": 62,
+   "hemorrhages": 9,
+   "exudates": 11,
+   "total": 82,
+   "flagged_share": 0.025348807977542215
+  },
+  {
+   "label": "No_DR",
+   "id": "ff1e940105f9",
+   "microaneurysms": 142,
+   "hemorrhages": 16,
+   "exudates": 12,
+   "total": 170,
+   "flagged_share": 0.025657181742571263
+  },
+  {
+   "label": "No_DR",
+   "id": "5b1c4cefeb24",
+   "microaneurysms": 40,
+   "hemorrhages": 11,
+   "exudates": 2,
+   "total": 53,
+   "flagged_share": 0.017638679403385284
+  },
+  {
+   "label": "No_DR",
+   "id": "3ce2f8a77a32",
+   "microaneurysms": 67,
+   "hemorrhages": 8,
+   "exudates": 9,
+   "total": 84,
+   "flagged_share": 0.019480246861749023
+  },
+  {
+   "label": "No_DR",
+   "id": "aa8a1e814811",
+   "microaneurysms": 146,
+   "hemorrhages": 18,
+   "exudates": 4,
+   "total": 168,
+   "flagged_share": 0.02281215302311497
+  },
+  {
+   "label": "No_DR",
+   "id": "44a4d04162cc",
+   "microaneurysms": 135,
+   "hemorrhages": 25,
+   "exudates": 19,
+   "total": 179,
+   "flagged_share": 0.025714935902298414
+  },
+  {
+   "label": "No_DR",
+   "id": "0dbe6c26cedc",
+   "microaneurysms": 34,
+   "hemorrhages": 10,
+   "exudates": 5,
+   "total": 49,
+   "flagged_share": 0.017346853264057657
+  },
+  {
+   "label": "No_DR",
+   "id": "f86d1c404acb",
+   "microaneurysms": 25,
+   "hemorrhages": 11,
+   "exudates": 4,
+   "total": 40,
+   "flagged_share": 0.01900029231218942
+  },
+  {
+   "label": "No_DR",
+   "id": "29a13e666266",
+   "microaneurysms": 133,
+   "hemorrhages": 27,
+   "exudates": 16,
+   "total": 176,
+   "flagged_share": 0.026968334932579163
+  },
+  {
+   "label": "No_DR",
+   "id": "992b9a07b25f",
+   "microaneurysms": 177,
+   "hemorrhages": 30,
+   "exudates": 5,
+   "total": 212,
+   "flagged_share": 0.026525899043220058
+  },
+  {
+   "label": "No_DR",
+   "id": "4a1afe4044f4",
+   "microaneurysms": 49,
+   "hemorrhages": 7,
+   "exudates": 12,
+   "total": 68,
+   "flagged_share": 0.01646970077948202
+  },
+  {
+   "label": "No_DR",
+   "id": "a61723fc38c2",
+   "microaneurysms": 129,
+   "hemorrhages": 19,
+   "exudates": 18,
+   "total": 166,
+   "flagged_share": 0.025862504419861595
+  },
+  {
+   "label": "No_DR",
+   "id": "3ac92ac3d65a",
+   "microaneurysms": 63,
+   "hemorrhages": 9,
+   "exudates": 13,
+   "total": 85,
+   "flagged_share": 0.021240869784233063
+  },
+  {
+   "label": "No_DR",
+   "id": "c62cef02efa2",
+   "microaneurysms": 136,
+   "hemorrhages": 26,
+   "exudates": 10,
+   "total": 172,
+   "flagged_share": 0.025267568659127625
+  },
+  {
+   "label": "No_DR",
+   "id": "dee31065f8fe",
+   "microaneurysms": 95,
+   "hemorrhages": 31,
+   "exudates": 21,
+   "total": 147,
+   "flagged_share": 0.026797204208826423
+  },
+  {
+   "label": "Mild",
+   "id": "71c1a3cdbe47",
+   "microaneurysms": 115,
+   "hemorrhages": 14,
+   "exudates": 14,
+   "total": 143,
+   "flagged_share": 0.02578885672591565
+  },
+  {
+   "label": "Mild",
+   "id": "30cab14951ac",
+   "microaneurysms": 117,
+   "hemorrhages": 24,
+   "exudates": 19,
+   "total": 160,
+   "flagged_share": 0.027428735549651754
+  },
+  {
+   "label": "Mild",
+   "id": "7005be54cab1",
+   "microaneurysms": 140,
+   "hemorrhages": 21,
+   "exudates": 13,
+   "total": 174,
+   "flagged_share": 0.027804341589365976
+  },
+  {
+   "label": "Mild",
+   "id": "259d30f693b6",
+   "microaneurysms": 92,
+   "hemorrhages": 22,
+   "exudates": 19,
+   "total": 133,
+   "flagged_share": 0.029451137884872823
+  },
+  {
+   "label": "Mild",
+   "id": "cc9270f06b65",
+   "microaneurysms": 120,
+   "hemorrhages": 12,
+   "exudates": 29,
+   "total": 161,
+   "flagged_share": 0.023091181134013712
+  },
+  {
+   "label": "Mild",
+   "id": "96a9706b8534",
+   "microaneurysms": 124,
+   "hemorrhages": 14,
+   "exudates": 17,
+   "total": 155,
+   "flagged_share": 0.024868521895398926
+  },
+  {
+   "label": "Mild",
+   "id": "b17f0b81dab3",
+   "microaneurysms": 135,
+   "hemorrhages": 18,
+   "exudates": 15,
+   "total": 168,
+   "flagged_share": 0.026820748396975787
+  },
+  {
+   "label": "Mild",
+   "id": "8676427e4625",
+   "microaneurysms": 162,
+   "hemorrhages": 19,
+   "exudates": 22,
+   "total": 203,
+   "flagged_share": 0.032019105322512884
+  },
+  {
+   "label": "Mild",
+   "id": "cf0575534cec",
+   "microaneurysms": 98,
+   "hemorrhages": 21,
+   "exudates": 25,
+   "total": 144,
+   "flagged_share": 0.028846384027960643
+  },
+  {
+   "label": "Mild",
+   "id": "b07bc463b718",
+   "microaneurysms": 117,
+   "hemorrhages": 26,
+   "exudates": 23,
+   "total": 166,
+   "flagged_share": 0.030049151027703308
+  },
+  {
+   "label": "Mild",
+   "id": "22098b1fe461",
+   "microaneurysms": 54,
+   "hemorrhages": 19,
+   "exudates": 14,
+   "total": 87,
+   "flagged_share": 0.022822560064165665
+  },
+  {
+   "label": "Mild",
+   "id": "ca63fe4f4b52",
+   "microaneurysms": 83,
+   "hemorrhages": 25,
+   "exudates": 14,
+   "total": 122,
+   "flagged_share": 0.029507412721186035
+  },
+  {
+   "label": "Mild",
+   "id": "365f8c01d994",
+   "microaneurysms": 127,
+   "hemorrhages": 27,
+   "exudates": 13,
+   "total": 167,
+   "flagged_share": 0.025285789991672344
+  },
+  {
+   "label": "Mild",
+   "id": "cae51154e1ce",
+   "microaneurysms": 104,
+   "hemorrhages": 31,
+   "exudates": 19,
+   "total": 154,
+   "flagged_share": 0.021351036153225082
+  },
+  {
+   "label": "Mild",
+   "id": "f6f7dba7104d",
+   "microaneurysms": 114,
+   "hemorrhages": 24,
+   "exudates": 22,
+   "total": 160,
+   "flagged_share": 0.029688995215311004
+  },
+  {
+   "label": "Mild",
+   "id": "a7ec056502e7",
+   "microaneurysms": 57,
+   "hemorrhages": 7,
+   "exudates": 11,
+   "total": 75,
+   "flagged_share": 0.009030971244944319
+  },
+  {
+   "label": "Mild",
+   "id": "6377e23928f6",
+   "microaneurysms": 77,
+   "hemorrhages": 18,
+   "exudates": 14,
+   "total": 109,
+   "flagged_share": 0.02148353997434801
+  },
+  {
+   "label": "Mild",
+   "id": "fecf4c5ae84b",
+   "microaneurysms": 99,
+   "hemorrhages": 19,
+   "exudates": 21,
+   "total": 139,
+   "flagged_share": 0.031620458891013385
+  },
+  {
+   "label": "Mild",
+   "id": "086d41d17da8",
+   "microaneurysms": 95,
+   "hemorrhages": 10,
+   "exudates": 30,
+   "total": 135,
+   "flagged_share": 0.0336699397455925
+  },
+  {
+   "label": "Mild",
+   "id": "756b0d6488bb",
+   "microaneurysms": 112,
+   "hemorrhages": 23,
+   "exudates": 16,
+   "total": 151,
+   "flagged_share": 0.031273928024502295
+  },
+  {
+   "label": "Mild",
+   "id": "36041171f441",
+   "microaneurysms": 107,
+   "hemorrhages": 17,
+   "exudates": 17,
+   "total": 141,
+   "flagged_share": 0.03236145327561051
+  },
+  {
+   "label": "Mild",
+   "id": "977e1ca77653",
+   "microaneurysms": 100,
+   "hemorrhages": 14,
+   "exudates": 15,
+   "total": 129,
+   "flagged_share": 0.029042667622803872
+  },
+  {
+   "label": "Mild",
+   "id": "944a233fbf8e",
+   "microaneurysms": 96,
+   "hemorrhages": 14,
+   "exudates": 22,
+   "total": 132,
+   "flagged_share": 0.030279113152041327
+  },
+  {
+   "label": "Mild",
+   "id": "582115961a3d",
+   "microaneurysms": 83,
+   "hemorrhages": 12,
+   "exudates": 14,
+   "total": 109,
+   "flagged_share": 0.018686445747098934
+  },
+  {
+   "label": "Mild",
+   "id": "47d1603a555b",
+   "microaneurysms": 82,
+   "hemorrhages": 28,
+   "exudates": 14,
+   "total": 124,
+   "flagged_share": 0.027629723463753912
+  },
+  {
+   "label": "Mild",
+   "id": "f0c13be90519",
+   "microaneurysms": 120,
+   "hemorrhages": 28,
+   "exudates": 18,
+   "total": 166,
+   "flagged_share": 0.030772320531988487
+  },
+  {
+   "label": "Mild",
+   "id": "45e4b7eada54",
+   "microaneurysms": 113,
+   "hemorrhages": 25,
+   "exudates": 17,
+   "total": 155,
+   "flagged_share": 0.028876288906433168
+  },
+  {
+   "label": "Mild",
+   "id": "bb783d8e496f",
+   "microaneurysms": 132,
+   "hemorrhages": 18,
+   "exudates": 19,
+   "total": 169,
+   "flagged_share": 0.03164844628375954
+  },
+  {
+   "label": "Mild",
+   "id": "bb45257258cc",
+   "microaneurysms": 86,
+   "hemorrhages": 19,
+   "exudates": 11,
+   "total": 116,
+   "flagged_share": 0.02528741126699969
+  },
+  {
+   "label": "Mild",
+   "id": "5b068765e846",
+   "microaneurysms": 109,
+   "hemorrhages": 22,
+   "exudates": 30,
+   "total": 161,
+   "flagged_share": 0.030829623246684857
+  },
+  {
+   "label": "Mild",
+   "id": "4fa26d065ad3",
+   "microaneurysms": 117,
+   "hemorrhages": 19,
+   "exudates": 13,
+   "total": 149,
+   "flagged_share": 0.030007178750897343
+  },
+  {
+   "label": "Mild",
+   "id": "13ab8db8c700",
+   "microaneurysms": 105,
+   "hemorrhages": 18,
+   "exudates": 18,
+   "total": 141,
+   "flagged_share": 0.02640642939150402
+  },
+  {
+   "label": "Mild",
+   "id": "c1e6fa1ad314",
+   "microaneurysms": 120,
+   "hemorrhages": 18,
+   "exudates": 14,
+   "total": 152,
+   "flagged_share": 0.03274058827752914
+  },
+  {
+   "label": "Mild",
+   "id": "73881f55a3ec",
+   "microaneurysms": 106,
+   "hemorrhages": 18,
+   "exudates": 16,
+   "total": 140,
+   "flagged_share": 0.026454773569124148
+  },
+  {
+   "label": "Mild",
+   "id": "eed4afc8ec83",
+   "microaneurysms": 114,
+   "hemorrhages": 19,
+   "exudates": 14,
+   "total": 147,
+   "flagged_share": 0.02861183363216243
+  },
+  {
+   "label": "Mild",
+   "id": "3c726de3ee90",
+   "microaneurysms": 72,
+   "hemorrhages": 14,
+   "exudates": 14,
+   "total": 100,
+   "flagged_share": 0.024059667976581923
+  },
+  {
+   "label": "Mild",
+   "id": "5b72ff04333d",
+   "microaneurysms": 147,
+   "hemorrhages": 14,
+   "exudates": 14,
+   "total": 175,
+   "flagged_share": 0.020271887415633526
+  },
+  {
+   "label": "Mild",
+   "id": "d567a1a22d33",
+   "microaneurysms": 105,
+   "hemorrhages": 22,
+   "exudates": 21,
+   "total": 148,
+   "flagged_share": 0.02999569439793331
+  },
+  {
+   "label": "Mild",
+   "id": "79ce83c07588",
+   "microaneurysms": 115,
+   "hemorrhages": 14,
+   "exudates": 14,
+   "total": 143,
+   "flagged_share": 0.02578885672591565
+  },
+  {
+   "label": "Mild",
+   "id": "93be637084a2",
+   "microaneurysms": 98,
+   "hemorrhages": 17,
+   "exudates": 19,
+   "total": 134,
+   "flagged_share": 0.02931611669057867
+  },
+  {
+   "label": "Mild",
+   "id": "7ea756985353",
+   "microaneurysms": 119,
+   "hemorrhages": 22,
+   "exudates": 22,
+   "total": 163,
+   "flagged_share": 0.029799660116326385
+  },
+  {
+   "label": "Mild",
+   "id": "1d11794057ff",
+   "microaneurysms": 60,
+   "hemorrhages": 7,
+   "exudates": 7,
+   "total": 74,
+   "flagged_share": 0.0184087441534729
+  },
+  {
+   "label": "Mild",
+   "id": "76be29bb30b2",
+   "microaneurysms": 80,
+   "hemorrhages": 24,
+   "exudates": 14,
+   "total": 118,
+   "flagged_share": 0.028168002871843963
+  },
+  {
+   "label": "Mild",
+   "id": "27e4c800a449",
+   "microaneurysms": 123,
+   "hemorrhages": 25,
+   "exudates": 53,
+   "total": 201,
+   "flagged_share": 0.03258865502957163
+  },
+  {
+   "label": "Mild",
+   "id": "52ae917fcea4",
+   "microaneurysms": 110,
+   "hemorrhages": 18,
+   "exudates": 18,
+   "total": 146,
+   "flagged_share": 0.024941953706584963
+  },
+  {
+   "label": "Mild",
+   "id": "82ac8463fadd",
+   "microaneurysms": 122,
+   "hemorrhages": 26,
+   "exudates": 6,
+   "total": 154,
+   "flagged_share": 0.026265990462493376
+  },
+  {
+   "label": "Mild",
+   "id": "8bbd7835e9aa",
+   "microaneurysms": 132,
+   "hemorrhages": 25,
+   "exudates": 27,
+   "total": 184,
+   "flagged_share": 0.029722620755619322
+  },
+  {
+   "label": "Mild",
+   "id": "4d7d6928534a",
+   "microaneurysms": 128,
+   "hemorrhages": 20,
+   "exudates": 1,
+   "total": 149,
+   "flagged_share": 0.021675438120557756
+  },
+  {
+   "label": "Mild",
+   "id": "1c0cf251b426",
+   "microaneurysms": 123,
+   "hemorrhages": 26,
+   "exudates": 12,
+   "total": 161,
+   "flagged_share": 0.02708328348924564
+  },
+  {
+   "label": "Mild",
+   "id": "f7fec8935126",
+   "microaneurysms": 119,
+   "hemorrhages": 21,
+   "exudates": 25,
+   "total": 165,
+   "flagged_share": 0.03009441854906179
+  },
+  {
+   "label": "Mild",
+   "id": "9a3109657ac1",
+   "microaneurysms": 90,
+   "hemorrhages": 19,
+   "exudates": 12,
+   "total": 121,
+   "flagged_share": 0.026721848759599053
+  },
+  {
+   "label": "Mild",
+   "id": "ec4649213ccf",
+   "microaneurysms": 103,
+   "hemorrhages": 23,
+   "exudates": 44,
+   "total": 170,
+   "flagged_share": 0.03543250609668627
+  },
+  {
+   "label": "Mild",
+   "id": "80d24897669f",
+   "microaneurysms": 130,
+   "hemorrhages": 15,
+   "exudates": 11,
+   "total": 156,
+   "flagged_share": 0.018506563374219926
+  },
+  {
+   "label": "Mild",
+   "id": "b56340f472d2",
+   "microaneurysms": 87,
+   "hemorrhages": 17,
+   "exudates": 14,
+   "total": 118,
+   "flagged_share": 0.01684291114407388
+  },
+  {
+   "label": "Mild",
+   "id": "3dbc90c7ee7d",
+   "microaneurysms": 106,
+   "hemorrhages": 29,
+   "exudates": 44,
+   "total": 179,
+   "flagged_share": 0.030200294419413836
+  },
+  {
+   "label": "Moderate",
+   "id": "85cc6d636898",
+   "microaneurysms": 97,
+   "hemorrhages": 16,
+   "exudates": 24,
+   "total": 137,
+   "flagged_share": 0.027626952424235175
+  },
+  {
+   "label": "Moderate",
+   "id": "757572337fd0",
+   "microaneurysms": 89,
+   "hemorrhages": 18,
+   "exudates": 12,
+   "total": 119,
+   "flagged_share": 0.023966014748316767
+  },
+  {
+   "label": "Moderate",
+   "id": "7c2f820a6425",
+   "microaneurysms": 97,
+   "hemorrhages": 15,
+   "exudates": 23,
+   "total": 135,
+   "flagged_share": 0.031014430325220763
+  },
+  {
+   "label": "Moderate",
+   "id": "31452ad8808c",
+   "microaneurysms": 84,
+   "hemorrhages": 14,
+   "exudates": 14,
+   "total": 112,
+   "flagged_share": 0.024612808706571787
+  },
+  {
+   "label": "Moderate",
+   "id": "ff77e8e5b5f3",
+   "microaneurysms": 122,
+   "hemorrhages": 19,
+   "exudates": 7,
+   "total": 148,
+   "flagged_share": 0.027931224143291005
+  },
+  {
+   "label": "Moderate",
+   "id": "c6a2975228af",
+   "microaneurysms": 151,
+   "hemorrhages": 25,
+   "exudates": 23,
+   "total": 199,
+   "flagged_share": 0.018718343977097554
+  },
+  {
+   "label": "Moderate",
+   "id": "8dfff47b06b7",
+   "microaneurysms": 82,
+   "hemorrhages": 24,
+   "exudates": 18,
+   "total": 124,
+   "flagged_share": 0.02389023836852361
+  },
+  {
+   "label": "Moderate",
+   "id": "c280730cc211",
+   "microaneurysms": 140,
+   "hemorrhages": 38,
+   "exudates": 29,
+   "total": 207,
+   "flagged_share": 0.030617614696455055
+  },
+  {
+   "label": "Moderate",
+   "id": "caec68f11c86",
+   "microaneurysms": 145,
+   "hemorrhages": 29,
+   "exudates": 22,
+   "total": 196,
+   "flagged_share": 0.027909678722974337
+  },
+  {
+   "label": "Moderate",
+   "id": "6d3d1fe6c32a",
+   "microaneurysms": 126,
+   "hemorrhages": 17,
+   "exudates": 13,
+   "total": 156,
+   "flagged_share": 0.028196658528412084
+  },
+  {
+   "label": "Moderate",
+   "id": "1a369baf9ee6",
+   "microaneurysms": 119,
+   "hemorrhages": 15,
+   "exudates": 29,
+   "total": 163,
+   "flagged_share": 0.027771043177359987
+  },
+  {
+   "label": "Moderate",
+   "id": "115e42dd6a81",
+   "microaneurysms": 110,
+   "hemorrhages": 13,
+   "exudates": 19,
+   "total": 142,
+   "flagged_share": 0.027060005742176284
+  },
+  {
+   "label": "Moderate",
+   "id": "a2ad3da4c7d6",
+   "microaneurysms": 107,
+   "hemorrhages": 20,
+   "exudates": 12,
+   "total": 139,
+   "flagged_share": 0.02758373205741627
+  },
+  {
+   "label": "Moderate",
+   "id": "9b0eb9f41da4",
+   "microaneurysms": 116,
+   "hemorrhages": 30,
+   "exudates": 13,
+   "total": 159,
+   "flagged_share": 0.03203868489037073
+  },
+  {
+   "label": "Moderate",
+   "id": "96d48b073f18",
+   "microaneurysms": 67,
+   "hemorrhages": 18,
+   "exudates": 19,
+   "total": 104,
+   "flagged_share": 0.027889223225231248
+  },
+  {
+   "label": "Moderate",
+   "id": "98f48850ebce",
+   "microaneurysms": 77,
+   "hemorrhages": 21,
+   "exudates": 26,
+   "total": 124,
+   "flagged_share": 0.028327789218015736
+  },
+  {
+   "label": "Moderate",
+   "id": "d18e5b68f6d2",
+   "microaneurysms": 95,
+   "hemorrhages": 21,
+   "exudates": 24,
+   "total": 140,
+   "flagged_share": 0.026461904552064514
+  },
+  {
+   "label": "Moderate",
+   "id": "b0d35981708b",
+   "microaneurysms": 89,
+   "hemorrhages": 23,
+   "exudates": 39,
+   "total": 151,
+   "flagged_share": 0.02899673953712117
+  },
+  {
+   "label": "Moderate",
+   "id": "48543037d0b3",
+   "microaneurysms": 106,
+   "hemorrhages": 16,
+   "exudates": 15,
+   "total": 137,
+   "flagged_share": 0.026018126599229977
+  },
+  {
+   "label": "Moderate",
+   "id": "a7b0d0c51731",
+   "microaneurysms": 90,
+   "hemorrhages": 14,
+   "exudates": 4,
+   "total": 108,
+   "flagged_share": 0.020460150131432753
+  },
+  {
+   "label": "Moderate",
+   "id": "1c6d119c3d70",
+   "microaneurysms": 76,
+   "hemorrhages": 19,
+   "exudates": 13,
+   "total": 108,
+   "flagged_share": 0.025530647606670998
+  },
+  {
+   "label": "Moderate",
+   "id": "07419eddd6be",
+   "microaneurysms": 87,
+   "hemorrhages": 17,
+   "exudates": 19,
+   "total": 123,
+   "flagged_share": 0.025084999866141943
+  },
+  {
+   "label": "Moderate",
+   "id": "28824d12d31d",
+   "microaneurysms": 100,
+   "hemorrhages": 18,
+   "exudates": 24,
+   "total": 142,
+   "flagged_share": 0.029267072458934378
+  },
+  {
+   "label": "Moderate",
+   "id": "42a67337fa8e",
+   "microaneurysms": 139,
+   "hemorrhages": 28,
+   "exudates": 26,
+   "total": 193,
+   "flagged_share": 0.029981261711430358
+  },
+  {
+   "label": "Moderate",
+   "id": "aa9cfe639ef1",
+   "microaneurysms": 104,
+   "hemorrhages": 21,
+   "exudates": 9,
+   "total": 134,
+   "flagged_share": 0.025453194256442924
+  },
+  {
+   "label": "Moderate",
+   "id": "3d663a6a50a3",
+   "microaneurysms": 84,
+   "hemorrhages": 21,
+   "exudates": 5,
+   "total": 110,
+   "flagged_share": 0.022779868953018263
+  },
+  {
+   "label": "Moderate",
+   "id": "48fda42bd5d4",
+   "microaneurysms": 98,
+   "hemorrhages": 23,
+   "exudates": 30,
+   "total": 151,
+   "flagged_share": 0.028872373416029513
+  },
+  {
+   "label": "Moderate",
+   "id": "1f4bf8e28b41",
+   "microaneurysms": 112,
+   "hemorrhages": 13,
+   "exudates": 17,
+   "total": 142,
+   "flagged_share": 0.022971196366678617
+  },
+  {
+   "label": "Moderate",
+   "id": "3128eb593012",
+   "microaneurysms": 191,
+   "hemorrhages": 27,
+   "exudates": 4,
+   "total": 222,
+   "flagged_share": 0.021795720273549524
+  },
+  {
+   "label": "Moderate",
+   "id": "d3be5346684b",
+   "microaneurysms": 108,
+   "hemorrhages": 25,
+   "exudates": 27,
+   "total": 160,
+   "flagged_share": 0.033864673589523116
+  },
+  {
+   "label": "Moderate",
+   "id": "1414128bead0",
+   "microaneurysms": 97,
+   "hemorrhages": 20,
+   "exudates": 23,
+   "total": 140,
+   "flagged_share": 0.022619441685975947
+  },
+  {
+   "label": "Moderate",
+   "id": "0c7e82daf5a0",
+   "microaneurysms": 65,
+   "hemorrhages": 14,
+   "exudates": 2,
+   "total": 81,
+   "flagged_share": 0.02581573375318964
+  },
+  {
+   "label": "Moderate",
+   "id": "83b61051737f",
+   "microaneurysms": 103,
+   "hemorrhages": 23,
+   "exudates": 29,
+   "total": 155,
+   "flagged_share": 0.03252966962471934
+  },
+  {
+   "label": "Moderate",
+   "id": "521d3e264d71",
+   "microaneurysms": 78,
+   "hemorrhages": 14,
+   "exudates": 20,
+   "total": 112,
+   "flagged_share": 0.024574141301312483
+  },
+  {
+   "label": "Moderate",
+   "id": "523d0c2cb4d6",
+   "microaneurysms": 71,
+   "hemorrhages": 23,
+   "exudates": 18,
+   "total": 112,
+   "flagged_share": 0.02697933099815503
+  },
+  {
+   "label": "Moderate",
+   "id": "7bda86d95c5b",
+   "microaneurysms": 99,
+   "hemorrhages": 17,
+   "exudates": 29,
+   "total": 145,
+   "flagged_share": 0.01615019953397434
+  },
+  {
+   "label": "Moderate",
+   "id": "3cd801ffdbf0",
+   "microaneurysms": 91,
+   "hemorrhages": 20,
+   "exudates": 18,
+   "total": 129,
+   "flagged_share": 0.0324365372098069
+  },
+  {
+   "label": "Moderate",
+   "id": "5c6194562ed2",
+   "microaneurysms": 77,
+   "hemorrhages": 14,
+   "exudates": 12,
+   "total": 103,
+   "flagged_share": 0.02574416733708769
+  },
+  {
+   "label": "Moderate",
+   "id": "525acfea47e8",
+   "microaneurysms": 104,
+   "hemorrhages": 20,
+   "exudates": 23,
+   "total": 147,
+   "flagged_share": 0.029423725569935173
+  },
+  {
+   "label": "Moderate",
+   "id": "f9ecf1795804",
+   "microaneurysms": 102,
+   "hemorrhages": 20,
+   "exudates": 14,
+   "total": 136,
+   "flagged_share": 0.024483468313153182
+  },
+  {
+   "label": "Moderate",
+   "id": "6d454444f17c",
+   "microaneurysms": 94,
+   "hemorrhages": 19,
+   "exudates": 13,
+   "total": 126,
+   "flagged_share": 0.02878610227082386
+  },
+  {
+   "label": "Moderate",
+   "id": "261c6bd63bff",
+   "microaneurysms": 79,
+   "hemorrhages": 16,
+   "exudates": 26,
+   "total": 121,
+   "flagged_share": 0.028034904384266503
+  },
+  {
+   "label": "Moderate",
+   "id": "1269ab57c2e6",
+   "microaneurysms": 119,
+   "hemorrhages": 23,
+   "exudates": 17,
+   "total": 159,
+   "flagged_share": 0.025912557072167906
+  },
+  {
+   "label": "Moderate",
+   "id": "d85a842d20bd",
+   "microaneurysms": 108,
+   "hemorrhages": 22,
+   "exudates": 21,
+   "total": 151,
+   "flagged_share": 0.02998785702972388
+  },
+  {
+   "label": "Moderate",
+   "id": "9dab2e6ba44b",
+   "microaneurysms": 131,
+   "hemorrhages": 16,
+   "exudates": 20,
+   "total": 167,
+   "flagged_share": 0.02390200838666961
+  },
+  {
+   "label": "Moderate",
+   "id": "9f436886e056",
+   "microaneurysms": 160,
+   "hemorrhages": 23,
+   "exudates": 7,
+   "total": 190,
+   "flagged_share": 0.022887635618724866
+  },
+  {
+   "label": "Moderate",
+   "id": "42a850acd2ac",
+   "microaneurysms": 99,
+   "hemorrhages": 21,
+   "exudates": 17,
+   "total": 137,
+   "flagged_share": 0.029216117917304746
+  },
+  {
+   "label": "Moderate",
+   "id": "4e7694eebb91",
+   "microaneurysms": 140,
+   "hemorrhages": 14,
+   "exudates": 20,
+   "total": 174,
+   "flagged_share": 0.021150855365474338
+  },
+  {
+   "label": "Moderate",
+   "id": "d2c6b99ef62c",
+   "microaneurysms": 99,
+   "hemorrhages": 16,
+   "exudates": 14,
+   "total": 129,
+   "flagged_share": 0.02734385360031826
+  },
+  {
+   "label": "Moderate",
+   "id": "98e8adcf085c",
+   "microaneurysms": 114,
+   "hemorrhages": 17,
+   "exudates": 22,
+   "total": 153,
+   "flagged_share": 0.026054623759462856
+  },
+  {
+   "label": "Moderate",
+   "id": "89fc080f7e83",
+   "microaneurysms": 86,
+   "hemorrhages": 17,
+   "exudates": 7,
+   "total": 110,
+   "flagged_share": 0.02774581939799331
+  },
+  {
+   "label": "Moderate",
+   "id": "9faad91b6578",
+   "microaneurysms": 89,
+   "hemorrhages": 17,
+   "exudates": 31,
+   "total": 137,
+   "flagged_share": 0.028051263624386154
+  },
+  {
+   "label": "Moderate",
+   "id": "eadfc8809ec8",
+   "microaneurysms": 100,
+   "hemorrhages": 17,
+   "exudates": 31,
+   "total": 148,
+   "flagged_share": 0.030337859510317547
+  },
+  {
+   "label": "Moderate",
+   "id": "09f6ab477654",
+   "microaneurysms": 91,
+   "hemorrhages": 17,
+   "exudates": 22,
+   "total": 130,
+   "flagged_share": 0.028587122659533816
+  },
+  {
+   "label": "Moderate",
+   "id": "349f3c0ac83e",
+   "microaneurysms": 95,
+   "hemorrhages": 29,
+   "exudates": 20,
+   "total": 144,
+   "flagged_share": 0.020597889542440465
+  },
+  {
+   "label": "Moderate",
+   "id": "012a242ac6ff",
+   "microaneurysms": 112,
+   "hemorrhages": 22,
+   "exudates": 11,
+   "total": 145,
+   "flagged_share": 0.023258300807357107
+  },
+  {
+   "label": "Moderate",
+   "id": "2700754f71e9",
+   "microaneurysms": 93,
+   "hemorrhages": 14,
+   "exudates": 13,
+   "total": 120,
+   "flagged_share": 0.02979478591246532
+  },
+  {
+   "label": "Moderate",
+   "id": "ef7a4ed8d5d1",
+   "microaneurysms": 107,
+   "hemorrhages": 29,
+   "exudates": 39,
+   "total": 175,
+   "flagged_share": 0.03352509422733584
+  },
+  {
+   "label": "Moderate",
+   "id": "141735b57ec0",
+   "microaneurysms": 90,
+   "hemorrhages": 19,
+   "exudates": 18,
+   "total": 127,
+   "flagged_share": 0.03252285454458431
+  },
+  {
+   "label": "Moderate",
+   "id": "7743f4e04a6d",
+   "microaneurysms": 89,
+   "hemorrhages": 21,
+   "exudates": 21,
+   "total": 131,
+   "flagged_share": 0.026007698064792046
+  },
+  {
+   "label": "Severe",
+   "id": "91b6ebaa3678",
+   "microaneurysms": 92,
+   "hemorrhages": 22,
+   "exudates": 39,
+   "total": 153,
+   "flagged_share": 0.03512899345007352
+  },
+  {
+   "label": "Severe",
+   "id": "9fefe2b44795",
+   "microaneurysms": 77,
+   "hemorrhages": 13,
+   "exudates": 18,
+   "total": 108,
+   "flagged_share": 0.01591765267681859
+  },
+  {
+   "label": "Severe",
+   "id": "0c917c372572",
+   "microaneurysms": 111,
+   "hemorrhages": 25,
+   "exudates": 34,
+   "total": 170,
+   "flagged_share": 0.03517203452645674
+  },
+  {
+   "label": "Severe",
+   "id": "d2ffe9287dc7",
+   "microaneurysms": 98,
+   "hemorrhages": 27,
+   "exudates": 30,
+   "total": 155,
+   "flagged_share": 0.027302113108754307
+  },
+  {
+   "label": "Severe",
+   "id": "05cd0178ccfe",
+   "microaneurysms": 91,
+   "hemorrhages": 24,
+   "exudates": 19,
+   "total": 134,
+   "flagged_share": 0.028876979759797118
+  },
+  {
+   "label": "Severe",
+   "id": "3218a6d8eb2c",
+   "microaneurysms": 117,
+   "hemorrhages": 27,
+   "exudates": 12,
+   "total": 156,
+   "flagged_share": 0.025265674814027632
+  },
+  {
+   "label": "Severe",
+   "id": "191a711852bd",
+   "microaneurysms": 145,
+   "hemorrhages": 29,
+   "exudates": 18,
+   "total": 192,
+   "flagged_share": 0.02889122739883287
+  },
+  {
+   "label": "Severe",
+   "id": "a14fcf84bfe1",
+   "microaneurysms": 91,
+   "hemorrhages": 21,
+   "exudates": 16,
+   "total": 128,
+   "flagged_share": 0.028038884871856674
+  },
+  {
+   "label": "Severe",
+   "id": "b960142a8de7",
+   "microaneurysms": 37,
+   "hemorrhages": 9,
+   "exudates": 8,
+   "total": 54,
+   "flagged_share": 0.022043795620437956
+  },
+  {
+   "label": "Severe",
+   "id": "457c7c927e27",
+   "microaneurysms": 104,
+   "hemorrhages": 34,
+   "exudates": 8,
+   "total": 146,
+   "flagged_share": 0.031755489352311594
+  },
+  {
+   "label": "Severe",
+   "id": "1ab3f1c71a5f",
+   "microaneurysms": 90,
+   "hemorrhages": 20,
+   "exudates": 25,
+   "total": 135,
+   "flagged_share": 0.026707741762657382
+  },
+  {
+   "label": "Severe",
+   "id": "6089fa333013",
+   "microaneurysms": 103,
+   "hemorrhages": 26,
+   "exudates": 33,
+   "total": 162,
+   "flagged_share": 0.03337019018133569
+  },
+  {
+   "label": "Severe",
+   "id": "0edadb2aa127",
+   "microaneurysms": 69,
+   "hemorrhages": 21,
+   "exudates": 15,
+   "total": 105,
+   "flagged_share": 0.024647401396594076
+  },
+  {
+   "label": "Severe",
+   "id": "2b48daf24be0",
+   "microaneurysms": 95,
+   "hemorrhages": 20,
+   "exudates": 23,
+   "total": 138,
+   "flagged_share": 0.030057388809182208
+  },
+  {
+   "label": "Severe",
+   "id": "e0b5a982a018",
+   "microaneurysms": 129,
+   "hemorrhages": 24,
+   "exudates": 11,
+   "total": 164,
+   "flagged_share": 0.02640137746317199
+  },
+  {
+   "label": "Severe",
+   "id": "f901d460517c",
+   "microaneurysms": 107,
+   "hemorrhages": 17,
+   "exudates": 25,
+   "total": 149,
+   "flagged_share": 0.026565264464337584
+  },
+  {
+   "label": "Severe",
+   "id": "dbb2c63f6f08",
+   "microaneurysms": 161,
+   "hemorrhages": 47,
+   "exudates": 23,
+   "total": 231,
+   "flagged_share": 0.035262351898122025
+  },
+  {
+   "label": "Severe",
+   "id": "9b093fe95d6b",
+   "microaneurysms": 52,
+   "hemorrhages": 14,
+   "exudates": 10,
+   "total": 76,
+   "flagged_share": 0.01958210261459359
+  },
+  {
+   "label": "Severe",
+   "id": "6253f23229b1",
+   "microaneurysms": 44,
+   "hemorrhages": 17,
+   "exudates": 11,
+   "total": 72,
+   "flagged_share": 0.020639609087262516
+  },
+  {
+   "label": "Severe",
+   "id": "6061f5b7378d",
+   "microaneurysms": 60,
+   "hemorrhages": 18,
+   "exudates": 16,
+   "total": 94,
+   "flagged_share": 0.022202809929387786
+  },
+  {
+   "label": "Severe",
+   "id": "f092febbf5c0",
+   "microaneurysms": 104,
+   "hemorrhages": 24,
+   "exudates": 15,
+   "total": 143,
+   "flagged_share": 0.030316807044410414
+  },
+  {
+   "label": "Severe",
+   "id": "51da6aebba8f",
+   "microaneurysms": 108,
+   "hemorrhages": 30,
+   "exudates": 24,
+   "total": 162,
+   "flagged_share": 0.03272317781359712
+  },
+  {
+   "label": "Severe",
+   "id": "19244004583f",
+   "microaneurysms": 105,
+   "hemorrhages": 17,
+   "exudates": 23,
+   "total": 145,
+   "flagged_share": 0.027284248786436788
+  },
+  {
+   "label": "Severe",
+   "id": "8a234d68b27e",
+   "microaneurysms": 123,
+   "hemorrhages": 25,
+   "exudates": 16,
+   "total": 164,
+   "flagged_share": 0.03255886759542924
+  },
+  {
+   "label": "Severe",
+   "id": "d3e884109b45",
+   "microaneurysms": 124,
+   "hemorrhages": 22,
+   "exudates": 39,
+   "total": 185,
+   "flagged_share": 0.030474762398288828
+  },
+  {
+   "label": "Severe",
+   "id": "9bafbbd152d2",
+   "microaneurysms": 112,
+   "hemorrhages": 34,
+   "exudates": 31,
+   "total": 177,
+   "flagged_share": 0.028425655976676383
+  },
+  {
+   "label": "Severe",
+   "id": "269b44e628eb",
+   "microaneurysms": 149,
+   "hemorrhages": 22,
+   "exudates": 8,
+   "total": 179,
+   "flagged_share": 0.029238091041290267
+  },
+  {
+   "label": "Severe",
+   "id": "36b5b3c9fb32",
+   "microaneurysms": 154,
+   "hemorrhages": 24,
+   "exudates": 27,
+   "total": 205,
+   "flagged_share": 0.023052534237526973
+  },
+  {
+   "label": "Severe",
+   "id": "3f49f8d100e9",
+   "microaneurysms": 122,
+   "hemorrhages": 36,
+   "exudates": 10,
+   "total": 168,
+   "flagged_share": 0.03193696477443277
+  },
+  {
+   "label": "Proliferate_DR",
+   "id": "8c7c26c52a6c",
+   "microaneurysms": 119,
+   "hemorrhages": 27,
+   "exudates": 11,
+   "total": 157,
+   "flagged_share": 0.029174039887129945
+  },
+  {
+   "label": "Proliferate_DR",
+   "id": "838c87c63422",
+   "microaneurysms": 129,
+   "hemorrhages": 29,
+   "exudates": 27,
+   "total": 185,
+   "flagged_share": 0.03679265581295273
+  },
+  {
+   "label": "Proliferate_DR",
+   "id": "dad71ba27a9b",
+   "microaneurysms": 134,
+   "hemorrhages": 12,
+   "exudates": 30,
+   "total": 176,
+   "flagged_share": 0.03043290872521789
+  },
+  {
+   "label": "Proliferate_DR",
+   "id": "7efc91af4ae6",
+   "microaneurysms": 146,
+   "hemorrhages": 26,
+   "exudates": 13,
+   "total": 185,
+   "flagged_share": 0.027010962884691587
+  },
+  {
+   "label": "Proliferate_DR",
+   "id": "8fd7ad26e691",
+   "microaneurysms": 82,
+   "hemorrhages": 23,
+   "exudates": 14,
+   "total": 119,
+   "flagged_share": 0.029331550802139037
+  },
+  {
+   "label": "Proliferate_DR",
+   "id": "2df07eb5779f",
+   "microaneurysms": 82,
+   "hemorrhages": 28,
+   "exudates": 14,
+   "total": 124,
+   "flagged_share": 0.027030640072723384
+  },
+  {
+   "label": "Proliferate_DR",
+   "id": "2f7789c1e046",
+   "microaneurysms": 86,
+   "hemorrhages": 21,
+   "exudates": 17,
+   "total": 124,
+   "flagged_share": 0.029656311783982883
+  },
+  {
+   "label": "Proliferate_DR",
+   "id": "eaa0dfbd5024",
+   "microaneurysms": 135,
+   "hemorrhages": 32,
+   "exudates": 26,
+   "total": 193,
+   "flagged_share": 0.026686771499006726
+  },
+  {
+   "label": "Proliferate_DR",
+   "id": "cf1b9d26d38d",
+   "microaneurysms": 82,
+   "hemorrhages": 23,
+   "exudates": 23,
+   "total": 128,
+   "flagged_share": 0.02956696984964599
+  },
+  {
+   "label": "Proliferate_DR",
+   "id": "bd9904495ccd",
+   "microaneurysms": 107,
+   "hemorrhages": 19,
+   "exudates": 31,
+   "total": 157,
+   "flagged_share": 0.0280775806796324
+  },
+  {
+   "label": "Proliferate_DR",
+   "id": "6daef3e5ca22",
+   "microaneurysms": 98,
+   "hemorrhages": 19,
+   "exudates": 15,
+   "total": 132,
+   "flagged_share": 0.024822001954488342
+  },
+  {
+   "label": "Proliferate_DR",
+   "id": "15e96e848b46",
+   "microaneurysms": 142,
+   "hemorrhages": 38,
+   "exudates": 41,
+   "total": 221,
+   "flagged_share": 0.03483065634647219
+  },
+  {
+   "label": "Proliferate_DR",
+   "id": "f025f33b2c9b",
+   "microaneurysms": 105,
+   "hemorrhages": 32,
+   "exudates": 23,
+   "total": 160,
+   "flagged_share": 0.029243211397354186
+  },
+  {
+   "label": "Proliferate_DR",
+   "id": "b37aae3c8fe1",
+   "microaneurysms": 159,
+   "hemorrhages": 19,
+   "exudates": 24,
+   "total": 202,
+   "flagged_share": 0.02745266987386611
+  },
+  {
+   "label": "Proliferate_DR",
+   "id": "8af6a4e5396f",
+   "microaneurysms": 98,
+   "hemorrhages": 19,
+   "exudates": 48,
+   "total": 165,
+   "flagged_share": 0.026209966968260806
+  },
+  {
+   "label": "Proliferate_DR",
+   "id": "a76b69e443ce",
+   "microaneurysms": 124,
+   "hemorrhages": 25,
+   "exudates": 10,
+   "total": 159,
+   "flagged_share": 0.027413613954413812
+  },
+  {
+   "label": "Proliferate_DR",
+   "id": "3a1ecf5e2839",
+   "microaneurysms": 143,
+   "hemorrhages": 15,
+   "exudates": 18,
+   "total": 176,
+   "flagged_share": 0.03166814275797688
+  },
+  {
+   "label": "Proliferate_DR",
+   "id": "cd54d022e37d",
+   "microaneurysms": 95,
+   "hemorrhages": 17,
+   "exudates": 12,
+   "total": 124,
+   "flagged_share": 0.02768055147353515
+  },
+  {
+   "label": "Proliferate_DR",
+   "id": "c0e509786f7f",
+   "microaneurysms": 102,
+   "hemorrhages": 22,
+   "exudates": 28,
+   "total": 152,
+   "flagged_share": 0.03418963351065252
+  },
+  {
+   "label": "Proliferate_DR",
+   "id": "247e98aba610",
+   "microaneurysms": 156,
+   "hemorrhages": 28,
+   "exudates": 37,
+   "total": 221,
+   "flagged_share": 0.027392668151234346
+  },
+  {
+   "label": "Proliferate_DR",
+   "id": "27e2be850a99",
+   "microaneurysms": 101,
+   "hemorrhages": 19,
+   "exudates": 11,
+   "total": 131,
+   "flagged_share": 0.0321377331420373
+  },
+  {
+   "label": "Proliferate_DR",
+   "id": "bfefa7344e7d",
+   "microaneurysms": 117,
+   "hemorrhages": 23,
+   "exudates": 16,
+   "total": 156,
+   "flagged_share": 0.02407533986481355
+  },
+  {
+   "label": "Proliferate_DR",
+   "id": "785777558f05",
+   "microaneurysms": 141,
+   "hemorrhages": 37,
+   "exudates": 6,
+   "total": 184,
+   "flagged_share": 0.03259050471241082
+  },
+  {
+   "label": "Proliferate_DR",
+   "id": "25d069089c5e",
+   "microaneurysms": 115,
+   "hemorrhages": 23,
+   "exudates": 22,
+   "total": 160,
+   "flagged_share": 0.029810751967844582
+  },
+  {
+   "label": "Proliferate_DR",
+   "id": "3ccf96c1dd6d",
+   "microaneurysms": 90,
+   "hemorrhages": 20,
+   "exudates": 15,
+   "total": 125,
+   "flagged_share": 0.024775497113534318
+  },
+  {
+   "label": "Proliferate_DR",
+   "id": "789434d095d1",
+   "microaneurysms": 92,
+   "hemorrhages": 21,
+   "exudates": 17,
+   "total": 130,
+   "flagged_share": 0.026799551114198687
+  },
+  {
+   "label": "Proliferate_DR",
+   "id": "211518c46162",
+   "microaneurysms": 86,
+   "hemorrhages": 16,
+   "exudates": 15,
+   "total": 117,
+   "flagged_share": 0.027958353152581786
+  },
+  {
+   "label": "Proliferate_DR",
+   "id": "2bbcfdc477db",
+   "microaneurysms": 85,
+   "hemorrhages": 27,
+   "exudates": 3,
+   "total": 115,
+   "flagged_share": 0.022499163599866177
+  },
+  {
+   "label": "Proliferate_DR",
+   "id": "63b4d030b016",
+   "microaneurysms": 144,
+   "hemorrhages": 24,
+   "exudates": 8,
+   "total": 176,
+   "flagged_share": 0.02559073950062183
+  },
+  {
+   "label": "Proliferate_DR",
+   "id": "613028ede6a0",
+   "microaneurysms": 102,
+   "hemorrhages": 34,
+   "exudates": 23,
+   "total": 159,
+   "flagged_share": 0.02904522359008064
+  },
+  {
+   "label": "Proliferate_DR",
+   "id": "5e7db41b3bee",
+   "microaneurysms": 57,
+   "hemorrhages": 17,
+   "exudates": 25,
+   "total": 99,
+   "flagged_share": 0.02711383528278151
+  },
+  {
+   "label": "Proliferate_DR",
+   "id": "499c8df39222",
+   "microaneurysms": 157,
+   "hemorrhages": 27,
+   "exudates": 10,
+   "total": 194,
+   "flagged_share": 0.02647628614479443
+  },
+  {
+   "label": "Proliferate_DR",
+   "id": "664b1f9a2087",
+   "microaneurysms": 67,
+   "hemorrhages": 23,
+   "exudates": 18,
+   "total": 108,
+   "flagged_share": 0.0272812291249165
+  },
+  {
+   "label": "Proliferate_DR",
+   "id": "4ccfa0b4e96c",
+   "microaneurysms": 118,
+   "hemorrhages": 23,
+   "exudates": 22,
+   "total": 163,
+   "flagged_share": 0.023500703482237074
+  },
+  {
+   "label": "Proliferate_DR",
+   "id": "3f752fcccec0",
+   "microaneurysms": 94,
+   "hemorrhages": 21,
+   "exudates": 20,
+   "total": 135,
+   "flagged_share": 0.02873618222711394
+  },
+  {
+   "label": "Proliferate_DR",
+   "id": "8ae049175db6",
+   "microaneurysms": 155,
+   "hemorrhages": 24,
+   "exudates": 40,
+   "total": 219,
+   "flagged_share": 0.03370141342756184
+  },
+  {
+   "label": "Proliferate_DR",
+   "id": "7e0598cc88a0",
+   "microaneurysms": 117,
+   "hemorrhages": 19,
+   "exudates": 6,
+   "total": 142,
+   "flagged_share": 0.02613457032184018
+  },
+  {
+   "label": "Proliferate_DR",
+   "id": "0bf37ca3156a",
+   "microaneurysms": 120,
+   "hemorrhages": 26,
+   "exudates": 29,
+   "total": 175,
+   "flagged_share": 0.03812039176846044
+  },
+  {
+   "label": "Proliferate_DR",
+   "id": "f6f3ea0d2693",
+   "microaneurysms": 89,
+   "hemorrhages": 26,
+   "exudates": 9,
+   "total": 124,
+   "flagged_share": 0.025844558477656616
+  },
+  {
+   "label": "Proliferate_DR",
+   "id": "875a2fc5fe23",
+   "microaneurysms": 58,
+   "hemorrhages": 11,
+   "exudates": 8,
+   "total": 77,
+   "flagged_share": 0.02216399170215089
+  },
+  {
+   "label": "Proliferate_DR",
+   "id": "254052cf3e48",
+   "microaneurysms": 99,
+   "hemorrhages": 24,
+   "exudates": 25,
+   "total": 148,
+   "flagged_share": 0.027051590483827853
+  },
+  {
+   "label": "Proliferate_DR",
+   "id": "84c663f39632",
+   "microaneurysms": 107,
+   "hemorrhages": 21,
+   "exudates": 14,
+   "total": 142,
+   "flagged_share": 0.026456433300539765
+  },
+  {
+   "label": "Proliferate_DR",
+   "id": "64fedbf97473",
+   "microaneurysms": 99,
+   "hemorrhages": 23,
+   "exudates": 17,
+   "total": 139,
+   "flagged_share": 0.021423055708769994
+  },
+  {
+   "label": "Proliferate_DR",
+   "id": "753b14c27c83",
+   "microaneurysms": 138,
+   "hemorrhages": 28,
+   "exudates": 17,
+   "total": 183,
+   "flagged_share": 0.021447207793762118
+  }
+ ],
+ "aptos": {
+  "by_grade": {
+   "No_DR": {
+    "n": 60,
+    "microaneurysms": {
+     "median": 114.0,
+     "p10": 40.0,
+     "p90": 151.2
+    },
+    "hemorrhages": {
+     "median": 18.5,
+     "p10": 9.0,
+     "p90": 26.1
+    },
+    "exudates": {
+     "median": 11.5,
+     "p10": 3.9000000000000004,
+     "p90": 24.1
+    },
+    "total": {
+     "median": 149.0,
+     "p10": 58.5,
+     "p90": 187.60000000000002
+    },
+    "flagged_share": {
+     "median": 0.02568605882243484,
+     "p10": 0.017620277214059257,
+     "p90": 0.030462493577985132
+    }
+   },
+   "Mild": {
+    "n": 55,
+    "microaneurysms": {
+     "median": 110.0,
+     "p10": 80.8,
+     "p90": 131.2
+    },
+    "hemorrhages": {
+     "median": 19.0,
+     "p10": 14.0,
+     "p90": 26.0
+    },
+    "exudates": {
+     "median": 16.0,
+     "p10": 11.4,
+     "p90": 28.200000000000003
+    },
+    "total": {
+     "median": 149.0,
+     "p10": 111.8,
+     "p90": 172.4
+    },
+    "flagged_share": {
+     "median": 0.028168002871843963,
+     "p10": 0.02070354691067015,
+     "p90": 0.031870841707011544
+    }
+   },
+   "Moderate": {
+    "n": 60,
+    "microaneurysms": {
+     "median": 99.0,
+     "p10": 77.9,
+     "p90": 139.1
+    },
+    "hemorrhages": {
+     "median": 19.0,
+     "p10": 14.0,
+     "p90": 27.1
+    },
+    "exudates": {
+     "median": 19.0,
+     "p10": 7.0,
+     "p90": 29.0
+    },
+    "total": {
+     "median": 139.5,
+     "p10": 110.0,
+     "p90": 176.50000000000003
+    },
+    "flagged_share": {
+     "median": 0.027463792828867267,
+     "p10": 0.022537069544733303,
+     "p90": 0.031116855781735762
+    }
+   },
+   "Severe": {
+    "n": 29,
+    "microaneurysms": {
+     "median": 104.0,
+     "p10": 58.400000000000006,
+     "p90": 145.8
+    },
+    "hemorrhages": {
+     "median": 24.0,
+     "p10": 16.400000000000002,
+     "p90": 34.0
+    },
+    "exudates": {
+     "median": 18.0,
+     "p10": 9.600000000000001,
+     "p90": 33.2
+    },
+    "total": {
+     "median": 153.0,
+     "p10": 90.4,
+     "p90": 186.4
+    },
+    "flagged_share": {
+     "median": 0.028425655976676383,
+     "p10": 0.021762958313802868,
+     "p90": 0.03372195083508325
+    }
+   },
+   "Proliferate_DR": {
+    "n": 44,
+    "microaneurysms": {
+     "median": 106.0,
+     "p10": 82.0,
+     "p90": 145.4
+    },
+    "hemorrhages": {
+     "median": 23.0,
+     "p10": 17.0,
+     "p90": 31.10000000000001
+    },
+    "exudates": {
+     "median": 17.0,
+     "p10": 8.3,
+     "p90": 30.700000000000003
+    },
+    "total": {
+     "median": 156.5,
+     "p10": 117.6,
+     "p90": 193.7
+    },
+    "flagged_share": {
+     "median": 0.027403141052824077,
+     "p10": 0.023673094397010017,
+     "p90": 0.033368140813016534
+    }
+   }
+  },
+  "auc_referable_vs_not": {
+   "microaneurysms": 0.47048054919908466,
+   "hemorrhages": 0.625040863027133,
+   "exudates": 0.6360575351422033,
+   "total": 0.5115070284406669
+  },
+  "n": 248,
+  "healthy_with_any_candidate": 1.0,
+  "healthy_median_total": 149.0
+ }
+}
