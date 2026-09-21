@@ -5,7 +5,7 @@
   "scripts": {
     "start": "node --disable-warning=ExperimentalWarning index.js",
     "dev": "node --disable-warning=ExperimentalWarning --watch index.js",
-    "test": "node --disable-warning=ExperimentalWarning --test test/auth.test.js",
+    "test": "node --disable-warning=ExperimentalWarning --test test/*.test.js",
     "check-email": "node scripts/check-email.js"
   },
   "dependencies": {

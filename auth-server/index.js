@@ -7,6 +7,8 @@ import rateLimit from 'express-rate-limit';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import db from './db.js';
+import { createInternalRouter, createPatientRouter } from './health.js';
+import { createVault } from './vault.js';
 import { isMailConfigured, sendPasswordResetEmail, sendVerificationEmail } from './mailer.js';
 
 /* ------------------------------ Config ------------------------------ */
@@ -26,6 +28,19 @@ if (process.env.NODE_ENV === 'production' && !isMailConfigured()) {
   console.error('GMAIL_USER and GMAIL_APP_PASSWORD must be set when NODE_ENV=production.');
   process.exit(1);
 }
+
+// Health data is encrypted at rest with DATA_KEY. Falling back to a key derived from JWT_SECRET keeps development
+// easy, but rotating JWT_SECRET would then make stored data unreadable, so production must set DATA_KEY.
+const DATA_KEY = process.env.DATA_KEY;
+if (!DATA_KEY) {
+  if (process.env.NODE_ENV === 'production') {
+    console.error('DATA_KEY must be set when NODE_ENV=production (it encrypts stored health data).');
+    process.exit(1);
+  }
+  console.warn('DATA_KEY is not set; deriving the encryption key from JWT_SECRET (development only).');
+}
+const vault = createVault(DATA_KEY || `health-data:${JWT_SECRET}`);
+const SERVICE_KEY = process.env.SERVICE_KEY; // shared with the ML backend so it can record exam results
 
 const CODE_TTL_MS = 10 * 60 * 1000; // verification / reset code lifetime
 const RESEND_COOLDOWN_MS = 60 * 1000; // minimum gap between emails
@@ -373,6 +388,11 @@ app.post('/api/auth/logout', requireAuth, (req, res) => {
   db.prepare('UPDATE users SET token_version = token_version + 1 WHERE id = ?').run(req.user.id);
   res.json({ message: 'Signed out.' });
 });
+
+/* ------------------------------ Health data ------------------------------ */
+
+app.use('/api/patient', makeLimiter(300), requireAuth, createPatientRouter({ vault }));
+app.use('/api/internal', createInternalRouter({ vault, serviceKey: SERVICE_KEY }));
 
 /* ----------------------------- Fallbacks ---------------------------- */
 

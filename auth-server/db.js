@@ -24,6 +24,22 @@ db.exec(`
   );
 `);
 
+// Health data. `data` holds encrypted JSON (see vault.js); only ids and timestamps are plain.
+db.exec(`
+  CREATE TABLE IF NOT EXISTS patient_profiles (
+    user_id     INTEGER PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+    data        TEXT    NOT NULL,
+    updated_at  INTEGER NOT NULL
+  );
+  CREATE TABLE IF NOT EXISTS exams (
+    id          INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id     INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    data        TEXT    NOT NULL,
+    created_at  INTEGER NOT NULL
+  );
+  CREATE INDEX IF NOT EXISTS idx_exams_user_created ON exams (user_id, created_at DESC);
+`);
+
 // Migrations for databases created before these columns existed (fresh databases get them here too).
 const columns = new Set(db.prepare('PRAGMA table_info(users)').all().map((c) => c.name));
 const addedColumns = [
