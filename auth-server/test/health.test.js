@@ -164,3 +164,48 @@ describe('vault', () => {
     assert.throws(() => vault.decryptJson('garbage'));
   });
 });
+
+describe('account deletion', () => {
+  const del = (token, body) => s.call('DELETE', '/auth/account', { token, body });
+  const rowsFor = (table, id) => rawDb().prepare(`SELECT COUNT(*) AS n FROM ${table} WHERE ${table === 'users' ? 'id' : 'user_id'} = ?`).get(id).n;
+
+  it('needs a signed-in session', async () => {
+    assert.equal((await del(undefined, { password: 'Password1' })).status, 401);
+  });
+
+  it('refuses without the password or with a wrong one, and deletes nothing', async () => {
+    const token = await s.signUpVerified('del-wrong@example.com', 'Password1');
+    const id = await userIdOf(token);
+    assert.equal((await del(token, {})).status, 400);
+    assert.equal((await del(token, { password: 'Nope12345' })).status, 403);
+    assert.equal(rowsFor('users', id), 1);
+    assert.equal(await s.me(token), 200);
+  });
+
+  it('erases the account, profile and every exam, and the session stops working', async () => {
+    const token = await s.signUpVerified('del-ok@example.com', 'Password1');
+    const id = await userIdOf(token);
+    await s.call('PUT', '/patient/profile', { token, body: profile });
+    await record(id);
+    await record(id);
+    assert.equal(rowsFor('exams', id), 2);
+
+    assert.equal((await del(token, { password: 'Password1' })).status, 200);
+    assert.equal(rowsFor('users', id), 0);
+    assert.equal(rowsFor('patient_profiles', id), 0);
+    assert.equal(rowsFor('exams', id), 0);
+    assert.equal(await s.me(token), 401);
+    assert.equal((await s.post('/auth/login', { email: 'del-ok@example.com', password: 'Password1' })).status, 401);
+  });
+
+  it('leaves other users untouched, and the email can be registered again', async () => {
+    const a = await s.signUpVerified('del-a@example.com', 'Password1');
+    const b = await s.signUpVerified('del-b@example.com', 'Password1');
+    const idB = await userIdOf(b);
+    await record(idB);
+    await del(a, { password: 'Password1' });
+    assert.equal(rowsFor('exams', idB), 1);
+    assert.equal(await s.me(b), 200);
+    assert.ok(await s.signUpVerified('del-a@example.com', 'Password2'));
+  });
+});

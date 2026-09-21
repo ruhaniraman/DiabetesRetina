@@ -94,7 +94,7 @@ function AppShell() {
 
 function DashboardRoute() {
   const { user, session, profile, history } = useOutletContext();
-  const { signOut } = useAuth();
+  const { signOut, deleteAccount } = useAuth();
   const navigate = useNavigate();
   return (
     <Dashboard
@@ -105,6 +105,7 @@ function DashboardRoute() {
       onEditPatient={() => navigate('/patient-details')}
       onViewDetailedReport={() => navigate('/report')}
       onLogout={signOut}
+      onDeleteAccount={deleteAccount}
     />
   );
 }

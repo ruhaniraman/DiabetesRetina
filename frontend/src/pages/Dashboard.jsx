@@ -5,6 +5,7 @@ import Logo from '../components/Logo';
 import EyePanel from '../components/EyePanel';
 import Disclaimer from '../components/Disclaimer';
 import ExamHistory from '../components/ExamHistory';
+import DeleteAccount from '../components/DeleteAccount';
 import { useTranslatedText } from '../hooks/useTranslatedText';
 import { bannerConfig, getTagColors } from '../utils/drStyles';
 import { calcAge, formatDob } from '../utils/patient';
@@ -48,7 +49,7 @@ const understated = (flagged, label) => Boolean(flagged) && /Stage [01]/.test(la
 
 const dash = (value, suffix = '') => (value === '' || value == null ? '—' : `${value}${suffix}`);
 
-export default function Dashboard({ user, patient, session, history, onEditPatient, onViewDetailedReport, onLogout }) {
+export default function Dashboard({ user, patient, session, history, onEditPatient, onViewDetailedReport, onLogout, onDeleteAccount }) {
   const { t, i18n } = useTranslation();
   const lang = i18n.resolvedLanguage || 'en';
   const [fullscreenImage, setFullscreenImage] = useState(null);
@@ -70,14 +71,14 @@ export default function Dashboard({ user, patient, session, history, onEditPatie
   const hint = runHint(session);
 
   return (
-    <div className="min-h-screen bg-slate-100/80 text-slate-800 font-['Plus_Jakarta_Sans',sans-serif] p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto antialiased">
+    <div className="min-h-screen bg-slate-100/80 text-slate-800 font-['Plus_Jakarta_Sans_Variable',sans-serif] p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto antialiased">
       <main className="flex flex-col gap-6">
         <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 py-1 px-1">
           <div className="flex items-center gap-4">
             <div className="p-3 bg-slate-900 rounded-2xl shadow-sm text-white flex items-center justify-center shrink-0">
               <Logo />
             </div>
-            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-['Outfit',sans-serif] font-bold text-slate-900 tracking-tight leading-none">
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-['Outfit_Variable',sans-serif] font-bold text-slate-900 tracking-tight leading-none">
               {t('welcomePatient', { name: displayName })}
             </h1>
           </div>
@@ -96,6 +97,7 @@ export default function Dashboard({ user, patient, session, history, onEditPatie
                 </button>
               ))}
             </div>
+            <DeleteAccount onDelete={onDeleteAccount} />
             <button
               type="button"
               onClick={onLogout}

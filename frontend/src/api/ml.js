@@ -1,5 +1,5 @@
 import { ML_API_URL } from '../config';
-import { ApiError, getToken } from './auth';
+import { ApiError, REQUEST_HEADERS } from './auth';
 
 let unauthorizedHandler = null;
 /** Called when the ML backend says the session is no longer valid. */
@@ -16,9 +16,7 @@ function detailMessage(data, fallback) {
 }
 
 async function mlRequest(path, { formData, json } = {}) {
-  const headers = {};
-  const token = getToken();
-  if (token) headers.Authorization = `Bearer ${token}`;
+  const headers = { ...REQUEST_HEADERS };
   if (json) headers['Content-Type'] = 'application/json';
 
   let res;
@@ -26,6 +24,7 @@ async function mlRequest(path, { formData, json } = {}) {
     res = await fetch(`${ML_API_URL}${path}`, {
       method: 'POST',
       headers,
+      credentials: 'include',
       body: formData ?? JSON.stringify(json),
     });
   } catch {

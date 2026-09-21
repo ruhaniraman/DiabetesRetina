@@ -70,6 +70,32 @@ const publicUser = (u) => ({ id: u.id, fullName: u.full_name, email: u.email });
 const signToken = (user) =>
   jwt.sign({ sub: String(user.id), v: user.token_version ?? 0 }, JWT_SECRET, { expiresIn: '7d' });
 
+// The browser keeps the session in an HttpOnly cookie, so page scripts (and any injected script) cannot read the token.
+// The token is also accepted as a Bearer header for non-browser clients.
+const SESSION_COOKIE = 'rr_session';
+const SESSION_MS = 7 * 24 * 60 * 60 * 1000;
+const CSRF_HEADER_VALUE = 'retina-rescue';
+const cookieOptions = () => ({ httpOnly: true, sameSite: 'lax', secure: process.env.NODE_ENV === 'production', path: '/' });
+const startSession = (res, user) => {
+  const token = signToken(user);
+  res.cookie(SESSION_COOKIE, token, { ...cookieOptions(), maxAge: SESSION_MS });
+  return token;
+};
+const endSessionCookie = (res) => res.clearCookie(SESSION_COOKIE, cookieOptions());
+function readCookie(req, name) {
+  for (const part of (req.headers.cookie || '').split(';')) {
+    const i = part.indexOf('=');
+    if (i > 0 && part.slice(0, i).trim() === name) {
+      try {
+        return decodeURIComponent(part.slice(i + 1).trim());
+      } catch {
+        return null;
+      }
+    }
+  }
+  return null;
+}
+
 // `purpose` keeps verification and reset codes from being interchangeable.
 const hashCode = (email, code, purpose = '') =>
   crypto.createHmac('sha256', JWT_SECRET).update(`${purpose}${email}:${code}`).digest('hex');
@@ -114,8 +140,14 @@ const resetCooldownRemainingMs = (user) =>
 
 function requireAuth(req, res, next) {
   const header = req.headers.authorization || '';
-  const token = header.startsWith('Bearer ') ? header.slice(7) : null;
+  const bearer = header.startsWith('Bearer ') ? header.slice(7) : null;
+  const token = bearer || readCookie(req, SESSION_COOKIE);
   if (!token) return res.status(401).json({ message: 'Not signed in.' });
+  // A cookie is sent automatically by the browser, so a request that changes data must also carry a header that a
+  // cross-site page cannot add (SameSite=Lax already blocks most cross-site requests; this is the second layer).
+  if (!bearer && !['GET', 'HEAD', 'OPTIONS'].includes(req.method) && req.headers['x-requested-with'] !== CSRF_HEADER_VALUE) {
+    return res.status(403).json({ message: 'Missing request header.' });
+  }
 
   try {
     const { sub, v } = jwt.verify(token, JWT_SECRET);
@@ -140,7 +172,7 @@ app.use('/api', (_req, res, next) => {
   res.set('Cache-Control', 'no-store');
   next();
 });
-app.use(cors({ origin: CLIENT_ORIGIN }));
+app.use(cors({ origin: CLIENT_ORIGIN, credentials: true }));
 app.use(express.json({ limit: '10kb' }));
 
 // One limiter per route so a burst on one endpoint doesn't lock users out of the others.
@@ -254,7 +286,7 @@ app.post('/api/auth/verify-email', verifyLimiter, (req, res) => {
       WHERE id = ?`
   ).run(user.id);
 
-  res.json({ token: signToken(user), user: publicUser(user) });
+  res.json({ token: startSession(res, user), user: publicUser(user) });
 });
 
 /* ---------------------------- Resend code --------------------------- */
@@ -317,7 +349,7 @@ app.post('/api/auth/login', loginLimiter, async (req, res) => {
     });
   }
 
-  res.json({ token: signToken(user), user: publicUser(user) });
+  res.json({ token: startSession(res, user), user: publicUser(user) });
 });
 
 /* ------------------------- Forgot / reset password ------------------------ */
@@ -393,7 +425,34 @@ app.get('/api/auth/me', requireAuth, (req, res) => {
 // Bumping token_version invalidates every token issued so far (all devices).
 app.post('/api/auth/logout', requireAuth, (req, res) => {
   db.prepare('UPDATE users SET token_version = token_version + 1 WHERE id = ?').run(req.user.id);
+  endSessionCookie(res);
   res.json({ message: 'Signed out.' });
+});
+
+/* --------------------------- Delete account --------------------------- */
+
+const deleteLimiter = makeLimiter(5);
+
+// Erases the account and everything stored for it (profile, exam history). Needs the password again, so a stolen
+// session token alone cannot do it. Irreversible: there is no soft delete and no copy is kept.
+app.delete('/api/auth/account', deleteLimiter, requireAuth, async (req, res) => {
+  const password = String(req.body?.password ?? '');
+  if (!password) return res.status(400).json({ message: 'Enter your password to delete your account.' });
+  if (!(await bcrypt.compare(password, req.user.password_hash))) {
+    return res.status(403).json({ message: 'Incorrect password.' });
+  }
+  db.exec('BEGIN');
+  try {
+    db.prepare('DELETE FROM exams WHERE user_id = ?').run(req.user.id);
+    db.prepare('DELETE FROM patient_profiles WHERE user_id = ?').run(req.user.id);
+    db.prepare('DELETE FROM users WHERE id = ?').run(req.user.id);
+    db.exec('COMMIT');
+  } catch (err) {
+    db.exec('ROLLBACK');
+    throw err;
+  }
+  endSessionCookie(res);
+  res.json({ message: 'Your account and all its data have been deleted.' });
 });
 
 /* ------------------------------ Health data ------------------------------ */

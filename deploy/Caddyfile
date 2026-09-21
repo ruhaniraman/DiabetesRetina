@@ -22,7 +22,7 @@ retina.example.org { # <-- EDIT: your domain (must match CLIENT_ORIGIN / CLIENT_
 		Permissions-Policy "camera=(), microphone=(), geolocation=(), payment=()"
 		# The app loads its own scripts/styles, fonts from Google Fonts, and images from data:/blob: URLs
 		# (uploaded photos and generated overlays). It talks only to its own origin.
-		Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'"
+		Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data: blob:; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'"
 		-Server
 	}
 

@@ -97,13 +97,14 @@ Test HTTPS quality at <https://www.ssllabs.com/ssltest/> and headers at <https:/
 | Stale pages | `index.html` is never cached; hashed assets are cached for a year. |
 
 **Known limits**
-- **The session token lives in browser `localStorage`.** Any script injection could steal it. The Content-Security-Policy
-  (`script-src 'self'`) is the main defence; moving the token to an `HttpOnly` cookie is a worthwhile follow-up.
-- **Fonts come from Google Fonts**, which means visitors' browsers contact Google. Self-host the fonts if that matters
-  for your privacy policy (then remove the two Google hosts from the CSP).
+- **The session is an `HttpOnly` cookie** (`rr_session`, `Secure` and `SameSite=Lax` in production), so page scripts cannot read it. Because browsers send it
+  automatically, every request that changes data must also carry `X-Requested-With: retina-rescue` (the app does this); requests without it are refused with 403.
+  This relies on the app and both APIs sharing one origin, as the Caddy setup does. If you put the APIs on a different site, the cookie will not be sent.
+  Sessions last 7 days and are revoked by logout, password reset and account deletion. After deploying this version everyone has to sign in once again.
+- **Fonts are bundled with the app** (Outfit and Plus Jakarta Sans, via `@fontsource`), so visitors' browsers contact no third party for them and the CSP allows only `'self'` for styles and fonts.
 - **One MATLAB engine handles one request at a time.** Concurrent assessments queue. That is fine for a clinic; for
   district-scale load you need multiple backend instances (each needs a MATLAB license).
-- **SQLite is a single file on one server.** Back up `auth-server/retina-rescue.db*` **and** `DATA_KEY` (separately!) on a schedule, and test a restore.
+- **SQLite is a single file on one server.** Back up `auth-server/retina-rescue.db*` **and** `DATA_KEY` (separately!) on a schedule, and test a restore. Deleting an account removes it from the live database only; copies in your backups remain until those backups expire, so state that in your privacy policy.
 - **Email uses a personal Gmail account (about 500 messages/day).** Use a transactional provider for real traffic.
 
 ## Before you go live

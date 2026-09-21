@@ -26,8 +26,8 @@ export default function Login({ onLogin, onGoToSignup, onNeedsVerification, onFo
     const normalizedEmail = email.trim().toLowerCase();
     setLoading(true);
     try {
-      const { token, user } = await login({ email: normalizedEmail, password });
-      onLogin(token, user);
+      const { user } = await login({ email: normalizedEmail, password });
+      onLogin(user);
     } catch (err) {
       // Account exists but the email was never verified: send them to the code screen.
       if (err.data?.code === 'EMAIL_NOT_VERIFIED') {

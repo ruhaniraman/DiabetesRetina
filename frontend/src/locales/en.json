@@ -16,5 +16,14 @@
   "processAllBtn": "Run Sequential AI Assessment",
   "detailedReportBtn": "DETAILED REPORT",
   "logout": "Log Out",
-  "welcomePatient": "Welcome, {{name}}"
+  "welcomePatient": "Welcome, {{name}}",
+  "deleteAccount": "Delete account",
+  "deleteAccountTitle": "Delete your account?",
+  "deleteAccountWarning": "This permanently erases your account, your patient details and every saved assessment. It cannot be undone. Assessment results you have already downloaded or printed are not affected.",
+  "deleteAccountPassword": "Enter your password to confirm",
+  "deleteAccountNeedPassword": "Enter your password to confirm.",
+  "deleteAccountFailed": "Could not delete the account. Please try again.",
+  "deleteAccountConfirm": "Delete permanently",
+  "deleteAccountBusy": "Deleting…",
+  "cancel": "Cancel"
 }

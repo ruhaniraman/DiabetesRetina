@@ -19,7 +19,7 @@ stage1_quality/ stage2_structure/ stage_3/ stage4_explainability/ stage5_simulin
 ```
 
 The browser talks to both servers. The Python backend never sees passwords or the JWT secret: it forwards each
-request's bearer token to the auth-server (`GET /api/auth/me`) and rejects the request unless that succeeds, so
+request's session (the cookie, or a Bearer token) to the auth-server (`GET /api/auth/me`) and rejects the request unless that succeeds, so
 logging out revokes access everywhere.
 
 ## Prerequisites
@@ -70,6 +70,12 @@ Override the API addresses with `frontend/.env.local` (see `frontend/.env.exampl
 3. Upload a fundus photo for each eye. Each is quality-checked; rejected images must be replaced.
 4. **Run AI Assessment**, then open **Detailed Report** for per-eye grades, lesion candidates and the Grad-CAM heatmap.
    Each assessment is saved to **Exam History** on the dashboard.
+
+## Accounts and sessions
+
+Signing in sets an `HttpOnly` cookie, so page scripts cannot read the session. Users can delete their account from the dashboard (trash icon, password required):
+this erases the account, patient details and every saved assessment from the live database at once, and cannot be undone. Data in any backups you keep is not
+touched (see `deploy/DEPLOYMENT.md`). The API also accepts `DELETE /api/auth/account` with a JSON `{ "password": ... }` body.
 
 ## Health data: what is stored
 

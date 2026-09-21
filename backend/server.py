@@ -27,7 +27,7 @@ import httpx
 import numpy as np
 import uvicorn
 from dotenv import load_dotenv
-from fastapi import Depends, FastAPI, File, Header, HTTPException, UploadFile
+from fastapi import Depends, FastAPI, File, Header, HTTPException, Request, UploadFile
 from fastapi.concurrency import run_in_threadpool
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
@@ -50,6 +50,8 @@ log = logging.getLogger("retina-rescue")
 logging.basicConfig(level=logging.INFO)
 
 CLIENT_ORIGINS = [o.strip() for o in os.getenv("CLIENT_ORIGINS", "http://localhost:5173").split(",") if o.strip()]
+if "*" in CLIENT_ORIGINS:
+    raise SystemExit("CLIENT_ORIGINS must list the web app's origin(s) explicitly: the session cookie is not allowed with \"*\".")
 AUTH_SERVER_URL = os.getenv("AUTH_SERVER_URL", "http://localhost:4000").rstrip("/")
 # Shared secret (same value as the auth-server's SERVICE_KEY) that lets this service record exam results.
 SERVICE_KEY = os.getenv("SERVICE_KEY", "")
@@ -141,13 +143,22 @@ _AUTH_CACHE_TTL = 5.0
 _auth_cache: dict[str, tuple[float, dict]] = {}  # token hash -> (expires_at, user)
 
 
-async def require_user(authorization: str | None = Header(default=None)) -> dict:
-    """Reject the request unless the auth-server accepts its bearer token. Returns the user ({id, fullName, email})."""
-    if not authorization or not authorization.startswith("Bearer "):
-        raise HTTPException(status_code=401, detail="Not signed in.")
-    token = authorization[7:].strip()
+SESSION_COOKIE = "rr_session"       # set by the auth-server (HttpOnly); same name on both sides
+CSRF_HEADER_VALUE = "retina-rescue"
+
+
+async def require_user(request: Request, authorization: str | None = Header(default=None)) -> dict:
+    """Reject the request unless the auth-server accepts the session token. Returns the user ({id, fullName, email}).
+
+    The token comes from the HttpOnly session cookie (browsers) or a Bearer header (other clients). A cookie is sent by the
+    browser automatically, so a POST authenticated only by it must also carry X-Requested-With, which a cross-site page cannot add.
+    """
+    bearer = authorization[7:].strip() if authorization and authorization.startswith("Bearer ") else ""
+    token = bearer or request.cookies.get(SESSION_COOKIE, "").strip()
     if not token:
         raise HTTPException(status_code=401, detail="Not signed in.")
+    if not bearer and request.method not in ("GET", "HEAD", "OPTIONS") and request.headers.get("x-requested-with") != CSRF_HEADER_VALUE:
+        raise HTTPException(status_code=403, detail="Missing request header.")
 
     key = hashlib.sha256(token.encode()).hexdigest()
     now = time.monotonic()
@@ -306,9 +317,9 @@ async def no_cache_headers(request, call_next):
 app.add_middleware(
     CORSMiddleware,
     allow_origins=CLIENT_ORIGINS,
-    allow_credentials=False,  # auth uses a bearer header, not cookies
+    allow_credentials=True,  # the session is an HttpOnly cookie; origins are an explicit list, never "*"
     allow_methods=["GET", "POST"],
-    allow_headers=["Authorization", "Content-Type"],
+    allow_headers=["Authorization", "Content-Type", "X-Requested-With"],
 )
 
 

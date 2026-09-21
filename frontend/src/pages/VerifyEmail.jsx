@@ -32,8 +32,8 @@ export default function VerifyEmail({ email, onVerified, onBack }) {
     setError('');
     setInfo('');
     try {
-      const { token, user } = await verifyEmail({ email, code });
-      onVerified(token, user);
+      const { user } = await verifyEmail({ email, code });
+      onVerified(user);
     } catch (err) {
       setError(err.message);
     } finally {
