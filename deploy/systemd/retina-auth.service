@@ -1,0 +1,24 @@
+# /etc/systemd/system/retina-auth.service  (adjust User and paths)
+[Unit]
+Description=Retina Rescue auth server
+After=network.target
+
+[Service]
+User=retina
+WorkingDirectory=/srv/retina-rescue/auth-server
+EnvironmentFile=/srv/retina-rescue/auth-server/.env
+Environment=NODE_ENV=production
+Environment=TRUST_PROXY=1
+ExecStart=/usr/bin/node --disable-warning=ExperimentalWarning index.js
+Restart=on-failure
+RestartSec=3
+
+# Hardening: it only needs to write its own database folder.
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/srv/retina-rescue/auth-server
+
+[Install]
+WantedBy=multi-user.target

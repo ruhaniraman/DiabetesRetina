@@ -1,0 +1,67 @@
+# Reverse proxy for production. Caddy obtains and renews the HTTPS certificate automatically
+# (needs: DNS for the domain pointing at this server, and ports 80 + 443 reachable).
+#
+#   Browser --https--> Caddy --> /auth-api/*  -> auth-server  127.0.0.1:4000  (/api/*)
+#                              --> /ml-api/*    -> ML backend   127.0.0.1:5000  (/api/*)
+#                              --> everything else: the built web app (frontend/dist)
+#
+# Edit the two marked lines, then:  caddy validate --config deploy/Caddyfile  &&  caddy reload --config deploy/Caddyfile
+
+{
+	email admin@example.org # <-- EDIT: address for certificate-expiry notices
+}
+
+retina.example.org { # <-- EDIT: your domain (must match CLIENT_ORIGIN / CLIENT_ORIGINS in the .env files)
+	encode zstd gzip
+
+	header {
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		X-Content-Type-Options "nosniff"
+		X-Frame-Options "DENY"
+		Referrer-Policy "no-referrer"
+		Permissions-Policy "camera=(), microphone=(), geolocation=(), payment=()"
+		# The app loads its own scripts/styles, fonts from Google Fonts, and images from data:/blob: URLs
+		# (uploaded photos and generated overlays). It talks only to its own origin.
+		Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'"
+		-Server
+	}
+
+	# The service-to-service endpoint must never be reachable from the internet (the ML backend calls it directly
+	# on localhost). The auth-server also refuses proxied requests to it; this is the first of the two layers.
+	handle /auth-api/internal* {
+		respond 404
+	}
+
+	handle /auth-api/* {
+		request_body {
+			max_size 64KB
+		}
+		uri replace /auth-api /api
+		reverse_proxy 127.0.0.1:4000
+	}
+
+	handle /ml-api/* {
+		# Two fundus photos of up to 15 MB each, plus multipart overhead.
+		request_body {
+			max_size 40MB
+		}
+		uri replace /ml-api /api
+		reverse_proxy 127.0.0.1:5000 {
+			transport http {
+				response_header_timeout 3m # the first Stage 3/4 call after a restart can take a minute
+			}
+		}
+	}
+
+	handle {
+		root * /srv/retina-rescue/frontend/dist # <-- path of `npm run build` output on the server
+		try_files {path} /index.html
+		file_server
+		# index.html (also served for deep links like /report) must always be revalidated so a new deploy is picked
+		# up at once; only the content-hashed files under /assets are safe to cache forever.
+		@hashed path /assets/*
+		@shell not path /assets/*
+		header @hashed Cache-Control "public, max-age=31536000, immutable"
+		header @shell Cache-Control "no-cache"
+	}
+}

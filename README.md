@@ -110,6 +110,13 @@ The server prints which mode it is in at startup. With `NODE_ENV=production` it 
 Gmail limits how much a personal account may send (about 500 messages/day), so use a transactional email provider
 (e.g. SES, Postmark) if you expect real traffic.
 
+## Deploying to production
+
+`deploy/DEPLOYMENT.md` is the step-by-step guide: HTTPS through Caddy (`deploy/Caddyfile`, automatic certificates,
+security headers and a Content-Security-Policy), systemd units (`deploy/systemd/`), production settings, a verification
+checklist, and an honest list of what still needs a decision from you (clinical validation, regulation, privacy law).
+With `NODE_ENV=production` / `APP_ENV=production` the servers refuse to start on weak or placeholder configuration.
+
 ## Tests
 
 ```bash

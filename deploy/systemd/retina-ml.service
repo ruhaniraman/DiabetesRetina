@@ -1,0 +1,23 @@
+# /etc/systemd/system/retina-ml.service  (adjust User and paths)
+# The MATLAB Engine for Python must be installed into the Python environment used below.
+[Unit]
+Description=Retina Rescue ML backend
+After=network.target retina-auth.service
+Wants=retina-auth.service
+
+[Service]
+User=retina
+WorkingDirectory=/srv/retina-rescue/backend
+EnvironmentFile=/srv/retina-rescue/backend/.env
+Environment=APP_ENV=production
+ExecStart=/srv/retina-rescue/backend/.venv/bin/python server.py
+Restart=on-failure
+RestartSec=5
+# MATLAB + the network need time to start; the API answers /api/health as "starting" until it is ready.
+TimeoutStartSec=120
+
+NoNewPrivileges=true
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target
