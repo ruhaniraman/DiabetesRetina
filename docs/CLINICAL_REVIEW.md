@@ -142,6 +142,7 @@ Source: `backend/quality.py`. A photo is **rejected** (the user is asked to reta
 | Only part of the retina in the picture | reject | Image rejected: only part of the retina is visible. Please retake the photo with the whole retina in the frame. |
 | The same photo uploaded for both eyes (checked when grading) | reject | Image rejected: the left and right photos are the same picture. Please upload a separate photo for each eye. |
 | Unusual colour balance | warn | Image has an unusual colour balance for a retinal photograph; results may be less reliable. Check that it is a fundus photograph. |
+| Optic disc not clearly visible | warn | Image may not show the optic disc clearly. Make sure the photograph is centred on the optic disc and macula; results may be less reliable. |
 | Slightly soft | warn | Image is slightly soft; results may be less reliable. |
 | Dark | warn | Image is dark; results may be less reliable. |
 | Very bright | warn | Image is very bright; results may be less reliable. |

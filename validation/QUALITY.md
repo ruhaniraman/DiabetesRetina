@@ -88,8 +88,28 @@ by the new rules** (31 of 3,662 APTOS photographs get the colour warning), every
 eight of nine non-fundus pictures are rejected (one of them, random noise, by the older grain rule) and one portrait only gets the colour warning.
 
 Limits: these rules look at colour and outline. A picture with a warm cast and a round outline can pass; a quarter of a retina, or a zoomed-in crop with no
-black border, looks whole; the optic disc, macula and vessels are not detected. The non-fundus test set is a handful of pictures. A trained
+black border, looks whole to these three checks (the optic-disc warning below catches most frames without a disc); the macula and vessels are not detected. The non-fundus test set is a handful of pictures. A trained
 fundus/non-fundus detector would be the proper fix and needs a set of real non-fundus uploads to train and test on.
+
+## Is the optic disc in the picture? (added later)
+
+A quarter of a retina, or a frame cut so the optic disc is missing, looks like a whole photograph to the checks above. A warning was added for it
+(`disc_score` in `backend/quality.py`): the brightest disc-sized blob in the retina (red and green channels, illumination removed), in units of the retina's own
+brightness variation. It is a **warning** ("Image may not show the optic disc clearly...", threshold 3.0), never a rejection, and the photograph is still graded.
+This is the practical use made of the team's Stage 2 anatomy work: the same idea (find the disc), rewritten in a few lines of Python so it is fast and can be tested on all
+516 IDRiD disc markups. The MATLAB `stage2_structure/` code itself is not used by the app.
+
+Evidence (`results/disc_check.md`, reproducible with `validation/disc_check.py`, using the shipped code):
+
+- **It finds the disc.** On IDRiD (516 photographs, disc centres marked by experts) the detected blob lies within 5% of the retina width of the true centre for 95.2% of photographs.
+- **Its confidence separates frames with the disc from frames without** (AUC 0.890, frames cut from IDRiD photographs). At the threshold: 71% of frames without the disc are
+  warned, 4% of frames with the disc are warned wrongly.
+- **Cost on whole photographs:** 1.4% of APTOS (51 of 3,662) and 0.8% of IDRiD (4 of 516) get the warning.
+- **Some of those are false alarms.** Looking at the lowest-scoring APTOS photographs, most do show a disc: pale or at the edge of a macula-centred photograph, or hidden by haze or
+  fibrous tissue. The warning is a little more common in advanced disease (2.4% of proliferative photographs, 2.1% severe, 1.3% of no-DR and moderate).
+
+Limits: only a low score is informative (a picture without a disc still has a brightest spot; glare or exudates can win); the macula is not checked; ground truth exists for IDRiD only, and
+the test frames are windows cut from complete photographs, not real off-centre photographs.
 
 ## Enforced by the server, and the same photo twice (added later)
 

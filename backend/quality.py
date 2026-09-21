@@ -33,6 +33,8 @@ def fundus_measures(img_bgr: np.ndarray) -> dict:
     - warm_share: share of retina pixels that are red/orange and saturated. Real photos: median 1.0, 1st percentile 0.6, lowest 0.06
       (a handful of green/grey-toned APTOS photos); scenes, drawings, pages and greyscale images are 0.0 to 0.28.
     - mean_saturation: greyscale and washed-out images are near 0 (real photos: at least 0.17).
+    - disc_score: how clearly an optic disc stands out (see _disc_score). Whole photographs: median about 5, 1st percentile about 3; frames cut
+      from a photograph so that the disc is missing: median about 2.
     """
     h, w = img_bgr.shape[:2]
     scale = 256 / max(h, w)
@@ -42,14 +44,38 @@ def fundus_measures(img_bgr: np.ndarray) -> dict:
     tissue = cv2.morphologyEx(tissue, cv2.MORPH_CLOSE, cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (9, 9)))
     n, labels, stats, _ = cv2.connectedComponentsWithStats(tissue)
     if n < 2:
-        return {"retina_aspect": 0.0, "warm_share": 0.0, "mean_saturation": 0.0}
+        return {"retina_aspect": 0.0, "warm_share": 0.0, "mean_saturation": 0.0, "disc_score": 0.0, "disc_x": 0.0, "disc_y": 0.0}
     biggest = 1 + int(np.argmax(stats[1:, cv2.CC_STAT_AREA]))
     region = labels == biggest
     box_w, box_h = stats[biggest, cv2.CC_STAT_WIDTH], stats[biggest, cv2.CC_STAT_HEIGHT]
     hsv = cv2.cvtColor(small, cv2.COLOR_BGR2HSV)
     hue, sat = hsv[..., 0][region], hsv[..., 1][region]
     warm = ((hue <= 25) | (hue >= 170)) & (sat > 60)
-    return {"retina_aspect": float(box_w / max(box_h, 1)), "warm_share": float(warm.mean()), "mean_saturation": float(sat.mean() / 255)}
+    return {
+        "retina_aspect": float(box_w / max(box_h, 1)),
+        "warm_share": float(warm.mean()),
+        "mean_saturation": float(sat.mean() / 255),
+        **dict(zip(("disc_score", "disc_x", "disc_y"), _find_disc(small, region, int(box_w)))),
+    }
+
+
+def _find_disc(small_bgr: np.ndarray, region: np.ndarray, retina_width: int) -> tuple:
+    """Returns (score, x, y): the score below, and the blob's position as a fraction of the picture's width and height."""
+    """How clearly an optic disc stands out: the brightest disc-sized blob (red+green channels, illumination removed) in units of the
+    retina's own brightness variation. Deliberately simple. On IDRiD (516 photographs with the disc position marked by experts) the brightest blob
+    lies within 5% of the retina width of the true disc centre for 97.7% of photographs. Bright lesions or glare can win instead, and a photograph
+    with no disc still has a brightest spot, so only a LOW score is informative: it says no disc-like blob stands out."""
+    blue, green, red = [c.astype(np.float32) for c in cv2.split(small_bgr)]
+    channel = 0.5 * (red + green)
+    channel = np.where(region, channel, channel[region].mean())
+    local = channel - cv2.GaussianBlur(channel, (0, 0), retina_width * 0.12)
+    smooth = cv2.GaussianBlur(local, (0, 0), retina_width * 0.02)
+    inner = cv2.erode(region.astype(np.uint8), cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (int(retina_width * 0.06) | 1,) * 2)).astype(bool)
+    if inner.sum() < 100:
+        return 0.0, 0.0, 0.0
+    masked = np.where(inner, smooth, -np.inf)
+    y, x = np.unravel_index(int(np.argmax(masked)), masked.shape)
+    return float(masked[y, x] / max(float(local[inner].std()), 1e-6)), float(x / masked.shape[1]), float(y / masked.shape[0])
 
 
 def _structure_signature(img_bgr: np.ndarray, size: int = 96):
@@ -136,6 +162,7 @@ THRESHOLDS = {
     "colour_warn": 0.35,       # warm_share below this: unusual colour; 0.7% of real photos, and some non-fundus scenes (up to 0.28)
     "aspect_min": 0.65,        # retina bounding box narrower/wider than this: only part of the retina is in the picture
     "aspect_max": 1.45,        # (real photos: 0.75 to 1.24)
+    "disc_warn": 3.0,          # disc_score below this: no optic disc stands out. Warns 0.5% of APTOS and 1.5% of IDRiD photographs; catches 73% of frames with the disc cut out
     "same_picture": 0.95,      # two uploads correlate at least this much: the same photo twice (different photos: at most 0.92)
 }
 
@@ -149,13 +176,14 @@ MESSAGES = {
     "partial_reject": "Image rejected: only part of the retina is visible. Please retake the photo with the whole retina in the frame.",
     "colour_warn": "Image has an unusual colour balance for a retinal photograph; results may be less reliable. Check that it is a fundus photograph.",
     "same_picture": "Image rejected: the left and right photos are the same picture. Please upload a separate photo for each eye.",
+    "disc_warn": "Image may not show the optic disc clearly. Make sure the photograph is centred on the optic disc and macula; results may be less reliable.",
     "blur_warn": "Image is slightly soft; results may be less reliable.",
     "dark_warn": "Image is dark; results may be less reliable.",
     "bright_warn": "Image is very bright; results may be less reliable.",
     "accept": "Quality check passed.",
 }
 _REJECT_ORDER = ("no_retina", "not_colour_reject", "partial_reject", "blur_reject", "dark_reject", "bright_reject", "noise_reject")
-_WARN_ORDER = ("colour_warn", "blur_warn", "dark_warn", "bright_warn")
+_WARN_ORDER = ("colour_warn", "blur_warn", "dark_warn", "bright_warn", "disc_warn")   # most specific first; disc_warn is the catch-all
 
 
 def reason_codes(m: dict) -> list[str]:
@@ -185,6 +213,8 @@ def reason_codes(m: dict) -> list[str]:
             found.append("dark_warn")
         if t["bright_warn"] < m["brightness"] <= t["bright_reject"]:
             found.append("bright_warn")
+        if m.get("disc_score", 99.0) < t["disc_warn"]:
+            found.append("disc_warn")
     return found
 
 

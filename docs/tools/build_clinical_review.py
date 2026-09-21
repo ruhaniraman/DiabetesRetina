@@ -189,6 +189,7 @@ def build():
         "partial_reject": ("Only part of the retina in the picture", "reject"),
         "same_picture": ("The same photo uploaded for both eyes (checked when grading)", "reject"),
         "colour_warn": ("Unusual colour balance", "warn"),
+        "disc_warn": ("Optic disc not clearly visible", "warn"),
         "blur_warn": ("Slightly soft", "warn"), "dark_warn": ("Dark", "warn"), "bright_warn": ("Very bright", "warn"),
         "accept": ("Passes", "accept"),
     }

@@ -30,7 +30,8 @@ def test_blur_is_rejected_in_proportion():
 
 def test_dark_and_bright_photos_warn_before_they_reject():
     assert verdict_of(realistic_fundus(brightness=0.4))["reasons"] == ["dark_warn"]
-    assert verdict_of(realistic_fundus(brightness=2.5))["reasons"] == ["bright_warn"]
+    v = verdict_of(realistic_fundus(brightness=2.5))
+    assert v["reasons"][0] == "bright_warn" and v["message"] == quality.MESSAGES["bright_warn"]        # the disc washes out too, but the exposure message comes first
     assert verdict_of(realistic_fundus(brightness=0.2))["verdict"] == "reject"                      # far too dark
     assert verdict_of(realistic_fundus(brightness=6.0))["verdict"] == "reject"                      # blown out
 
@@ -136,7 +137,33 @@ def test_the_new_measures_do_not_depend_on_file_size():
     small, large = realistic_fundus(224), cv2.resize(realistic_fundus(224), (1600, 1600))
     a, b = quality.fundus_measures(small), quality.fundus_measures(large)
     for k in a:
-        assert abs(a[k] - b[k]) < 0.05, k
+        assert abs(a[k] - b[k]) <= 0.05 * max(1.0, abs(a[k])), k        # 5% (the disc score is about 5, the others are 0 to 1)
+
+
+# ----------------------------------------------------------------------------------- is the optic disc in the picture?
+def _fundus_with_disc_removed():
+    """The synthetic fundus with its bright optic disc painted over with the surrounding colour."""
+    img = realistic_fundus(seed=3)
+    size = img.shape[0]
+    cv2.circle(img, (int(size * 0.68), int(size * 0.5)), int(size * 0.09), (35, 85, 150), -1)
+    return cv2.GaussianBlur(img, (0, 0), 0.8)
+
+
+def test_a_photo_with_an_optic_disc_gets_no_disc_warning():
+    v = verdict_of(realistic_fundus(seed=3))
+    assert "disc_warn" not in v["reasons"], quality.measures(realistic_fundus(seed=3))["disc_score"]
+
+
+def test_a_photo_without_a_disc_gets_the_disc_warning_but_is_not_rejected():
+    m = quality.measures(_fundus_with_disc_removed())
+    assert m["disc_score"] < quality.measures(realistic_fundus(seed=3))["disc_score"]
+    v = quality.verdict({**quality.measures(realistic_fundus(seed=3)), "disc_score": 1.5})
+    assert v["verdict"] == "warn" and v["reasons"] == ["disc_warn"] and "optic disc" in v["message"]
+
+
+def test_the_disc_warning_is_the_lowest_priority_warning():
+    v = quality.verdict({**GOOD, "brightness": 0.12, "disc_score": 1.0})
+    assert v["reasons"] == ["dark_warn", "disc_warn"] and v["message"] == quality.MESSAGES["dark_warn"]
 
 
 # ----------------------------------------------------------------------------------- the same picture twice
