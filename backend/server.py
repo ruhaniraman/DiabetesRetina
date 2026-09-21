@@ -406,11 +406,57 @@ STAGE_LABELS = {
     "Severe": "Stage 3 - Severe",
     "Proliferate_DR": "Stage 4 - Proliferative",
 }
-DISCLAIMER = " This is an automated screening aid, not a diagnosis."
+DISCLAIMER = " This is an automated screening aid, not a diagnosis, and it can miss disease: symptoms or a clinician's concern should always prompt review."
 
 
-def build_summary(overall: str, left: str, right: str) -> str:
-    """Grade-based wording only: it never claims lesions the model was not asked about."""
+GRADE_ORDER = ["No_DR", "Mild", "Moderate", "Severe", "Proliferate_DR"]
+REFERABLE_FROM = GRADE_ORDER.index("Moderate")   # moderate NPDR or worse is "referable"
+STAGE_TEXT = {
+    "No_DR": "no retinopathy (Stage 0)",
+    "Mild": "mild retinopathy (Stage 1)",
+    "Moderate": "moderate retinopathy (Stage 2)",
+    "Severe": "severe retinopathy (Stage 3)",
+    "Proliferate_DR": "proliferative retinopathy (Stage 4)",
+}
+
+
+def decide(g: dict) -> dict:
+    """Turn the raw network output into the clinical decision.
+
+    The network was tuned to flag an eye as referable when P(Moderate)+P(Severe)+P(Proliferate) reaches a threshold
+    (stored with the model). On the held-out test set that rule finds 92.4% of referable patients, against 83.9% when
+    deciding from the single most-likely grade (validation/REPORT.md), so the threshold is what decides.
+
+    The displayed grade is never lowered, and is raised to Moderate (Stage 2) when the threshold flags an eye whose most
+    likely grade is lower, so a referable result cannot be shown as a routine one.
+    """
+    flags = {}
+    for eye in ("left", "right"):
+        flags[eye] = g[f"{eye}_ref"] >= g["threshold"] or GRADE_ORDER.index(g[eye]) >= REFERABLE_FROM
+    referable = flags["left"] or flags["right"]
+    overall = g["overall"]
+    escalated = referable and GRADE_ORDER.index(overall) < REFERABLE_FROM
+    if escalated:
+        overall = "Moderate"
+    return {**g, "overall": overall, "escalated": escalated, "referable": referable,
+            "left_flagged": flags["left"], "right_flagged": flags["right"]}
+
+
+def build_summary(overall: str, left: str, right: str, *, decision: dict | None = None) -> str:
+    """Grade- and threshold-based wording only: it never claims lesions the model was not asked about."""
+    if decision and decision["escalated"]:
+        worst = left if GRADE_ORDER.index(left) >= GRADE_ORDER.index(right) else right
+        flagged = [e for e in ("left", "right") if decision[f"{e}_flagged"]]
+        eyes = " and ".join(flagged) + (" eye" if len(flagged) == 1 else " eyes")
+        probs = ", ".join(f"{decision[f'{e}_ref']:.0%}" for e in flagged)
+        text = (
+            f"The most likely grade was {STAGE_TEXT[worst]}, but the screening model's referral threshold "
+            f"({decision['threshold']:.0%}) was reached in the {eyes} (referral probability {probs}). "
+            "This is treated as referable (Stage 2 or worse) until a clinician reviews it. "
+            "The exact stage is an estimate; the referral decision is the more reliable result."
+        )
+        return text + DISCLAIMER
+
     affected = [name for name, grade in (("left", left), ("right", right)) if grade == overall]
     eyes = " and ".join(affected) + (" eye" if len(affected) == 1 else " eyes")
     if overall == "No_DR":
@@ -436,16 +482,21 @@ def build_summary(overall: str, left: str, right: str) -> str:
     return text + DISCLAIMER
 
 
-def grade_eyes(left_img: np.ndarray, right_img: np.ndarray) -> tuple[str, str, str, float, float]:
+def grade_eyes(left_img: np.ndarray, right_img: np.ndarray) -> dict:
+    """Run Stage 3 on both eyes and return the raw network output (see decide() for the clinical decision)."""
     # Re-encode as PNG so MATLAB always gets a clean file with a known extension.
     with tempfile.TemporaryDirectory(prefix="retina_") as tmp:
         left_path, right_path = Path(tmp) / "left.png", Path(tmp) / "right.png"
         cv2.imwrite(str(left_path), left_img)
         cv2.imwrite(str(right_path), right_img)
-        overall, left, right, left_conf, right_conf = matlab_service.call(
-            "assessBilateralFromFiles", str(left_path), str(right_path), nargout=5
+        overall, left, right, left_conf, right_conf, left_ref, right_ref, threshold = matlab_service.call(
+            "assessBilateralFromFiles", str(left_path), str(right_path), nargout=8
         )
-    return str(overall), str(left), str(right), float(left_conf), float(right_conf)
+    return {
+        "overall": str(overall), "left": str(left), "right": str(right),
+        "left_conf": float(left_conf), "right_conf": float(right_conf),
+        "left_ref": float(left_ref), "right_ref": float(right_ref), "threshold": float(threshold),
+    }
 
 
 async def record_exam(user_id: int, exam: dict) -> int | None:
@@ -478,21 +529,29 @@ async def run_stage3_assessment(
     left_img = await read_image(leftEye)
     right_img = await read_image(rightEye)
     try:
-        overall, left, right, left_conf, right_conf = await run_in_threadpool(grade_eyes, left_img, right_img)
+        raw = await run_in_threadpool(grade_eyes, left_img, right_img)
     except HTTPException:
         raise
     except Exception:
         log.exception("Stage 3 assessment failed")
         raise HTTPException(status_code=500, detail="Assessment failed.")
 
+    d = decide(raw)
     result = {
         "status": "success",
-        "leftGrade": STAGE_LABELS.get(left, left),
-        "rightGrade": STAGE_LABELS.get(right, right),
-        "leftConfidence": left_conf,
-        "rightConfidence": right_conf,
-        "overallRisk": overall,
-        "overallSummary": build_summary(overall, left, right),
+        "leftGrade": STAGE_LABELS.get(d["left"], d["left"]),
+        "rightGrade": STAGE_LABELS.get(d["right"], d["right"]),
+        "leftConfidence": d["left_conf"],
+        "rightConfidence": d["right_conf"],
+        "leftReferableProbability": d["left_ref"],
+        "rightReferableProbability": d["right_ref"],
+        "leftReferable": d["left_flagged"],
+        "rightReferable": d["right_flagged"],
+        "referable": d["referable"],
+        "referralThreshold": d["threshold"],
+        "escalated": d["escalated"],
+        "overallRisk": d["overall"],
+        "overallSummary": build_summary(d["overall"], d["left"], d["right"], decision=d),
     }
 
     exam_id = None

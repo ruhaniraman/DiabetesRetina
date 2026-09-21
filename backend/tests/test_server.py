@@ -121,6 +121,12 @@ def test_translation_rejects_unknown_language(client):
 
 
 # --- exam history recording -------------------------------------------------------------------------
+def raw(overall, left, right, left_conf, right_conf, left_ref, right_ref, threshold=0.2):
+    """What grade_eyes returns (the raw network output)."""
+    return {"overall": overall, "left": left, "right": right, "left_conf": left_conf, "right_conf": right_conf,
+            "left_ref": left_ref, "right_ref": right_ref, "threshold": threshold}
+
+
 def two_images():
     return {
         "leftEye": ("l.png", png_bytes(fake_fundus()), "image/png"),
@@ -135,7 +141,7 @@ def test_stage3_saves_the_exam_for_the_calling_user(client, monkeypatch):
         saved["user_id"], saved["exam"] = user_id, exam
         return 42
 
-    monkeypatch.setattr(server, "grade_eyes", lambda l, r: ("Moderate", "Moderate", "No_DR", 0.9, 0.8))
+    monkeypatch.setattr(server, "grade_eyes", lambda l, r: raw("Moderate", "Moderate", "No_DR", 0.9, 0.8, 0.92, 0.03))
     monkeypatch.setattr(server, "record_exam", fake_record)
     body = client.post("/api/stage3-assessment", files=two_images()).json()
 
@@ -149,7 +155,7 @@ def test_a_failed_save_never_hides_the_result(client, monkeypatch):
     async def failing_record(user_id, exam):
         return None
 
-    monkeypatch.setattr(server, "grade_eyes", lambda l, r: ("Severe", "Severe", "Mild", 0.9, 0.8))
+    monkeypatch.setattr(server, "grade_eyes", lambda l, r: raw("Severe", "Severe", "Mild", 0.9, 0.8, 0.97, 0.10))
     monkeypatch.setattr(server, "record_exam", failing_record)
     body = client.post("/api/stage3-assessment", files=two_images()).json()
     assert body["overallRisk"] == "Severe" and body["saved"] is False and body["examId"] is None
@@ -245,3 +251,64 @@ def test_api_docs_are_only_available_in_development():
 def test_responses_are_not_cacheable(client):
     r = client.get("/api/health")
     assert r.headers["cache-control"] == "no-store" and r.headers["x-content-type-options"] == "nosniff"
+
+
+# --- referral decision (threshold), validated in validation/REPORT.md -------------------------------------
+def test_threshold_flags_a_referable_eye_that_the_most_likely_grade_would_miss():
+    d = server.decide(raw("Mild", "Mild", "No_DR", 0.45, 0.9, 0.35, 0.02))
+    assert d["referable"] and d["left_flagged"] and not d["right_flagged"]
+    assert d["escalated"] and d["overall"] == "Moderate"   # never shown as a routine "Mild"
+
+
+def test_a_clear_result_stays_clear():
+    d = server.decide(raw("No_DR", "No_DR", "No_DR", 0.9, 0.9, 0.05, 0.08))
+    assert not d["referable"] and not d["escalated"] and d["overall"] == "No_DR"
+
+
+def test_the_displayed_grade_is_never_lowered():
+    d = server.decide(raw("Severe", "Severe", "No_DR", 0.6, 0.9, 0.10, 0.02))  # threshold not reached, grade is Severe
+    assert d["overall"] == "Severe" and d["referable"] and d["left_flagged"] and not d["escalated"]
+
+
+def test_threshold_is_at_least_as_sensitive_as_the_most_likely_grade():
+    """With the deployed threshold (0.2 = 1/5), any eye whose top class is referable is also flagged by the threshold."""
+    import numpy as np
+
+    rng = np.random.default_rng(0)
+    classes = ["Mild", "Moderate", "No_DR", "Proliferate_DR", "Severe"]
+    referable = {"Moderate", "Proliferate_DR", "Severe"}
+    for probs in rng.dirichlet(np.ones(5) * 0.3, 5000):
+        top = classes[int(probs.argmax())]
+        ref_prob = sum(p for c, p in zip(classes, probs) if c in referable)
+        if top in referable:
+            assert ref_prob >= 0.2
+
+
+def test_escalated_summary_explains_itself_and_never_reads_as_routine():
+    d = server.decide(raw("Mild", "Mild", "No_DR", 0.45, 0.9, 0.35, 0.02))
+    text = server.build_summary(d["overall"], d["left"], d["right"], decision=d)
+    assert "left eye" in text and "35%" in text and "20%" in text
+    assert "treated as referable" in text and "estimate" in text
+    assert "routine" not in text.lower().replace("repeat screening", "") or "not" in text
+    assert "can miss disease" in text
+
+
+def test_disclaimer_says_the_tool_can_miss_disease():
+    assert "can miss disease" in server.build_summary("No_DR", "No_DR", "No_DR")
+
+
+def test_endpoint_returns_referral_fields_and_saves_the_escalated_grade(client, monkeypatch):
+    saved = {}
+
+    async def fake_record(user_id, exam):
+        saved.update(exam)
+        return 5
+
+    monkeypatch.setattr(server, "grade_eyes", lambda l, r: raw("Mild", "Mild", "No_DR", 0.45, 0.9, 0.35, 0.02))
+    monkeypatch.setattr(server, "record_exam", fake_record)
+    body = client.post("/api/stage3-assessment", files=two_images()).json()
+    assert body["referable"] is True and body["escalated"] is True and body["overallRisk"] == "Moderate"
+    assert body["leftReferable"] is True and body["rightReferable"] is False
+    assert body["leftReferableProbability"] == 0.35 and body["referralThreshold"] == 0.2
+    assert body["leftGrade"].startswith("Stage 1")            # the per-eye estimate is still reported honestly
+    assert saved["overallRisk"] == "Moderate" and "treated as referable" in saved["summary"]
