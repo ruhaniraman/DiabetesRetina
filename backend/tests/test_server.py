@@ -2,6 +2,7 @@
 import os
 
 os.environ["DISABLE_MATLAB"] = "true"
+os.environ["ENABLE_LESION_OVERLAY"] = "true"   # the overlay tests below exercise it; default-off is tested separately
 
 import cv2  # noqa: E402
 import numpy as np  # noqa: E402
@@ -107,8 +108,8 @@ def test_summary_is_grade_based_and_has_disclaimer(overall):
 
 
 def test_summary_names_only_the_affected_eye():
-    assert "left eye" in server.build_summary("Moderate", "Moderate", "No_DR")
-    assert "right" not in server.build_summary("Moderate", "Moderate", "No_DR").split("flagged in the")[1].split(".")[0]
+    text = server.build_summary("Moderate", "Moderate", "No_DR")
+    assert "left eye" in text and "right" not in text.lower()
 
 
 def test_translation_passthrough_for_english(client):
@@ -312,3 +313,24 @@ def test_endpoint_returns_referral_fields_and_saves_the_escalated_grade(client, 
     assert body["leftReferableProbability"] == 0.35 and body["referralThreshold"] == 0.2
     assert body["leftGrade"].startswith("Stage 1")            # the per-eye estimate is still reported honestly
     assert saved["overallRisk"] == "Moderate" and "treated as referable" in saved["summary"]
+
+
+# --- the experimental lesion overlay is off unless enabled --------------------------------------------------
+def test_lesion_overlay_is_disabled_by_default(client, monkeypatch):
+    monkeypatch.setattr(server, "LESION_OVERLAY_ENABLED", False)
+    r = client.post("/api/stage2-segmentation", files=upload("f.png", fake_fundus()))
+    assert r.status_code == 404 and "disabled" in r.json()["detail"]
+
+
+def test_health_reports_whether_the_overlay_is_on(client, monkeypatch):
+    monkeypatch.setattr(server, "LESION_OVERLAY_ENABLED", False)
+    assert client.get("/api/health").json()["lesionOverlay"] is False
+
+
+def test_the_overlay_default_is_off_when_the_variable_is_unset():
+    import subprocess, sys
+
+    env = {k: v for k, v in os.environ.items() if k != "ENABLE_LESION_OVERLAY"} | {"DISABLE_MATLAB": "true"}
+    code = "import server; print(server.LESION_OVERLAY_ENABLED)"
+    r = subprocess.run([sys.executable, "-c", code], cwd=os.path.dirname(server.__file__), env=env, capture_output=True, text=True, timeout=120)
+    assert r.stdout.strip().endswith("False"), r.stderr[-300:]

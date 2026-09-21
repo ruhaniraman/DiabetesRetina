@@ -32,6 +32,15 @@ from fastapi.concurrency import run_in_threadpool
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 
+from clinical_text import (  # noqa: F401  (re-exported: tests and callers use server.build_summary, server.DISCLAIMER, ...)
+    DISCLAIMER,
+    GRADE_ORDER,
+    STAGE_LABELS,
+    STAGE_TEXT,
+    build_summary,
+    confidence_band,
+)
+
 BASE_DIR = Path(__file__).resolve().parent
 REPO_ROOT = BASE_DIR.parent
 load_dotenv(BASE_DIR / ".env")
@@ -46,6 +55,9 @@ SERVICE_KEY = os.getenv("SERVICE_KEY", "")
 MAX_UPLOAD_BYTES = int(os.getenv("MAX_UPLOAD_MB", "15")) * 1024 * 1024
 MATLAB_ENABLED = os.getenv("DISABLE_MATLAB", "").lower() not in ("1", "true", "yes")
 IS_PROD = os.getenv("APP_ENV", "development").lower() == "production"
+# The Stage 2 lesion overlay is experimental and OFF by default: validation/LESIONS.md shows it does not detect lesions
+# (it paints about 2.7% of every retina, healthy or not, and misses the annotated lesions on real ground truth).
+LESION_OVERLAY_ENABLED = os.getenv("ENABLE_LESION_OVERLAY", "").lower() in ("1", "true", "yes")
 
 
 def production_problems(env) -> list[str]:
@@ -385,6 +397,11 @@ def segment_lesions(img: np.ndarray) -> tuple[np.ndarray, dict]:
 
 @app.post("/api/stage2-segmentation", dependencies=[Depends(require_user)])
 async def run_stage2_segmentation(file: UploadFile = File(...)):
+    if not LESION_OVERLAY_ENABLED:
+        raise HTTPException(
+            status_code=404,
+            detail="The experimental lesion overlay is disabled. Set ENABLE_LESION_OVERLAY=true to use it (see validation/LESIONS.md).",
+        )
     img = await read_image(file)
     try:
         mask_img, counts = await run_in_threadpool(segment_lesions, img)
@@ -399,25 +416,7 @@ async def run_stage2_segmentation(file: UploadFile = File(...)):
 # --------------------------------------------------------------------------- #
 # Stage 3 - bilateral grading (MATLAB)
 # --------------------------------------------------------------------------- #
-STAGE_LABELS = {
-    "No_DR": "Stage 0 - Clear",
-    "Mild": "Stage 1 - Mild",
-    "Moderate": "Stage 2 - Moderate",
-    "Severe": "Stage 3 - Severe",
-    "Proliferate_DR": "Stage 4 - Proliferative",
-}
-DISCLAIMER = " This is an automated screening aid, not a diagnosis, and it can miss disease: symptoms or a clinician's concern should always prompt review."
-
-
-GRADE_ORDER = ["No_DR", "Mild", "Moderate", "Severe", "Proliferate_DR"]
 REFERABLE_FROM = GRADE_ORDER.index("Moderate")   # moderate NPDR or worse is "referable"
-STAGE_TEXT = {
-    "No_DR": "no retinopathy (Stage 0)",
-    "Mild": "mild retinopathy (Stage 1)",
-    "Moderate": "moderate retinopathy (Stage 2)",
-    "Severe": "severe retinopathy (Stage 3)",
-    "Proliferate_DR": "proliferative retinopathy (Stage 4)",
-}
 
 
 def decide(g: dict) -> dict:
@@ -440,46 +439,6 @@ def decide(g: dict) -> dict:
         overall = "Moderate"
     return {**g, "overall": overall, "escalated": escalated, "referable": referable,
             "left_flagged": flags["left"], "right_flagged": flags["right"]}
-
-
-def build_summary(overall: str, left: str, right: str, *, decision: dict | None = None) -> str:
-    """Grade- and threshold-based wording only: it never claims lesions the model was not asked about."""
-    if decision and decision["escalated"]:
-        worst = left if GRADE_ORDER.index(left) >= GRADE_ORDER.index(right) else right
-        flagged = [e for e in ("left", "right") if decision[f"{e}_flagged"]]
-        eyes = " and ".join(flagged) + (" eye" if len(flagged) == 1 else " eyes")
-        probs = ", ".join(f"{decision[f'{e}_ref']:.0%}" for e in flagged)
-        text = (
-            f"The most likely grade was {STAGE_TEXT[worst]}, but the screening model's referral threshold "
-            f"({decision['threshold']:.0%}) was reached in the {eyes} (referral probability {probs}). "
-            "This is treated as referable (Stage 2 or worse) until a clinician reviews it. "
-            "The exact stage is an estimate; the referral decision is the more reliable result."
-        )
-        return text + DISCLAIMER
-
-    affected = [name for name, grade in (("left", left), ("right", right)) if grade == overall]
-    eyes = " and ".join(affected) + (" eye" if len(affected) == 1 else " eyes")
-    if overall == "No_DR":
-        text = "No signs of diabetic retinopathy were flagged in either eye. Continue routine annual screening."
-    elif overall == "Mild":
-        text = (
-            f"Mild non-proliferative diabetic retinopathy (Stage 1) was flagged in the {eyes}. "
-            "Clinical review is advised; repeat screening in 6-12 months or as directed by a clinician."
-        )
-    elif overall == "Moderate":
-        text = (
-            f"Moderate non-proliferative diabetic retinopathy (Stage 2) was flagged in the {eyes}. "
-            "This cannot be cleared automatically: specialist review is recommended."
-        )
-    elif overall in ("Severe", "Proliferate_DR"):
-        stage = "Stage 3 - severe" if overall == "Severe" else "Stage 4 - proliferative"
-        text = (
-            f"URGENT: {stage} diabetic retinopathy was flagged in the {eyes}. "
-            "Immediate ophthalmologist review is required."
-        )
-    else:
-        text = f"Bilateral analysis complete. Highest flagged grade: {overall}. Clinical review is required."
-    return text + DISCLAIMER
 
 
 def grade_eyes(left_img: np.ndarray, right_img: np.ndarray) -> dict:
@@ -543,6 +502,9 @@ async def run_stage3_assessment(
         "rightGrade": STAGE_LABELS.get(d["right"], d["right"]),
         "leftConfidence": d["left_conf"],
         "rightConfidence": d["right_conf"],
+        # Bands, not percentages, are what the interface shows: the raw probabilities are over-confident.
+        "leftConfidenceBand": confidence_band(d["left_conf"]),
+        "rightConfidenceBand": confidence_band(d["right_conf"]),
         "leftReferableProbability": d["left_ref"],
         "rightReferableProbability": d["right_ref"],
         "leftReferable": d["left_flagged"],
@@ -631,7 +593,7 @@ async def get_simulation_data():
 
 @app.get("/api/health")
 async def health():
-    return {"ok": True, "matlab": matlab_service.status}
+    return {"ok": True, "matlab": matlab_service.status, "lesionOverlay": LESION_OVERLAY_ENABLED}
 
 
 if __name__ == "__main__":
