@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import AuthLayout, { Field, FormAlert } from '../components/AuthLayout';
 import { forgotPassword, resetPassword } from '../api/auth';
 import { validateEmail, validatePassword } from '../utils/validation';
+import { useMessages } from '../messages';
 
 const RESEND_SECONDS = 60;
 
@@ -14,6 +16,8 @@ const submitClass =
  * never says whether an email is registered.
  */
 export default function ForgotPassword({ onDone, onBackToLogin }) {
+  const { t } = useTranslation();
+  const { tm } = useMessages();
   const [step, setStep] = useState('email'); // 'email' | 'reset'
   const [email, setEmail] = useState('');
   const [code, setCode] = useState('');
@@ -45,7 +49,7 @@ export default function ForgotPassword({ onDone, onBackToLogin }) {
     try {
       await forgotPassword({ email: normalizedEmail });
       setStep('reset');
-      setInfo(`If an account exists for ${normalizedEmail}, we've sent it a 6-digit code. It expires in 10 minutes.`);
+      setInfo(t('forgot.sent', { email: normalizedEmail }));
       setCooldown(RESEND_SECONDS);
     } catch (err) {
       setFormError(err.message);
@@ -60,7 +64,7 @@ export default function ForgotPassword({ onDone, onBackToLogin }) {
     setFormError('');
     try {
       await forgotPassword({ email: normalizedEmail });
-      setInfo('If the account exists, a new code is on its way.');
+      setInfo(t('forgot.resent'));
       setCode('');
       setCooldown(RESEND_SECONDS);
     } catch (err) {
@@ -86,7 +90,7 @@ export default function ForgotPassword({ onDone, onBackToLogin }) {
     setLoading(true);
     try {
       await resetPassword({ email: normalizedEmail, code, password });
-      onDone('Password updated. Sign in with your new password.');
+      onDone(t('forgot.done'));
     } catch (err) {
       setFormError(err.message);
     } finally {
@@ -98,21 +102,21 @@ export default function ForgotPassword({ onDone, onBackToLogin }) {
 
   return (
     <AuthLayout
-      heroTitle="Locked out? It happens."
-      heroText="Reset your password with a one-time code sent to your email."
-      title={step === 'email' ? 'Reset your password' : 'Choose a new password'}
+      heroTitle={t('forgot.heroTitle')}
+      heroText={t('forgot.heroText')}
+      title={step === 'email' ? t('forgot.titleEmail') : t('forgot.titleReset')}
       subtitle={
         step === 'email'
-          ? "Enter your account email and we'll send you a 6-digit code."
-          : 'Enter the code from your email and pick a new password.'
+          ? t('forgot.subtitleEmail')
+          : t('forgot.subtitleReset')
       }
     >
       {step === 'email' ? (
         <form onSubmit={requestCode} noValidate className="space-y-4">
-          <FormAlert message={formError} />
+          <FormAlert message={tm(formError)} />
           <Field
             id="forgot-email"
-            label="Email address"
+            label={t('forgot.email')}
             type="email"
             autoComplete="email"
             autoFocus
@@ -123,21 +127,21 @@ export default function ForgotPassword({ onDone, onBackToLogin }) {
               setFormError('');
             }}
             placeholder="doctor@retinarescue.com"
-            error={errors.email}
+            error={tm(errors.email)}
           />
           <button type="submit" disabled={loading} className={submitClass}>
-            <span>{loading ? 'Sending…' : 'Send code'}</span>
+            <span>{loading ? t('forgot.sending') : t('forgot.send')}</span>
             {!loading && <span className="text-base">→</span>}
           </button>
         </form>
       ) : (
         <form onSubmit={submitReset} noValidate className="space-y-4">
-          <FormAlert message={formError} />
+          <FormAlert message={tm(formError)} />
           <FormAlert message={info} tone="success" />
 
           <Field
             id="reset-code"
-            label="Reset code"
+            label={t('forgot.code')}
             inputMode="numeric"
             autoComplete="one-time-code"
             maxLength={6}
@@ -150,11 +154,11 @@ export default function ForgotPassword({ onDone, onBackToLogin }) {
             }}
             placeholder="123456"
             inputClassName="text-center !text-lg tracking-[0.5em]"
-            error={errors.code}
+            error={tm(errors.code)}
           />
           <Field
             id="reset-password"
-            label="New password"
+            label={t('forgot.newPassword')}
             type="password"
             autoComplete="new-password"
             value={password}
@@ -163,12 +167,12 @@ export default function ForgotPassword({ onDone, onBackToLogin }) {
               clear('password');
               setFormError('');
             }}
-            placeholder="At least 8 characters"
-            error={errors.password}
+            placeholder={t('forgot.newPasswordHint')}
+            error={tm(errors.password)}
           />
           <Field
             id="reset-confirm"
-            label="Confirm new password"
+            label={t('forgot.confirm')}
             type="password"
             autoComplete="new-password"
             value={confirm}
@@ -177,11 +181,11 @@ export default function ForgotPassword({ onDone, onBackToLogin }) {
               clear('confirm');
               setFormError('');
             }}
-            placeholder="Repeat the password"
-            error={errors.confirm}
+            placeholder={t('forgot.confirmHint')}
+            error={tm(errors.confirm)}
           />
           <button type="submit" disabled={loading} className={submitClass}>
-            <span>{loading ? 'Updating…' : 'Update password'}</span>
+            <span>{loading ? t('forgot.updating') : t('forgot.update')}</span>
             {!loading && <span className="text-base">→</span>}
           </button>
 
@@ -192,7 +196,7 @@ export default function ForgotPassword({ onDone, onBackToLogin }) {
               disabled={cooldown > 0 || loading}
               className="font-bold text-[#0d1424] hover:underline disabled:text-slate-400 disabled:no-underline disabled:cursor-not-allowed cursor-pointer"
             >
-              {cooldown > 0 ? `Resend code in ${cooldown}s` : 'Resend code'}
+              {cooldown > 0 ? t('forgot.resendIn', { n: cooldown }) : t('forgot.resend')}
             </button>
             <button
               type="button"
@@ -204,16 +208,16 @@ export default function ForgotPassword({ onDone, onBackToLogin }) {
               }}
               className="font-bold text-[#0d1424] hover:underline cursor-pointer"
             >
-              Use a different email
+              {t('forgot.differentEmail')}
             </button>
           </div>
         </form>
       )}
 
       <p className="text-xs text-center text-slate-500 font-medium mt-6">
-        Remembered it?{' '}
+        {t('forgot.remembered')}{' '}
         <button type="button" onClick={onBackToLogin} className="font-bold text-[#0d1424] hover:underline cursor-pointer">
-          Back to sign in
+          {t('forgot.back')}
         </button>
       </p>
     </AuthLayout>

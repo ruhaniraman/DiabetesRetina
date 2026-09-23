@@ -3,7 +3,7 @@
 // PRIVACY: some browsers offer "network" voices that send the text to an online service to be spoken. The result is health information, so only voices that run on
 // the device (`localService`) are used unless allowNetwork is set. When a language has only online voices the caller says so instead of quietly using them.
 
-export const LANG_TAGS = { en: ['en-IN', 'en-GB', 'en-US', 'en'], hi: ['hi-IN', 'hi'], kn: ['kn-IN', 'kn'] };
+export const LANG_TAGS = { en: ['en-IN', 'en-GB', 'en-US', 'en'], hi: ['hi-IN', 'hi'], kn: ['kn-IN', 'kn'], ta: ['ta-IN', 'ta'] };
 
 export const speechSupported = () =>
   typeof window !== 'undefined' && 'speechSynthesis' in window && typeof window.SpeechSynthesisUtterance === 'function';

@@ -78,7 +78,7 @@ def shape(value):
     return {k: shape(v) for k, v in value.items()} if isinstance(value, dict) else "text"
 
 
-@pytest.mark.parametrize("lang", ["hi", "kn"])
+@pytest.mark.parametrize("lang", ["hi", "kn", "ta"])
 def test_a_translation_has_exactly_the_same_sentences_and_blanks_as_english(lang):
     assert shape(DATA[lang]) == shape(EN)
     blanks = lambda t: sorted(re.findall(r"\{(\w+)\}", t))
@@ -86,9 +86,9 @@ def test_a_translation_has_exactly_the_same_sentences_and_blanks_as_english(lang
         assert blanks(DATA[lang]["summary"][key]) == blanks(text), (lang, key)
 
 
-@pytest.mark.parametrize("lang", ["hi", "kn"])
+@pytest.mark.parametrize("lang", ["hi", "kn", "ta"])
 def test_every_translated_sentence_is_in_the_right_script_and_not_empty(lang):
-    script = {"hi": r"[ऀ-ॿ]", "kn": r"[ಀ-೿]"}[lang]
+    script = {"hi": r"[ऀ-ॿ]", "kn": r"[ಀ-೿]", "ta": r"[஀-௿]"}[lang]
 
     def sentences(v):
         return [x for item in v.values() for x in (sentences(item) if isinstance(item, dict) else [item])]
@@ -98,7 +98,7 @@ def test_every_translated_sentence_is_in_the_right_script_and_not_empty(lang):
 
 
 def test_the_translations_are_flagged_as_unreviewed_until_a_person_signs_them_off():
-    assert DATA["reviewed"] == {"hi": False, "kn": False}
+    assert DATA["reviewed"] == {"hi": False, "kn": False, "ta": False}
 
 
 def test_no_reassuring_or_prescriptive_english_in_the_source_sentences():

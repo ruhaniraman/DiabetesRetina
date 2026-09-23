@@ -1,6 +1,7 @@
 import '@testing-library/jest-dom/vitest';
 import { afterEach } from 'vitest';
 import { cleanup, configure } from '@testing-library/react';
+import '../i18n'; // the app starts this in main.jsx; components under test read their words from it
 
 afterEach(cleanup);
 

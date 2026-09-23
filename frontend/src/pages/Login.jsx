@@ -1,10 +1,13 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import AuthLayout, { Field, FormAlert } from '../components/AuthLayout';
 import { login } from '../api/auth';
 import { validateEmail } from '../utils/validation';
-import { LOGIN_HERO } from '../clinicalText';
+import { useMessages } from '../messages';
 
 export default function Login({ onLogin, onGoToSignup, onNeedsVerification, onForgotPassword, notice }) {
+  const { t } = useTranslation();
+  const { tm } = useMessages();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [errors, setErrors] = useState({});
@@ -42,18 +45,18 @@ export default function Login({ onLogin, onGoToSignup, onNeedsVerification, onFo
 
   return (
     <AuthLayout
-      heroTitle={<>Early detection <br />for preserving vision.</>}
-      heroText={LOGIN_HERO.text}
-      title="Welcome Back"
-      subtitle={LOGIN_HERO.subtitle}
+      heroTitle={<>{t('login.heroTitleA')} <br />{t('login.heroTitleB')}</>}
+      heroText={t('login.heroText')}
+      title={t('login.title')}
+      subtitle={t('login.subtitle')}
     >
       <form onSubmit={handleSubmit} noValidate className="space-y-4">
-        <FormAlert message={notice} tone="success" />
-        <FormAlert message={formError} />
+        <FormAlert message={tm(notice)} tone="success" />
+        <FormAlert message={tm(formError)} />
 
         <Field
           id="login-email"
-          label="Email address"
+          label={t('login.email')}
           type="email"
           autoComplete="email"
           value={email}
@@ -63,12 +66,12 @@ export default function Login({ onLogin, onGoToSignup, onNeedsVerification, onFo
             setFormError('');
           }}
           placeholder="doctor@retinarescue.com"
-          error={errors.email}
+          error={tm(errors.email)}
         />
 
         <Field
           id="login-password"
-          label="Password"
+          label={t('login.password')}
           type="password"
           autoComplete="current-password"
           value={password}
@@ -78,7 +81,7 @@ export default function Login({ onLogin, onGoToSignup, onNeedsVerification, onFo
             setFormError('');
           }}
           placeholder="••••••••"
-          error={errors.password}
+          error={tm(errors.password)}
         />
 
         <div className="text-right -mt-1">
@@ -87,7 +90,7 @@ export default function Login({ onLogin, onGoToSignup, onNeedsVerification, onFo
             onClick={onForgotPassword}
             className="text-xs font-bold text-[#0d1424] hover:underline cursor-pointer"
           >
-            Forgot password?
+            {t('login.forgot')}
           </button>
         </div>
 
@@ -96,19 +99,19 @@ export default function Login({ onLogin, onGoToSignup, onNeedsVerification, onFo
           disabled={loading}
           className="w-full py-3.5 px-4 bg-[#0d1424] hover:bg-[#1a2744] disabled:opacity-60 disabled:cursor-not-allowed text-white font-bold text-xs uppercase tracking-wider rounded-xl transition-all shadow-md active:scale-[0.99] mt-2 flex items-center justify-center gap-2 cursor-pointer"
         >
-          <span>{loading ? 'Signing in…' : 'Sign In'}</span>
+          <span>{loading ? t('login.signingIn') : t('login.signIn')}</span>
           {!loading && <span className="text-base">→</span>}
         </button>
       </form>
 
       <p className="text-xs text-center text-slate-500 font-medium mt-6">
-        Don't have an account?{' '}
+        {t('login.noAccount')}{' '}
         <button
           type="button"
           onClick={onGoToSignup}
           className="font-bold text-[#0d1424] hover:underline cursor-pointer"
         >
-          Sign Up
+          {t('login.signUp')}
         </button>
       </p>
     </AuthLayout>

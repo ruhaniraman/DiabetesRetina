@@ -1,9 +1,13 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import AuthLayout, { Field, FormAlert } from '../components/AuthLayout';
 import { signup, ApiError } from '../api/auth';
 import { validateName, validateEmail, validatePassword, passwordRules } from '../utils/validation';
+import { useMessages } from '../messages';
 
 export default function Signup({ onSignup, onGoToLogin }) {
+  const { t } = useTranslation();
+  const { tm } = useMessages();
   const [form, setForm] = useState({ fullName: '', email: '', password: '', confirmPassword: '' });
   const [errors, setErrors] = useState({});
   const [formError, setFormError] = useState('');
@@ -54,48 +58,48 @@ export default function Signup({ onSignup, onGoToLogin }) {
 
   return (
     <AuthLayout
-      heroTitle="Join Retina Rescue Portal."
-      heroText="Start monitoring retinal health with intelligent deep learning tools."
-      title="Create Account"
-      subtitle="Enter your details below to set up your account."
+      heroTitle={t('signup.heroTitle')}
+      heroText={t('signup.heroText')}
+      title={t('signup.title')}
+      subtitle={t('signup.subtitle')}
     >
       <form onSubmit={handleSubmit} noValidate className="space-y-3.5">
-        <FormAlert message={formError} />
+        <FormAlert message={tm(formError)} />
 
         <Field
           id="signup-name"
-          label="Full Name"
+          label={t('signup.fullName')}
           autoComplete="name"
           value={form.fullName}
           onChange={update('fullName')}
           placeholder="Dr. Alex Vance"
-          error={errors.fullName}
+          error={tm(errors.fullName)}
         />
 
         <Field
           id="signup-email"
-          label="Email address"
+          label={t('signup.email')}
           type="email"
           autoComplete="email"
           value={form.email}
           onChange={update('email')}
           placeholder="doctor@retinarescue.com"
-          error={errors.email}
+          error={tm(errors.email)}
         />
 
         <div>
           <Field
             id="signup-password"
-            label="Password"
+            label={t('signup.password')}
             type="password"
             autoComplete="new-password"
             value={form.password}
             onChange={update('password')}
             placeholder="••••••••"
-            error={errors.password}
+            error={tm(errors.password)}
           />
           {form.password && (
-            <ul className="mt-2 grid grid-cols-2 gap-x-3 gap-y-1" aria-label="Password requirements">
+            <ul className="mt-2 grid grid-cols-2 gap-x-3 gap-y-1" aria-label={t('signup.requirements')}>
               {passwordRules.map((rule) => {
                 const met = rule.test(form.password);
                 return (
@@ -104,7 +108,7 @@ export default function Signup({ onSignup, onGoToLogin }) {
                     className={`text-[10px] font-bold flex items-center gap-1 ${met ? 'text-emerald-600' : 'text-slate-400'}`}
                   >
                     <span aria-hidden="true">{met ? '✓' : '○'}</span>
-                    {rule.label}
+                    {tm(rule.label)}
                   </li>
                 );
               })}
@@ -114,13 +118,13 @@ export default function Signup({ onSignup, onGoToLogin }) {
 
         <Field
           id="signup-confirm"
-          label="Confirm Password"
+          label={t('signup.confirm')}
           type="password"
           autoComplete="new-password"
           value={form.confirmPassword}
           onChange={update('confirmPassword')}
           placeholder="••••••••"
-          error={errors.confirmPassword}
+          error={tm(errors.confirmPassword)}
         />
 
         <button
@@ -128,19 +132,19 @@ export default function Signup({ onSignup, onGoToLogin }) {
           disabled={loading}
           className="w-full py-3.5 px-4 bg-[#0d1424] hover:bg-[#1a2744] disabled:opacity-60 disabled:cursor-not-allowed text-white font-bold text-xs uppercase tracking-wider rounded-xl transition-all shadow-md active:scale-[0.99] mt-3 flex items-center justify-center gap-2 cursor-pointer"
         >
-          <span>{loading ? 'Sending code…' : 'Get Started'}</span>
+          <span>{loading ? t('signup.sending') : t('signup.getStarted')}</span>
           {!loading && <span className="text-base">→</span>}
         </button>
       </form>
 
       <p className="text-xs text-center text-slate-500 font-medium mt-6">
-        Already have an account?{' '}
+        {t('signup.haveAccount')}{' '}
         <button
           type="button"
           onClick={onGoToLogin}
           className="font-bold text-[#0d1424] hover:underline cursor-pointer"
         >
-          Sign In
+          {t('signup.signIn')}
         </button>
       </p>
     </AuthLayout>

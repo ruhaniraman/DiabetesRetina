@@ -1,10 +1,13 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import LanguageSwitcher from './LanguageSwitcher';
 
 /**
  * Shared shell for Login, Signup and VerifyEmail so the hero panel,
  * animation styles and brand header live in one place.
  */
 export default function AuthLayout({ heroTitle, heroText, title, subtitle, children }) {
+  const { t } = useTranslation();
   return (
     <div className="min-h-screen bg-[#eceff4] flex items-center justify-center p-4 sm:p-6 font-sans">
       {/* Dynamic Moving Gradient Styles */}
@@ -48,6 +51,9 @@ export default function AuthLayout({ heroTitle, heroText, title, subtitle, child
 
         {/* Right Side: Form Panel */}
         <div className="w-full md:w-1/2 p-4 sm:p-8 flex flex-col justify-center">
+          <div className="flex justify-end mb-3">
+            <LanguageSwitcher />
+          </div>
           {/* Brand Header with Custom Eye Icon */}
           <div className="flex items-center gap-3.5 mb-6">
             <div className="w-11 h-11 bg-[#fef6e4] rounded-[16px] flex items-center justify-center flex-shrink-0 border border-[#fde4b8] shadow-sm">
@@ -67,10 +73,10 @@ export default function AuthLayout({ heroTitle, heroText, title, subtitle, child
             </div>
             <div>
               <span className="text-2xl font-extrabold text-[#0d1424] tracking-tight block leading-none">
-                Retina Rescue
+                {t('common.brand')}
               </span>
               <span className="text-[10px] font-black uppercase tracking-[0.2em] text-amber-600 block mt-1.5">
-                Personal Health Portal
+                {t('common.portal')}
               </span>
             </div>
           </div>
@@ -90,6 +96,7 @@ export default function AuthLayout({ heroTitle, heroText, title, subtitle, child
  * Any extra props (value, onChange, placeholder, autoComplete...) go to the <input>.
  */
 export function Field({ id, label, error, type = 'text', inputClassName = '', ...inputProps }) {
+  const { t } = useTranslation();
   const [visible, setVisible] = useState(false);
   const isPassword = type === 'password';
 
@@ -120,7 +127,7 @@ export function Field({ id, label, error, type = 'text', inputClassName = '', ..
             onClick={() => setVisible((v) => !v)}
             className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-extrabold uppercase tracking-wider text-slate-400 hover:text-[#0d1424] cursor-pointer"
           >
-            {visible ? 'Hide' : 'Show'}
+            {visible ? t('common.hide') : t('common.show')}
           </button>
         )}
       </div>

@@ -1,4 +1,5 @@
 import { Routes, Route, Navigate, Outlet, useLocation, useNavigate, useOutletContext } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 
 import AuthProvider from './auth/AuthProvider';
 import { useAuth } from './auth/useAuth';
@@ -26,9 +27,10 @@ function FullScreenMessage({ children }) {
 
 // Signed-in users have no business on these pages.
 function PublicOnly({ children }) {
+  const { t } = useTranslation();
   const { status } = useAuth();
   const location = useLocation();
-  if (status === 'loading') return <FullScreenMessage>Loading…</FullScreenMessage>;
+  if (status === 'loading') return <FullScreenMessage>{t('common.loading')}</FullScreenMessage>;
   if (status === 'authenticated') return <Navigate to={location.state?.from || '/'} replace />;
   return children;
 }
@@ -74,9 +76,10 @@ function VerifyRoute() {
 /* --------------------------- Protected application --------------------------- */
 
 function RequireAuth() {
+  const { t } = useTranslation();
   const { status } = useAuth();
   const location = useLocation();
-  if (status === 'loading') return <FullScreenMessage>Restoring your session…</FullScreenMessage>;
+  if (status === 'loading') return <FullScreenMessage>{t('common.restoring')}</FullScreenMessage>;
   if (status !== 'authenticated') return <Navigate to="/login" replace state={{ from: location.pathname }} />;
   return <AppShell />;
 }
@@ -84,11 +87,12 @@ function RequireAuth() {
 // Holds the state that must survive moving between pages (uploads, results, profile, exam history).
 // It only mounts while signed in, so signing out discards all of it.
 function AppShell() {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const session = useScanSession();
   const profile = usePatientProfile(user);
   const history = useExamHistory(session.assessment);
-  if (profile.status === 'loading') return <FullScreenMessage>Loading your profile…</FullScreenMessage>;
+  if (profile.status === 'loading') return <FullScreenMessage>{t('common.loadingProfile')}</FullScreenMessage>;
   return <Outlet context={{ user, session, profile, history }} />;
 }
 

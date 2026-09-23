@@ -26,17 +26,17 @@ describe('translations.json', () => {
   const shape = (value) => (value && typeof value === 'object' ? Object.fromEntries(Object.entries(value).map(([k, v]) => [k, shape(v)])) : 'text');
   const placeholders = (text) => [...String(text).matchAll(/\{(\w+)\}/g)].map((m) => m[1]).sort();
 
-  it.each(['hi', 'kn'])('%s has exactly the same sentences as the English source', (lang) => {
+  it.each(['hi', 'kn', 'ta'])('%s has exactly the same sentences as the English source', (lang) => {
     expect(shape(data[lang])).toEqual(shape(data.en));
   });
 
-  it.each(['hi', 'kn'])('%s keeps every blank ({eyes}, {worst}, ...) of the English sentence, and adds none', (lang) => {
+  it.each(['hi', 'kn', 'ta'])('%s keeps every blank ({eyes}, {worst}, ...) of the English sentence, and adds none', (lang) => {
     for (const key of Object.keys(data.en.summary)) {
       expect(placeholders(data[lang].summary[key]), `${lang} summary.${key}`).toEqual(placeholders(data.en.summary[key]));
     }
   });
 
-  it.each(['hi', 'kn'])('%s has no empty or untranslated (still English) sentence', (lang) => {
+  it.each(['hi', 'kn', 'ta'])('%s has no empty or untranslated (still English) sentence', (lang) => {
     const flat = (o) => Object.values(o).flatMap((v) => (typeof v === 'object' ? flat(v) : [v]));
     for (const sentence of flat(data[lang])) {
       expect(sentence.trim().length).toBeGreaterThan(0);
@@ -44,10 +44,11 @@ describe('translations.json', () => {
     }
   });
 
-  it('Hindi and Kannada are NOT reviewed yet: they are drafts, and speech in them stays off until a qualified person signs them off', () => {
-    expect(data.reviewed).toEqual({ hi: false, kn: false });
+  it('Hindi, Kannada and Tamil are NOT reviewed yet: they are drafts, and speech in them stays off until a qualified person signs them off', () => {
+    expect(data.reviewed).toEqual({ hi: false, kn: false, ta: false });
     expect(isReviewed('hi')).toBe(false);
     expect(isReviewed('kn')).toBe(false);
+    expect(isReviewed('ta')).toBe(false);
     expect(isReviewed('en')).toBe(true);
     expect(draftNotice('hi')).toMatch(/डॉक्टर/);
   });

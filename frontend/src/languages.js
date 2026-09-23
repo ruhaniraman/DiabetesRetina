@@ -3,4 +3,5 @@ export const LANGUAGES = [
   { code: 'en', label: 'EN', name: 'English' },
   { code: 'hi', label: 'हिंदी', name: 'हिंदी' },
   { code: 'kn', label: 'ಕನ್ನಡ', name: 'ಕನ್ನಡ' },
+  { code: 'ta', label: 'தமிழ்', name: 'தமிழ்' },
 ];

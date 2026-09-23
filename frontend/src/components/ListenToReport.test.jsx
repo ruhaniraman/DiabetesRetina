@@ -3,9 +3,10 @@ import { render, screen, waitFor, act, cleanup } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
 // Switches the tests can flip: whether the deployment allows unreviewed drafts, and whether a language has been reviewed.
-const flags = vi.hoisted(() => ({ allowUnreviewed: [], reviewed: { hi: false, kn: false } }));
+const flags = vi.hoisted(() => ({ allowUnreviewed: [], reviewed: { hi: false, kn: false, ta: false } }));
 vi.mock('../config', async (importOriginal) => ({
   ...(await importOriginal()),
+  ALLOW_NETWORK_VOICES: false, // the default; a developer's own .env must not change what these tests check
   allowsUnreviewedSpeech: (lang) => flags.allowUnreviewed.includes('true') || flags.allowUnreviewed.includes(lang),
 }));
 vi.mock('../speech/translations', async (importOriginal) => ({
@@ -32,7 +33,7 @@ const setup = async (props = {}) => {
   render(<ListenToReport assessment={assessment} {...props} />);
   return userEvent.setup({ delay: null });
 };
-const listenButton = () => screen.getByRole('button', { name: /listen to the result|नतीजा सुनें|ಫಲಿತಾಂಶ ಕೇಳಿ|stop|रोकें|ನಿಲ್ಲಿಸಿ/i });
+const listenButton = () => screen.getByRole('button', { name: /listen to the result|नतीजा सुनें|ಫಲಿತಾಂಶ ಕೇಳಿ|முடிவைக் கேளுங்கள்|stop|रोकें|ನಿಲ್ಲಿಸಿ|நிறுத்து/i });
 const spokenText = (synth) => synth.spoken.map((u) => u.text);
 const useLanguage = async (lang) => {
   await act(async () => {
@@ -42,7 +43,7 @@ const useLanguage = async (lang) => {
 
 beforeEach(async () => {
   flags.allowUnreviewed = [];
-  flags.reviewed = { hi: false, kn: false };
+  flags.reviewed = { hi: false, kn: false, ta: false };
   await useLanguage('en');
 });
 afterEach(() => removeFakeSpeech());
@@ -126,6 +127,7 @@ describe('ListenToReport in English', () => {
 describe.each([
   ['hi', 'हिंदी', 'hi-IN'],
   ['kn', 'ಕನ್ನಡ', 'kn-IN'],
+  ['ta', 'தமிழ்', 'ta-IN'],
 ])('ListenToReport in %s', (lang, name, voiceTag) => {
   beforeEach(async () => {
     await useLanguage(lang);
@@ -140,7 +142,7 @@ describe.each([
     await user.click(listenButton());
     expect(await screen.findByRole('alert')).toHaveTextContent(name);
     expect(synth.spoken).toEqual([]);
-    await user.click(screen.getByRole('button', { name: /अंग्रेज़ी में सुनें|ಇಂಗ್ಲಿಷ್‌ನಲ್ಲಿ ಕೇಳಿ/ }));
+    await user.click(screen.getByRole('button', { name: /अंग्रेज़ी में सुनें|ಇಂಗ್ಲಿಷ್‌ನಲ್ಲಿ ಕೇಳಿ|ஆங்கிலத்தில் கேளுங்கள்/ }));
     await waitFor(() => expect(spokenText(synth)[0]).toBe('This is your diabetic retinopathy screening result.'));
   });
 
@@ -182,7 +184,7 @@ describe.each([
     installFakeSpeech({ voices: [makeVoice(voiceTag)] });
     const user = await setup();
     await user.click(listenButton());
-    await waitFor(() => expect(screen.getByRole('button', { name: /सुनें|ಕೇಳಿ/ })).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByRole('button', { name: /सुनें|ಕೇಳಿ|கேளுங்கள்/ })).toBeInTheDocument());
     expect(fetchSpy).not.toHaveBeenCalled();
     vi.unstubAllGlobals();
   });
