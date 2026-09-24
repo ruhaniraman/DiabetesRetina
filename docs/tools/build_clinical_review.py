@@ -215,7 +215,8 @@ def build():
     add("Source: `backend/report_pdf.py`, wording in `backend/clinical_text.py` (`PDF_TEXT`) plus the summary sentence shown in 3a. Created when the user presses "
         "\"Download PDF Report\": the server grades both photographs again, draws the heatmaps and returns the PDF. **It prints the patient's name and date of birth "
         "(if given) and both eyes' results.** The server keeps neither the photographs nor the report file and adds nothing to the exam history. Names in scripts the report font "
-        "cannot print (for example Devanagari or Kannada) are replaced by a note. The report never shows raw class probabilities or lesion claims.\n")
+        "cannot print (for example Devanagari or Kannada) are replaced by a note. The report never shows raw class probabilities. Lesions appear only when the Stage 2 "
+        "lesion overlay is turned on (section 3e), and then only as possible lesions with a caveat.\n")
     add("| Where | Text |\n|---|---|")
     for key, label in [("kicker", "Header"), ("title", "Title"), ("badge_referral", "Badge, referral flagged (red)"), ("badge_no_referral", "Badge, no referral flagged (neutral slate, not green)"),
                        ("photo_caption", "Caption under the analysed photograph"), ("heatmap_caption", "Caption under the heatmap"), ("heatmap_note", "Note under each eye"),
@@ -227,7 +228,23 @@ def build():
         "Any photograph-quality warnings are listed under \"Notes on this report\". The footer on every page reads \"Automated screening aid, not a diagnosis\".\n")
     add("- **Question for the reviewer:** should the PDF carry the patient's name and date of birth at all, and is the referral score percentage appropriate to print for patients?\n")
 
-    add("### 3e. Developer tool: the MATLAB PDF (Stage 4)\n")
+    add("### 3e. Stage 2 lesion overlay (off until this section is reviewed)\n")
+    add("Source: wording in `backend/clinical_text.py` (`PDF_TEXT`, `LESION_LABELS`) and `frontend/src/clinicalText.js`; the overlay comes from "
+        "`stage2_structure/dl/lesionOverlayToFile.m` (the calibrated v2 lesion network). It is shown only when `ENABLE_LESION_OVERLAY` (backend) and "
+        "`VITE_ENABLE_LESION_OVERLAY` (web app) are set. It then adds a \"Possible lesions\" view to each eye in the app and a picture with counts per eye in the PDF. "
+        "On held-out test photographs it marked something in 34% of eyes without retinopathy and in 98-100% of eyes with retinopathy; Dice against expert masks "
+        "was 0.45 (microaneurysms), 0.42 (hemorrhages), 0.62 (hard exudates) and 0.51 (soft exudates) "
+        "(validation/results/lesions_dl_Stage2_LesionUNet_v2_calibrated.md).\n")
+    add("| Where | Text |\n|---|---|")
+    for key, label in [("lesion_caption", "Heading above each eye's picture (PDF, after the eye name)"), ("lesion_note", "Note when something is marked (app and PDF)"),
+                       ("lesion_none_note", "Note when nothing is marked (app and PDF)")]:
+        add(f"| {label} | {ct.PDF_TEXT[key]} |")
+    for key, label in ct.LESION_LABELS.items():
+        add(f"| Count row: {key} | {label} |")
+    add("\n- **Question for the reviewer:** is it acceptable to show possible lesions that also appear on about 1 in 3 eyes without retinopathy, "
+        "and should the overlay be shown for eyes the referral model did not flag?\n")
+
+    add("### 3f. Developer tool: the MATLAB PDF (Stage 4)\n")
     add("`createMedicalReport.m` / `run_stage4.m` are the team's original command-line report generator for a single photograph. The app does **not** use it. Its wording is below "
         "because the file can still be run by hand.\n")
     add("Source: `stage4_explainability/report/formatReportText.m` (captured by running the real function). "
@@ -263,7 +280,7 @@ def build():
             f"{loc['hottest_pixel_on_lesion'] * 100:.0f}% of photographs (chance {loc['chance'] * 100:.1f}%); the earlier map was at chance (AUC {old['pixel_auc']:.2f}).")
         add("- **Question for the reviewer:** is a coarse \"regions that raised the score\" picture appropriate to show to patients, or only to clinicians?\n")
 
-    add("### 3f. Not covered by this packet\n")
+    add("### 3g. Not covered by this packet\n")
     add("- **Hindi and Kannada.** The dashboard summary is machine-translated (Argos Translate, which has **no Kannada model**, so Kannada stays English) on demand; it has not been reviewed by a "
         "clinician or a medical translator. The fixed interface labels in `frontend/src/locales/` are also unreviewed. Machine translation of medical advice can be "
         "wrong; consider disabling it, or having translations professionally reviewed, before use with patients.")

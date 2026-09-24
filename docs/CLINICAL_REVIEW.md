@@ -163,7 +163,7 @@ Source: `backend/quality.py`. A photo is **rejected** (the user is asked to reta
 
 ### 3d. Downloadable PDF report (what a patient or clinician can save and print)
 
-Source: `backend/report_pdf.py`, wording in `backend/clinical_text.py` (`PDF_TEXT`) plus the summary sentence shown in 3a. Created when the user presses "Download PDF Report": the server grades both photographs again, draws the heatmaps and returns the PDF. **It prints the patient's name and date of birth (if given) and both eyes' results.** The server keeps neither the photographs nor the report file and adds nothing to the exam history. Names in scripts the report font cannot print (for example Devanagari or Kannada) are replaced by a note. The report never shows raw class probabilities or lesion claims.
+Source: `backend/report_pdf.py`, wording in `backend/clinical_text.py` (`PDF_TEXT`) plus the summary sentence shown in 3a. Created when the user presses "Download PDF Report": the server grades both photographs again, draws the heatmaps and returns the PDF. **It prints the patient's name and date of birth (if given) and both eyes' results.** The server keeps neither the photographs nor the report file and adds nothing to the exam history. Names in scripts the report font cannot print (for example Devanagari or Kannada) are replaced by a note. The report never shows raw class probabilities. Lesions appear only when the Stage 2 lesion overlay is turned on (section 3e), and then only as possible lesions with a caveat.
 
 | Where | Text |
 |---|---|
@@ -188,7 +188,23 @@ Per eye the report lists: estimated stage (labelled an estimate), confidence ban
 
 - **Question for the reviewer:** should the PDF carry the patient's name and date of birth at all, and is the referral score percentage appropriate to print for patients?
 
-### 3e. Developer tool: the MATLAB PDF (Stage 4)
+### 3e. Stage 2 lesion overlay (off until this section is reviewed)
+
+Source: wording in `backend/clinical_text.py` (`PDF_TEXT`, `LESION_LABELS`) and `frontend/src/clinicalText.js`; the overlay comes from `stage2_structure/dl/lesionOverlayToFile.m` (the calibrated v2 lesion network). It is shown only when `ENABLE_LESION_OVERLAY` (backend) and `VITE_ENABLE_LESION_OVERLAY` (web app) are set. It then adds a "Possible lesions" view to each eye in the app and a picture with counts per eye in the PDF. On held-out test photographs it marked something in 34% of eyes without retinopathy and in 98-100% of eyes with retinopathy; Dice against expert masks was 0.45 (microaneurysms), 0.42 (hemorrhages), 0.62 (hard exudates) and 0.51 (soft exudates) (validation/results/lesions_dl_Stage2_LesionUNet_v2_calibrated.md).
+
+| Where | Text |
+|---|---|
+| Heading above each eye's picture (PDF, after the eye name) | Possible lesions marked by the lesion model |
+| Note when something is marked (app and PDF) | Coloured areas are possible lesions for a clinician to check, not findings. In testing, the lesion model marked something in about 1 in 3 eyes that had no retinopathy, and it misses some lesions. |
+| Note when nothing is marked (app and PDF) | The lesion model marked nothing in this photograph. That does not rule out disease. |
+| Count row: microaneurysms | Possible microaneurysms |
+| Count row: hemorrhages | Possible hemorrhages |
+| Count row: exudates | Possible hard exudates |
+| Count row: softExudates | Possible soft exudates |
+
+- **Question for the reviewer:** is it acceptable to show possible lesions that also appear on about 1 in 3 eyes without retinopathy, and should the overlay be shown for eyes the referral model did not flag?
+
+### 3f. Developer tool: the MATLAB PDF (Stage 4)
 
 `createMedicalReport.m` / `run_stage4.m` are the team's original command-line report generator for a single photograph. The app does **not** use it. Its wording is below because the file can still be run by hand.
 
@@ -265,7 +281,7 @@ The PDF header reads "AI SCREENING AID", the badge reads "REFERRAL RECOMMENDED" 
 - It is only weakly hotter on lesions than elsewhere: on IDRiD photographs with expert lesion masks the pixel AUC is 0.66 (0.5 is chance) and the hottest point is on a lesion in 12% of photographs (chance 3.1%); the earlier map was at chance (AUC 0.51).
 - **Question for the reviewer:** is a coarse "regions that raised the score" picture appropriate to show to patients, or only to clinicians?
 
-### 3f. Not covered by this packet
+### 3g. Not covered by this packet
 
 - **Hindi and Kannada.** The dashboard summary is machine-translated (Argos Translate, which has **no Kannada model**, so Kannada stays English) on demand; it has not been reviewed by a clinician or a medical translator. The fixed interface labels in `frontend/src/locales/` are also unreviewed. Machine translation of medical advice can be wrong; consider disabling it, or having translations professionally reviewed, before use with patients.
 - **Anything typed by staff or patients**, and email text (sign-in codes only).

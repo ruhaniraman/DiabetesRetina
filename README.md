@@ -12,7 +12,7 @@ frontend/       React + Vite web app (port 5173)
 auth-server/    Node/Express: sign-up, email verification, login, sessions (port 4000, SQLite via node:sqlite)
 backend/        Python/FastAPI: image analysis API (port 5000)
    ├─ Stage 1  image quality check           OpenCV
-   ├─ Stage 2  lesion overlay (EXPERIMENTAL, off by default: validation/LESIONS.md shows it does not detect lesions)
+   ├─ Stage 2  possible-lesion overlay (MATLAB lesion network; off until clinically reviewed, see below)
    ├─ Stage 3  bilateral DR grading          MATLAB Engine → trained network (stage_3/)
    └─ Stage 4  Grad-CAM of the referral score     MATLAB Engine → stage4_explainability/
 stage1_quality/ (original MATLAB Stage 1; the app runs backend/quality.py) stage2_structure/ stage_3/ stage4_explainability/ stage5_simulink/ utils/   MATLAB source
@@ -185,7 +185,7 @@ CI (`.github/workflows/ci.yml`) runs the frontend, backend and auth-server check
 
 ## Notes and limitations
 
-- The Stage 2 lesion overlay is disabled by default: it paints about 2.7% of every retina (healthy or not) and misses annotated lesions (`validation/LESIONS.md`).
+- The Stage 2 lesion overlay (MATLAB, `stage2_structure/dl/lesionOverlayToFile.m`, calibrated v2 network) is off by default until its wording is clinically reviewed (`ENABLE_LESION_OVERLAY` / `VITE_ENABLE_LESION_OVERLAY`). It marks *possible* lesions: on held-out test photographs, something in 34% of eyes without retinopathy and 98-100% of eyes with DR; Dice against expert masks 0.45 MA, 0.42 HE, 0.62 EX, 0.51 SE (`validation/results/lesions_dl_Stage2_LesionUNet_v2_calibrated.md`). The old image-processing overlay it replaced painted about 2.7% of every retina (`validation/LESIONS.md`).
 - Exam history keeps grades and summaries only; there is no image storage, so a past exam cannot be re-opened visually.
 - Health data has one owner (the account). There is no clinician/patient sharing model or audit log yet.
 - The model files (`*.mat`) are large binaries tracked directly in git. Consider Git LFS.

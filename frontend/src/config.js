@@ -6,9 +6,10 @@ export const ML_API_URL = import.meta.env.VITE_ML_API_URL || 'http://localhost:5
 // Must match MAX_UPLOAD_MB on the ML backend.
 export const MAX_UPLOAD_MB = 15;
 
-// The Stage 2 lesion overlay is EXPERIMENTAL and off by default. validation/LESIONS.md shows it does not detect lesions:
-// it paints about 2.7% of every retina (healthy or not) and misses annotated lesions on real ground truth.
-// Turn it on only for research (VITE_ENABLE_LESION_OVERLAY=true, and ENABLE_LESION_OVERLAY=true on the backend).
+// The Stage 2 lesion overlay (MATLAB lesion network, calibrated v2) is off until its wording has been clinically reviewed. It marks POSSIBLE
+// lesions: on held-out test photographs, something in 34% of eyes without retinopathy and 98-100% of eyes with DR
+// (validation/results/lesions_dl_Stage2_LesionUNet_v2_calibrated.md). Turn it on with VITE_ENABLE_LESION_OVERLAY=true here and
+// ENABLE_LESION_OVERLAY=true on the backend (which needs MATLAB).
 // Reading the result aloud uses voices built into the device. Some browsers also offer "online" voices that send the text to a service to be spoken; the result is
 // health information, so those are NOT used unless this is set (VITE_ALLOW_NETWORK_VOICES=true). See src/speech/voices.js.
 export const ALLOW_NETWORK_VOICES = import.meta.env.VITE_ALLOW_NETWORK_VOICES === 'true';

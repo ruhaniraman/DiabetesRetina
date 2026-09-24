@@ -87,7 +87,32 @@ def test_an_empty_heatmap_says_so():
 
 def test_raw_probabilities_and_lesion_claims_are_not_in_the_report():
     t = text_of(report_pdf.build_report_pdf(result(), eyes())).lower()
-    assert "class probabilit" not in t and "microaneurysm" not in t and "haemorrhage" not in t and "exudate" not in t
+    assert "class probabilit" not in t and "microaneurysm" not in t and "hemorrhage" not in t and "haemorrhage" not in t and "exudate" not in t
+
+
+def with_lesions(counts):
+    e = eyes()
+    for side in e.values():
+        side |= {"lesions": realistic_fundus(seed=5), "lesion_counts": counts}
+    return e
+
+
+def test_lesions_are_shown_as_possible_lesions_with_the_caveat():
+    t = squash(text_of(report_pdf.build_report_pdf(result(), with_lesions({"microaneurysms": 3, "hemorrhages": 1, "exudates": 5, "softExudates": 0}))))
+    assert t.lower().count(squash(ct.PDF_TEXT["lesion_caption"]).lower()) == 2 and t.count(squash(ct.PDF_TEXT["lesion_note"])) == 2
+    for label in ct.LESION_LABELS.values():
+        assert squash(label) in t
+    assert squash(ct.PDF_TEXT["lesion_none_note"]) not in t
+
+
+def test_an_eye_with_nothing_marked_says_that_does_not_rule_out_disease():
+    t = squash(text_of(report_pdf.build_report_pdf(result(), with_lesions({"microaneurysms": 0, "hemorrhages": 0, "exudates": 0, "softExudates": 0}))))
+    assert t.count(squash(ct.PDF_TEXT["lesion_none_note"])) == 2 and squash(ct.PDF_TEXT["lesion_note"]) not in t
+
+
+@pytest.mark.parametrize("label", list(ct.LESION_LABELS.values()))
+def test_lesion_labels_say_possible(label):
+    assert label.startswith("Possible ")
 
 
 def test_a_name_in_a_script_the_font_cannot_print_is_replaced_by_a_note_not_garbled():
@@ -130,7 +155,8 @@ def _js_strings():
     return re.sub(r"['\"`+\s]", "", src)
 
 
-@pytest.mark.parametrize("key", ["heatmap_note", "heatmap_empty_note", "heatmap_below_threshold_note", "confidence_note", "stage_note"])
+@pytest.mark.parametrize("key", ["heatmap_note", "heatmap_empty_note", "heatmap_below_threshold_note", "confidence_note", "stage_note",
+                                 "lesion_note", "lesion_none_note"])
 def test_sentences_shared_with_the_web_app_have_not_drifted(key):
     """The web app's wording (frontend/src/clinicalText.js) and the PDF's must stay identical."""
     assert re.sub(r"['\"`+\s]", "", ct.PDF_TEXT[key]) in _js_strings(), f"{key} differs from frontend/src/clinicalText.js"
@@ -168,7 +194,7 @@ def files(left=None, right=None):
 
 @pytest.fixture()
 def fake_matlab(monkeypatch):
-    calls = {"graded": 0, "heatmaps": 0, "saved": 0}
+    calls = {"graded": 0, "heatmaps": 0, "saved": 0, "lesions": 0}
 
     def grade(l, r):
         calls["graded"] += 1
@@ -184,8 +210,15 @@ def fake_matlab(monkeypatch):
         calls["saved"] += 1
         return 1
 
+    def lesions(img, with_composite=False):
+        calls["lesions"] += 1
+        counts = {"microaneurysms": 3, "hemorrhages": 1, "exudates": 5, "softExudates": 0}
+        overlay = np.zeros((*img.shape[:2], 4), np.uint8)
+        return (overlay, counts, {k: 0.1 for k in counts}, realistic_fundus(seed=5)) if with_composite else (overlay, counts, {k: 0.1 for k in counts})
+
     monkeypatch.setattr(server, "grade_eyes", grade)
     monkeypatch.setattr(server, "render_gradcam", heat)
+    monkeypatch.setattr(server, "render_lesions", lesions)
     monkeypatch.setattr(server, "record_exam", record)
     return calls
 
@@ -199,6 +232,14 @@ def test_the_endpoint_returns_a_pdf_that_is_not_cached_and_names_no_one(client, 
     t = squash(text_of(r.content))
     assert "Asha Rao" in t and "REFERRAL RECOMMENDED" in t and "Left eye (OS)" in t
     assert fake_matlab["graded"] == 1 and fake_matlab["heatmaps"] == 2
+    assert fake_matlab["lesions"] == 2 and squash(ct.PDF_TEXT["lesion_caption"]).lower() in t.lower()      # the overlay is on in these tests
+
+
+def test_with_the_overlay_off_the_report_has_no_lesion_section(client, fake_matlab, monkeypatch):
+    monkeypatch.setattr(server, "LESION_OVERLAY_ENABLED", False)
+    r = client.post("/api/report-pdf", files=files())
+    assert r.status_code == 200 and fake_matlab["lesions"] == 0
+    assert squash(ct.PDF_TEXT["lesion_caption"]).lower() not in squash(text_of(r.content)).lower()
 
 
 def test_generating_a_report_does_not_add_to_the_exam_history(client, fake_matlab):

@@ -94,17 +94,57 @@ def test_oversized_upload_is_a_413(client, monkeypatch):
     assert r.status_code == 413
 
 
-def test_segmentation_returns_mask_and_counts(client):
-    r = client.post("/api/stage2-segmentation", files=upload("f.png", fake_fundus()))
+def fake_lesion_matlab(counts=(3, 1, 5, 0), areas=(0.05, 0.2, 1.1, 0.0)):
+    """Stands in for MATLAB's lesionOverlayToFile: writes the overlay (and composite) PNGs and returns 1x4 values shaped like matlab.double."""
+    calls = []
+
+    def call(name, src, dst, *rest, nargout=1):
+        calls.append(name)
+        img = cv2.imread(src)
+        overlay = np.zeros((*img.shape[:2], 4), np.uint8)
+        overlay[10:20, 10:20] = (94, 63, 244, 200)
+        cv2.imwrite(dst, overlay)
+        if rest:
+            cv2.imwrite(rest[0], cv2.resize(img, (448, 448)))
+        return [list(counts)], [list(areas)]
+
+    return call, calls
+
+
+def test_segmentation_returns_the_overlay_counts_and_areas_from_matlab(client, monkeypatch):
+    call, calls = fake_lesion_matlab()
+    monkeypatch.setattr(server.matlab_service, "call", call)
+    r = client.post("/api/stage2-segmentation", files=upload("f.png", realistic_fundus(seed=1)))
     body = r.json()
-    assert r.status_code == 200
-    assert body["maskUrl"].startswith("data:image/png;base64,")
-    assert set(body["counts"]) == {"microaneurysms", "hemorrhages", "exudates"}
+    assert r.status_code == 200 and calls == ["lesionOverlayToFile"]
+    assert body["maskUrl"].startswith("data:image/png;base64,") and body["method"] == "unet-v2"
+    assert body["counts"] == {"microaneurysms": 3, "hemorrhages": 1, "exudates": 5, "softExudates": 0}
+    assert body["areaPercent"]["exudates"] == 1.1
 
 
-def test_segmentation_on_black_image_is_a_422_not_a_crash(client):
+def test_the_overlay_keeps_its_transparency(monkeypatch):
+    call, _ = fake_lesion_matlab()
+    monkeypatch.setattr(server.matlab_service, "call", call)
+    overlay, counts, areas, composite = server.render_lesions(realistic_fundus(seed=1), True)
+    assert overlay.shape[2] == 4 and overlay[..., 3].max() == 200 and overlay[0, 0, 3] == 0
+    assert composite.shape == (448, 448, 3) and sum(counts.values()) == 9
+
+
+def test_segmentation_applies_the_stage_1_gate_before_matlab(client, monkeypatch):
+    call, calls = fake_lesion_matlab()
+    monkeypatch.setattr(server.matlab_service, "call", call)
     r = client.post("/api/stage2-segmentation", files=upload("black.png", np.zeros((64, 64, 3), np.uint8)))
-    assert r.status_code == 422
+    assert r.status_code == 422 and calls == []
+
+
+def test_segmentation_without_matlab_is_a_503(client):
+    assert client.post("/api/stage2-segmentation", files=upload("f.png", realistic_fundus(seed=1))).status_code == 503
+
+
+def test_a_matlab_failure_in_stage_2_is_a_500_with_no_detail_leak(client, monkeypatch):
+    monkeypatch.setattr(server.matlab_service, "call", lambda *a, **k: (_ for _ in ()).throw(RuntimeError("secret internals")))
+    r = client.post("/api/stage2-segmentation", files=upload("f.png", realistic_fundus(seed=1)))
+    assert r.status_code == 500 and "secret" not in r.text
 
 
 def test_stage3_and_stage4_report_503_without_matlab(client):
@@ -380,11 +420,11 @@ def test_endpoint_returns_referral_fields_and_saves_the_escalated_grade(client, 
     assert saved["overallRisk"] == "Moderate" and "treated as referable" in saved["summary"]
 
 
-# --- the experimental lesion overlay is off unless enabled --------------------------------------------------
+# --- the lesion overlay is off unless enabled ----------------------------------------------------------------
 def test_lesion_overlay_is_disabled_by_default(client, monkeypatch):
     monkeypatch.setattr(server, "LESION_OVERLAY_ENABLED", False)
     r = client.post("/api/stage2-segmentation", files=upload("f.png", fake_fundus()))
-    assert r.status_code == 404 and "disabled" in r.json()["detail"]
+    assert r.status_code == 404 and "turned off" in r.json()["detail"]
 
 
 def test_health_reports_whether_the_overlay_is_on(client, monkeypatch):

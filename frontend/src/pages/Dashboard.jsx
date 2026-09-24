@@ -220,9 +220,11 @@ export default function Dashboard({ user, patient, session, history, onEditPatie
             {LESION_OVERLAY_ENABLED && (left.viewMode === 'mapped' || right.viewMode === 'mapped') && (
               <div className="mt-2 bg-slate-50 border border-slate-200/90 rounded-2xl p-4 flex flex-wrap items-center justify-center gap-6">
                 <span className="text-xs font-black text-slate-800 uppercase tracking-wider mr-2">{t('dash.highlights')}</span>
+                {/* Colours match stage2_structure/dl/lesionOverlayToFile.m */}
                 {[
                   ['bg-rose-500 border-rose-300', t('dash.hemorrhage')],
                   ['bg-emerald-400 border-emerald-300', t('dash.exudate')],
+                  ['bg-violet-400 border-violet-300', t('dash.softExudate')],
                   ['bg-amber-400 border-amber-300', t('dash.microaneurysm')],
                 ].map(([dot, name]) => (
                   <div key={name} className="flex items-center gap-2 text-[11px] font-extrabold text-slate-600 uppercase">

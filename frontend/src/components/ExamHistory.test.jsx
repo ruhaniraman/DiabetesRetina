@@ -104,11 +104,11 @@ describe('EyePanel lesion toggle', () => {
   const scan = { imageUrl: null, viewMode: 'original', quality: { status: 'accepted', verdict: 'accept', reason: '' }, mask: { status: 'idle' }, setViewMode: () => {} };
   const panel = (enabled) => <EyePanel title="Left Eye (OS)" inputId="x" scan={scan} tagLabel="t" tagClass="" overlayEnabled={enabled} onUpload={() => {}} onExpand={() => {}} />;
 
-  it('hides the Original/Mapped toggle unless the experimental overlay is enabled', () => {
+  it('hides the Original/Possible lesions toggle unless the lesion overlay is enabled', () => {
     const { rerender } = render(panel(false));
-    expect(screen.queryByRole('button', { name: /mapped/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /possible lesions/i })).not.toBeInTheDocument();
     rerender(panel(true));
-    expect(screen.getByRole('button', { name: /mapped \(experimental\)/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /possible lesions/i })).toBeInTheDocument();
   });
 });
 

@@ -3,7 +3,7 @@ import en from './en.json';
 import hi from './hi.json';
 import kn from './kn.json';
 import ta from './ta.json';
-import { BANNER_TEXT, CONFIDENCE, DISCLAIMER, HEATMAP_BELOW_NOTE, HEATMAP_EMPTY_NOTE, HEATMAP_NOTE, IDLE_NOTE, PDF_NEEDS_ASSESSMENT, PDF_NEEDS_PHOTOS, PDF_PRIVACY_NOTE, REFERRAL_CHIP, REPORT_LABELS, STAGE_NOTE, TRIAGE, basisText } from '../clinicalText';
+import { BANNER_TEXT, CONFIDENCE, DISCLAIMER, HEATMAP_BELOW_NOTE, HEATMAP_EMPTY_NOTE, HEATMAP_NOTE, IDLE_NOTE, LESION_NONE_NOTE, LESION_NOTE, PDF_NEEDS_ASSESSMENT, PDF_NEEDS_PHOTOS, PDF_PRIVACY_NOTE, REFERRAL_CHIP, REPORT_LABELS, STAGE_NOTE, TRIAGE, basisText } from '../clinicalText';
 import { localizeMessage, localizeGrade, localizeStage } from '../messages';
 import i18n from '../i18n';
 
@@ -59,6 +59,8 @@ describe('the English text', () => {
     expect(source['clinical.referralChipLabel']).toBe(REFERRAL_CHIP.label);
     expect(source['clinical.referralChipHint']).toBe(REFERRAL_CHIP.hint);
     expect(source['clinical.heatmapNote']).toBe(HEATMAP_NOTE);
+    expect(source['clinical.lesionNote']).toBe(LESION_NOTE);
+    expect(source['clinical.lesionNoneNote']).toBe(LESION_NONE_NOTE);
     expect(source['clinical.heatmapBelow']).toBe(HEATMAP_BELOW_NOTE);
     expect(source['clinical.heatmapEmpty']).toBe(HEATMAP_EMPTY_NOTE);
     expect(source['clinical.pdfPrivacy']).toBe(PDF_PRIVACY_NOTE);

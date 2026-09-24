@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { FiArrowLeft, FiLayers, FiCheckCircle, FiEye, FiInfo } from 'react-icons/fi';
+import { FiArrowLeft, FiLayers, FiEye, FiInfo } from 'react-icons/fi';
 import Disclaimer from '../components/Disclaimer';
 import LanguageSwitcher from '../components/LanguageSwitcher';
 import HeroBand, { cardClass } from '../components/HeroBand';
@@ -12,7 +12,7 @@ import { LESION_OVERLAY_ENABLED } from '../config';
 import { useResultSummary } from '../hooks/useResultSummary';
 import { useMessages } from '../messages';
 
-const LESION_ROWS = ['microaneurysms', 'hemorrhages', 'exudates'];
+const LESION_ROWS = ['microaneurysms', 'hemorrhages', 'exudates', 'softExudates'];
 
 const percent = (p) => (typeof p === 'number' ? `${Math.round(p * 100)}%` : null);
 
@@ -312,13 +312,11 @@ export default function DetailedReportPage({ patient, session, onBack }) {
                   {LESION_ROWS.map((key) => (
                     <div key={key} className="bg-amber-50 p-3 rounded-2xl border border-amber-100 flex justify-between items-center">
                       <span className="font-bold text-amber-950">{t(`report.${key}`)}</span>
-                      <span className="font-black text-amber-900 bg-amber-200/60 px-2 py-1 rounded-lg">{scan.mask.counts[key]}</span>
+                      <span className="font-black text-amber-900 bg-amber-200/60 px-2 py-1 rounded-lg">{scan.mask.counts[key] ?? 0}</span>
                     </div>
                   ))}
                   {candidateCount(scan) === 0 && (
-                    <div className="flex items-center gap-2 font-bold text-emerald-800 text-[11px] pt-1">
-                      <FiCheckCircle /> {t('report.noCandidates')}
-                    </div>
+                    <p className="font-semibold text-slate-600 text-[11px] pt-1">{t('clinical.lesionNoneNote')}</p>
                   )}
                 </div>
               ) : (
@@ -335,7 +333,7 @@ export default function DetailedReportPage({ patient, session, onBack }) {
 
               <p className="flex gap-1.5 text-[11px] text-slate-500 leading-snug">
                 <FiInfo className="shrink-0 mt-0.5" aria-hidden="true" />
-                {t('report.experimental')}
+                {t('clinical.lesionNote')}
               </p>
                 </>
               )}

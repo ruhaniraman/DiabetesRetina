@@ -1,7 +1,7 @@
 """Retina Rescue ML backend (FastAPI).
 
 Stage 1  image quality check            (OpenCV)
-Stage 2  lesion candidate segmentation  (OpenCV, heuristic)
+Stage 2  possible-lesion overlay        (MATLAB Engine + U-Net; off unless ENABLE_LESION_OVERLAY)
 Stage 3  bilateral DR grading           (MATLAB Engine + trained network)
 Stage 4  Grad-CAM explainability        (MATLAB Engine)
 
@@ -62,8 +62,9 @@ SERVICE_KEY = os.getenv("SERVICE_KEY", "")
 MAX_UPLOAD_BYTES = int(os.getenv("MAX_UPLOAD_MB", "15")) * 1024 * 1024
 MATLAB_ENABLED = os.getenv("DISABLE_MATLAB", "").lower() not in ("1", "true", "yes")
 IS_PROD = os.getenv("APP_ENV", "development").lower() == "production"
-# The Stage 2 lesion overlay is experimental and OFF by default: validation/LESIONS.md shows it does not detect lesions
-# (it paints about 2.7% of every retina, healthy or not, and misses the annotated lesions on real ground truth).
+# The Stage 2 lesion overlay (MATLAB U-Net, calibrated v2) is OFF by default until a clinician has reviewed its wording. It shows
+# POSSIBLE lesions: on held-out test photographs it marked something in 34% of eyes without retinopathy and 98-100% of eyes with DR
+# (validation/results/lesions_dl_Stage2_LesionUNet_v2_calibrated.md). Needs MATLAB, like Stages 3 and 4.
 LESION_OVERLAY_ENABLED = os.getenv("ENABLE_LESION_OVERLAY", "").lower() in ("1", "true", "yes")
 
 # A site may replace the model's referral threshold with one it calibrated on its own graded images
@@ -128,10 +129,11 @@ if IS_PROD:
 TRANSLATION_TARGETS = ("hi", "kn")
 TRANSLATION_CACHE_SIZE = 1000
 
-# MATLAB folders (relative to the repo root) that the Stage 3/4 functions need.
+# MATLAB folders (relative to the repo root) that the Stage 2/3/4 functions need.
 MATLAB_PATHS = [
     "utils",
     "stage1_quality",
+    "stage2_structure/dl",
     "stage_3",
     "stage4_explainability/core",
     "stage4_explainability/report",
@@ -392,60 +394,38 @@ async def check_image_quality(file: UploadFile = File(...)):
 
 
 # --------------------------------------------------------------------------- #
-# Stage 2 - lesion candidates (heuristic image processing, not the neural net)
+# Stage 2 - possible lesions (MATLAB U-Net)
 # --------------------------------------------------------------------------- #
-# RGBA colours (OpenCV writes BGRA, so these are listed as B, G, R, A).
-EXUDATE_BGRA = (153, 211, 52, 200)
-HEMORRHAGE_BGRA = (94, 63, 244, 200)
-MICROANEURYSM_BGRA = (36, 191, 251, 255)
+# Order of the counts MATLAB's lesionOverlayToFile returns.
+LESION_KEYS = ("microaneurysms", "hemorrhages", "exudates", "softExudates")
 
 
-def _paint_components(binary, min_area, max_area, colour, mask_img) -> int:
-    n, labels, stats, _ = cv2.connectedComponentsWithStats((binary * 255).astype(np.uint8))
-    count = 0
-    for i in range(1, n):
-        if min_area <= stats[i, cv2.CC_STAT_AREA] <= max_area:
-            mask_img[labels == i] = colour
-            count += 1
-    return count
+def _numbers(value) -> list[float]:
+    """A MATLAB 1xN double (or any nested sequence) as a flat list of floats."""
+    try:
+        return [float(x) for row in value for x in (row if hasattr(row, "__iter__") else [row])]
+    except TypeError:
+        return [float(value)]
 
 
-def segment_lesions(img: np.ndarray) -> tuple[np.ndarray, dict]:
-    height, width = img.shape[:2]
-    scale = (height * width) / (512 * 512)
+def render_lesions(img: np.ndarray, with_composite: bool = False) -> tuple:
+    """Stage 2 for one photograph (MATLAB, stage2_structure/dl/lesionOverlayToFile.m, calibrated v2 network).
 
-    # Circular field-of-view mask, eroded so border artefacts aren't flagged.
-    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-    _, fov = cv2.threshold(gray, 15, 255, cv2.THRESH_BINARY)
-    kernel_circle = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (15, 15))
-    fov = cv2.morphologyEx(fov, cv2.MORPH_CLOSE, kernel_circle)
-    inner = cv2.erode(fov, kernel_circle, iterations=3)
-    if not inner.any():
-        raise HTTPException(status_code=422, detail="No retina was detected in this image.")
-
-    clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8))
-    enhanced = clahe.apply(img[:, :, 1]).astype(np.float32) / 255.0
-    inside = inner > 0
-
-    def top_percentile(response, pct):
-        response = cv2.bitwise_and(response, response, mask=inner)
-        _, thresh = cv2.threshold(response, np.percentile(response[inside], pct), 1.0, cv2.THRESH_BINARY)
-        return thresh
-
-    mask_img = np.zeros((height, width, 4), dtype=np.uint8)
-
-    bright = enhanced - cv2.GaussianBlur(enhanced, (0, 0), sigmaX=15)
-    exudates = _paint_components(top_percentile(bright, 98), 15 * scale, 600 * scale, EXUDATE_BGRA, mask_img)
-
-    dark = cv2.GaussianBlur(enhanced, (0, 0), sigmaX=8) - enhanced
-    hemorrhages = _paint_components(top_percentile(dark, 97), 30 * scale, 2000 * scale, HEMORRHAGE_BGRA, mask_img)
-
-    kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (3, 3))
-    tophat = cv2.morphologyEx(enhanced, cv2.MORPH_TOPHAT, kernel)
-    microaneurysms = _paint_components(top_percentile(tophat, 99.4), 2 * scale, 80 * scale, MICROANEURYSM_BGRA, mask_img)
-
-    counts = {"microaneurysms": microaneurysms, "hemorrhages": hemorrhages, "exudates": exudates}
-    return mask_img, counts
+    Returns (overlay BGRA same size as the photo, counts, area percentages), plus the photo with the overlay drawn on it (square,
+    cropped to the retina) when `with_composite` is set. The overlay shows POSSIBLE lesions for review: on held-out test photographs it
+    marked something in 34% of eyes without retinopathy (validation/results/lesions_dl_Stage2_LesionUNet_v2_calibrated.md)."""
+    with tempfile.TemporaryDirectory(prefix="retina_") as tmp:
+        src, dst, comp_path = Path(tmp) / "in.png", Path(tmp) / "lesions.png", Path(tmp) / "composite.png"
+        cv2.imwrite(str(src), img)
+        args = (str(src), str(dst), str(comp_path)) if with_composite else (str(src), str(dst))
+        counts, areas = matlab_service.call("lesionOverlayToFile", *args, nargout=2)
+        overlay = cv2.imread(str(dst), cv2.IMREAD_UNCHANGED)
+        composite = cv2.imread(str(comp_path), cv2.IMREAD_COLOR) if with_composite else None
+    if overlay is None or overlay.ndim != 3 or overlay.shape[2] != 4 or (with_composite and composite is None):
+        raise RuntimeError("MATLAB did not produce a lesion overlay.")
+    counts = dict(zip(LESION_KEYS, (int(round(c)) for c in _numbers(counts))))
+    areas = dict(zip(LESION_KEYS, (round(a, 3) for a in _numbers(areas))))
+    return (overlay, counts, areas, composite) if with_composite else (overlay, counts, areas)
 
 
 @app.post("/api/stage2-segmentation", dependencies=[Depends(require_user)])
@@ -453,17 +433,21 @@ async def run_stage2_segmentation(file: UploadFile = File(...)):
     if not LESION_OVERLAY_ENABLED:
         raise HTTPException(
             status_code=404,
-            detail="The experimental lesion overlay is disabled. Set ENABLE_LESION_OVERLAY=true to use it (see validation/LESIONS.md).",
+            detail="The lesion overlay is turned off. Set ENABLE_LESION_OVERLAY=true to use it (see validation/results/lesions_dl_Stage2_LesionUNet_v2_calibrated.md).",
         )
     img = await read_image(file)
+    q = await run_in_threadpool(assess_quality, img)          # same gate as grading: no overlay for a picture that would not be graded
+    if q["verdict"] == "reject":
+        raise HTTPException(status_code=422, detail=q["reason"])
     try:
-        mask_img, counts = await run_in_threadpool(segment_lesions, img)
+        overlay, counts, areas = await run_in_threadpool(render_lesions, img)
     except HTTPException:
         raise
     except Exception:
         log.exception("Stage 2 segmentation failed")
         raise HTTPException(status_code=500, detail="Lesion segmentation failed.")
-    return {"status": "success", "maskUrl": png_data_url(mask_img), "counts": counts}
+    # method: which Stage 2 produced this ("unet-v2": the calibrated lesion network, not the old image-processing heuristic).
+    return {"status": "success", "maskUrl": png_data_url(overlay), "counts": counts, "areaPercent": areas, "method": "unet-v2"}
 
 
 # --------------------------------------------------------------------------- #
@@ -669,6 +653,9 @@ async def run_report(
         for eye, img in (("left", left_img), ("right", right_img)):
             heat, _score, empty, analysed = await run_in_threadpool(render_gradcam, img, True)
             eyes[eye] = {"analysed": analysed, "heatmap": heat, "heatmap_empty": empty}
+            if LESION_OVERLAY_ENABLED:
+                _overlay, counts, _areas, composite = await run_in_threadpool(render_lesions, img, True)
+                eyes[eye] |= {"lesions": composite, "lesion_counts": counts}
         pdf = await run_in_threadpool(lambda: build_report_pdf(result, eyes, patient=patient))
     except HTTPException:
         raise

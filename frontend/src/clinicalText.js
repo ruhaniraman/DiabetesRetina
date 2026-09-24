@@ -92,6 +92,13 @@ export const HEATMAP_BELOW_NOTE =
 
 export const HEATMAP_EMPTY_NOTE = "No region raised this eye's referral score, so nothing is highlighted. That does not rule out disease.";
 
+// Stage 2 lesion overlay (calibrated lesion network; off unless VITE_ENABLE_LESION_OVERLAY). Same sentences as the PDF (backend/clinical_text.py).
+export const LESION_NOTE =
+  'Coloured areas are possible lesions for a clinician to check, not findings. In testing, the lesion model marked something in about ' +
+  '1 in 3 eyes that had no retinopathy, and it misses some lesions.';
+
+export const LESION_NONE_NOTE = 'The lesion model marked nothing in this photograph. That does not rule out disease.';
+
 export const PDF_PRIVACY_NOTE =
   "The PDF prints the patient's name and date of birth from their profile. To create it, the photographs are sent to the server again; the server does not keep the photographs or the report file.";
 

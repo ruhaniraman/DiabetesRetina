@@ -3,7 +3,8 @@
 Built in memory from a result the server has just computed (see run_report in server.py); nothing is written to disk and the report is
 not kept. All wording comes from clinical_text.py (PDF_TEXT and the summary the app already shows), so a clinician reviews one set of text.
 
-Deliberately NOT included: the raw class probabilities (the model is over-confident; the app shows confidence as a band) and any lesion claims.
+Deliberately NOT included: the raw class probabilities (the model is over-confident; the app shows confidence as a band). Lesions appear only
+when the Stage 2 overlay is turned on (ENABLE_LESION_OVERLAY), and then only as POSSIBLE lesions with the caveat from clinical_text.py.
 """
 import datetime as _dt
 import io
@@ -18,7 +19,7 @@ from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
 from reportlab.lib.units import mm
 from reportlab.platypus import Image, KeepTogether, Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
 
-from clinical_text import PDF_TEXT
+from clinical_text import LESION_LABELS, PDF_TEXT
 
 NAVY = colors.HexColor("#1c2033")
 MUTED = colors.HexColor("#6b7280")
@@ -125,12 +126,29 @@ def _eye_block(eye: str, result: dict, images: dict) -> list:
     return block
 
 
+def _lesion_block(eye: str, images: dict) -> list:
+    """The Stage 2 overlay for one eye: the photograph with possible lesions drawn on it, the count per type, and the caveat."""
+    column = CONTENT_W / 2 - 8 * mm
+    width = column / 2 - 4 * mm
+    counts = images.get("lesion_counts") or {}
+    rest = column - width - 3 * mm
+    rows = [[Paragraph(escape(label), SMALL), Paragraph(str(int(counts.get(key, 0))), SMALL)] for key, label in LESION_LABELS.items()]
+    count_table = Table(rows, colWidths=[rest - 6 * mm, 6 * mm])
+    count_table.setStyle(TableStyle([("LEFTPADDING", (0, 0), (-1, -1), 0), ("RIGHTPADDING", (0, 0), (-1, -1), 0),
+                                     ("TOPPADDING", (0, 0), (-1, -1), 1), ("BOTTOMPADDING", (0, 0), (-1, -1), 1)]))
+    pictures = Table([[_image(images["lesions"], width), count_table]], colWidths=[width + 3 * mm, rest])
+    pictures.setStyle(TableStyle([("VALIGN", (0, 0), (-1, -1), "TOP"), ("LEFTPADDING", (0, 0), (-1, -1), 0), ("RIGHTPADDING", (0, 0), (-1, -1), 1 * mm)]))
+    note = PDF_TEXT["lesion_note"] if sum(int(v) for v in counts.values()) else PDF_TEXT["lesion_none_note"]
+    return [Paragraph(f"{EYE_NAMES[eye]}: {escape(PDF_TEXT['lesion_caption'].lower())}", H2), pictures, Spacer(1, 1 * mm), Paragraph(escape(note), SMALL)]
+
+
 def build_report_pdf(result: dict, eyes: dict, *, patient: dict | None = None, generated_at: _dt.datetime | None = None, compress: bool = True) -> bytes:
     """Return the report as PDF bytes.
 
     result   the assessment the API returns (leftGrade, rightGrade, ...ConfidenceBand, ...ReferableProbability, ...Referable, referable,
              referralThreshold, referralThresholdSource, overallSummary, qualityWarnings)
-    eyes     {"left": {"analysed": BGR array, "heatmap": BGR array, "heatmap_empty": bool}, "right": {...}}
+    eyes     {"left": {"analysed": BGR array, "heatmap": BGR array, "heatmap_empty": bool}, "right": {...}}; with the lesion overlay on, each eye
+             also has "lesions" (BGR photo with the overlay, square) and "lesion_counts" ({microaneurysms, hemorrhages, exudates, softExudates})
     patient  optional {"name": str, "dob": "YYYY-MM-DD"}; printed on the report only
     """
     generated_at = generated_at or _dt.datetime.now(_dt.timezone.utc)
@@ -156,9 +174,13 @@ def build_report_pdf(result: dict, eyes: dict, *, patient: dict | None = None, g
     story = [Paragraph(escape(PDF_TEXT["kicker"]), KICKER), Paragraph(escape(PDF_TEXT["title"]), TITLE), Spacer(1, 2 * mm), meta, Spacer(1, 4 * mm), badge,
              Spacer(1, 3 * mm), Paragraph(escape(result["overallSummary"]), BODY), Spacer(1, 3 * mm)]
 
-    columns = Table([[_eye_block("left", result, eyes["left"]), _eye_block("right", result, eyes["right"])]], colWidths=[CONTENT_W / 2, CONTENT_W / 2])
-    columns.setStyle(TableStyle([("VALIGN", (0, 0), (-1, -1), "TOP"), ("LEFTPADDING", (0, 0), (-1, -1), 0), ("RIGHTPADDING", (0, 0), (-1, -1), 8 * mm)]))
-    story.append(KeepTogether([columns]))
+    rows = [[_eye_block("left", result, eyes["left"]), _eye_block("right", result, eyes["right"])]]
+    if any(eyes[e].get("lesions") is not None for e in ("left", "right")):     # a second row, so the table can break between the rows
+        rows.append([_lesion_block(e, eyes[e]) if eyes[e].get("lesions") is not None else "" for e in ("left", "right")])
+    columns = Table(rows, colWidths=[CONTENT_W / 2, CONTENT_W / 2])
+    columns.setStyle(TableStyle([("VALIGN", (0, 0), (-1, -1), "TOP"), ("LEFTPADDING", (0, 0), (-1, -1), 0), ("RIGHTPADDING", (0, 0), (-1, -1), 8 * mm),
+                                 ("TOPPADDING", (0, 1), (-1, -1), 4 * mm)]))
+    story.append(columns)
 
     notes = [Paragraph("Notes on this report", H2)]
     warnings = result.get("qualityWarnings") or []

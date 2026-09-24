@@ -109,6 +109,12 @@ PDF_TEXT = {
         "matched the reference grade about 78% of the time. Results depend on the camera and population: on a second public dataset it flagged many more eyes that had no disease "
         "(see validation/REPORT.md)."
     ),
+    "lesion_caption": "Possible lesions marked by the lesion model",
+    "lesion_note": (
+        "Coloured areas are possible lesions for a clinician to check, not findings. In testing, the lesion model marked something in about "
+        "1 in 3 eyes that had no retinopathy, and it misses some lesions."
+    ),
+    "lesion_none_note": "The lesion model marked nothing in this photograph. That does not rule out disease.",
     "escalated_chip": "Referral flagged although the most likely stage is lower",
     "site_threshold_note": (
         "The referral threshold used here was set by this site from its own calibration, not the model's default. "
@@ -117,6 +123,15 @@ PDF_TEXT = {
     "generated_note": "Generated on request from the photographs supplied. The server does not keep this report file.",
     "name_unprintable": "(name uses characters this report cannot print; see the application record)",
     "not_provided": "Not provided",
+}
+
+
+# Names of the lesion types the Stage 2 overlay marks (PDF count rows; the web app's report.<key> texts say the same).
+LESION_LABELS = {
+    "microaneurysms": "Possible microaneurysms",
+    "hemorrhages": "Possible hemorrhages",
+    "exudates": "Possible hard exudates",
+    "softExudates": "Possible soft exudates",
 }
 
 
