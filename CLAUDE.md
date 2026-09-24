@@ -52,8 +52,8 @@ The full problem statement is in `context.txt` at the repo root. That file is lo
 ## Gaps against the problem statement (open)
 1. **The web app runs Stage 1 in Python** (`quality.py`). The MATLAB port (`assessFundusQuality.m`) matches it, so the backend could switch to it through `MatlabService`, but that would make Stage 1 depend on MATLAB being up.
 2. **Neovascularization detection** is missing: none of the PS datasets has NV masks.
-3. **Vessels** are only the classical `vesselSegmentation.m`. DRIVE was downloaded on 2026-09-24 into `data/drive/DRIVE/` from the Kaggle mirror `andrewmvd/drive-digital-retinal-images-for-vessel-extraction`; that mirror has manual vessel masks for the 20 training photos only.
-4. **Benchmarks**: no comparison of the integrated pipeline with single techniques or published results yet.
+3. **Vessels** are the classical `vesselSegmentation.m`. On DRIVE (`validation/results/vessels_drive.md`) it scores accuracy 0.896, sensitivity 0.691 and AUC 0.887, against about 0.944 for published unsupervised methods. A trained vessel model would close that gap. DRIVE is in `data/drive/DRIVE/` (Kaggle mirror `andrewmvd/drive-digital-retinal-images-for-vessel-extraction`, manual masks for the 20 training photos only).
+4. **Benchmarks** (`validation/results/benchmark.md`): integrated (CNN + lesion network) vs CNN alone gives AUC +0.001 on APTOS and -0.005 on IDRiD, both within noise. The integrated pipeline beats the classical rule-based detector by a wide margin but does **not** beat the CNN alone for the referral decision. Against published results every directly comparable measure trails the best: IDRiD grade accuracy 0.553 vs 0.631, lesion AUPR 0.08-0.19 lower, disc 66 vs 21 px, fovea 284 vs 64 px (estimated from the disc, not detected).
 5. **Messidor-2** images are awaited from ADCIS (`data/messidor2/IMAGES/` is empty); `evaluateFinetuned` includes them automatically.
 6. The retired OpenCV overlay is kept in `validation/legacy_overlay.py` (copied from commit 73057ad) only so `LESIONS.md` can be reproduced; `evaluate_lesions.py` uses it.
 7. Wording needs clinician review (`CLINICAL_REVIEW.md`, incl. section 3e).
