@@ -18,7 +18,7 @@ The full problem statement is in `context.txt` at the repo root. That file is lo
 | Path | What it is |
 |---|---|
 | `stage1_quality/` | **`assessFundusQuality.m`**: MATLAB port of `backend/quality.py` (the gate the web app runs); same measures, thresholds and messages, including the FOV-adequacy (partial retina), colour-fundus and optic-disc checks. It gives the same verdict as the Python gate on 97.3% of 698 photos (same reject decision 99.4%; `validation/results/stage1_parity.md`). **`enhanceForReview.m`**: illumination normalisation + CLAHE + bilateral denoising, for display only; `validation/results/enhancement.md` shows it does not help the grader. The old `assessImageQuality.m` failed validation and is unused. |
-| `stage2_structure/` | Classical MATLAB CV (OD, fovea, vessels, lesions; `Stage2_Documentation.md`, samples in `examples/`, new outputs in the git-ignored `results/`). **`dl/`** holds the trained lesion U-Net the app uses (`Stage2_LesionUNet_v2.mat`, see `dl/README.md`): `lesionOverlayToFile.m` (overlay + counts + ICDR evidence), `lesionEvidence.m`, `estimateFovea.m`, `calibrateLesionMasks.m`, `evaluateLesionSegmenter.m`, `validateLocalisation.m`. |
+| `stage2_structure/` | Classical MATLAB CV (OD, fovea, vessels, lesions; `Stage2_Documentation.md`, samples in `examples/`, new outputs in the git-ignored `results/`). **`dl/`** holds the trained lesion U-Net the app uses (`Stage2_LesionUNet_v2.mat`, see `dl/README.md`): `lesionOverlayToFile.m` (overlay + counts + ICDR evidence), `lesionEvidence.m`, `estimateFovea.m`, `calibrateLesionMasks.m`, `evaluateLesionSegmenter.m`, `validateLocalisation.m`. **`nv/`**: image-level new-vessel suspicion (`nvFeatures.m`, `buildNvDataset.m`), research only, not in the app. |
 | `stage_3/` | `Stage3_Final_HighSensitivity_Model.mat` is the **fine-tuned ResNet-18 (run 2), deployed 2026-09-24**: 384 px, full-resolution APTOS + IDRiD, referral threshold **0.0964**, temperature 1.217 for calibrated confidence. `loadStage3Model.m` returns net, threshold, classes, temperature. `assessBilateralFromFiles.m` reports temperature-scaled confidence; the referral decision uses the raw score. `finetune/` has the training pipeline. `Stage3_checkpoint.mat` holds the split validation uses, so **keep it**. The previous 224 px model is in git history (and locally as the untracked `Stage3_previous_224px_Model.mat`). |
 | `utils/` | `preprocessStage3Input.m` crops the retina, pads it to a square and resizes it to the network's input size. `stage3Scores.m` averages the scores of the image and its mirror image. `projectRoot.m` gives paths that don't depend on the working directory. |
 | `stage4_explainability/` | `core/referralGradCAM.m` and `gradCamToFile.m` produce Grad-CAM of the *referral* score (12x12 grid with the 384 px model), and the backend calls them. `report/formatReportText.m` holds the MATLAB report wording. `createMedicalReport.m` is a legacy dev tool. |
@@ -26,7 +26,7 @@ The full problem statement is in `context.txt` at the repo root. That file is lo
 | `backend/` | FastAPI on port 5000. Stage 1 is `quality.py` (OpenCV). Stages 2, 3 and 4 run through `MatlabService` (`matlab.engine`). The Stage 2 overlay is **off by default** (`ENABLE_LESION_OVERLAY`). Wording lives in `clinical_text.py` (incl. `LESION_EVIDENCE_TEXT`) and the PDF is built by `report_pdf.py`. Every route checks the session with the auth-server. Tests are in `tests/`. |
 | `auth-server/` | Express + `node:sqlite` on port 4000. It handles signup, email verification, login (HttpOnly cookie), password reset, account deletion, and AES-GCM-encrypted patient profiles and exam history (`vault.js`). |
 | `frontend/` | React 19 + Vite + Tailwind + i18next (en, hi, kn, ta). Routes are protected. It has Dashboard, PatientDetails, DetailedReport (Grad-CAM, possible-lesion overlay with ICDR evidence, PDF), Exam History, and Listen-to-result (Web Speech; Hindi and Kannada are off until reviewed). Tests use Vitest. |
-| `validation/` | `REPORT.md` (deployed Stage 3 model, full-resolution photos), `results/calibration.md` (temperature scaling), `results/site_calibration_idrid.md`, `results/gradcam.md` (Grad-CAM trust tests), `results/localisation.md` (disc/fovea), `results/lesions_dl_*.md` (lesion U-Net), `QUALITY.md` (Stage 1), `LESIONS.md` (the retired OpenCV overlay). `results/` is committed. |
+| `validation/` | `results/` is committed. The main reports are:<br>- `REPORT.md`: the deployed Stage 3 model on full-resolution photos.<br>- `results/benchmark.md`: integrated vs single techniques, and published results with sources.<br>- `results/calibration.md`: temperature scaling.<br>- `results/site_calibration_idrid.md`.<br>- `results/gradcam.md`: Grad-CAM trust tests.<br>- `results/localisation.md`: disc and fovea.<br>- `results/lesions_dl_*.md`: lesion U-Net.<br>- `results/vessels_drive.md`.<br>- `results/nv.md`: new vessels.<br>- `results/stage1_parity.md`: MATLAB vs Python Stage 1.<br>- `results/enhancement.md`.<br>- `QUALITY.md`: Stage 1.<br>- `LESIONS.md`: the retired OpenCV overlay, whose code is in `legacy_overlay.py`. |
 | `calibration/` | Per-site referral threshold calibration from clinician-graded images. The result is applied through `REFERRAL_THRESHOLD`. |
 | `docs/` | Clinician review packet (`CLINICAL_REVIEW.md`, generated by `docs/tools/`) and a review packet for the spoken translations. |
 | `deploy/` | Caddy HTTPS, systemd units, `DEPLOYMENT.md`. |
@@ -48,6 +48,9 @@ The full problem statement is in `context.txt` at the repo root. That file is lo
 - Grad-CAM: pixel AUC 0.70 on IDRiD lesion masks; deleting the hottest cells lowers the score +0.22 more than random cells.
 - Lesion U-Net v2 (calibrated): IDRiD test Dice MA 0.45, HE 0.42, EX 0.62, SE 0.51, OD 0.88; marks something in 34% of healthy APTOS test eyes vs 98-100% of eyes with DR.
 - Disc found in 103/103 IDRiD test photos (median error 0.08 disc diameters); fovea estimate 90% within 1 DD.
+- Stage 1 MATLAB port agrees with the app's Python gate on 97.3% of 698 photos. Enhancement (CLAHE etc.) does not help the grader.
+- Stage 5 (`stage5_simulink/results/district_plan.md`): 100k patients/year need about 8 camera sites, 1 GPU server (4.5 s AI per patient), 1 reviewer at 30 s per case, and 2G-grade links for JPEG. Camera sites bind; specificity drives the reviewer load.
+- Benchmarks and new vessels: see gaps 2-4 below.
 
 ## Gaps against the problem statement (open)
 1. **The web app runs Stage 1 in Python** (`quality.py`). The MATLAB port (`assessFundusQuality.m`) matches it, so the backend could switch to it through `MatlabService`, but that would make Stage 1 depend on MATLAB being up.
@@ -59,12 +62,28 @@ The full problem statement is in `context.txt` at the repo root. That file is lo
 7. Wording needs clinician review (`CLINICAL_REVIEW.md`, incl. section 3e).
 8. **Translation review (team to do):** the hi/kn/ta strings Claude drafted on 2026-09-24 still need a native-speaker check. They are the `report.evidence*` keys (lesion evidence against ICDR) and the updated `clinical.stageNote` numbers in `frontend/src/locales/{hi,kn,ta}.json`. The earlier "Possible lesions" overlay strings were already verified by the team.
 
+## Where we left off (2026-09-24 evening)
+- Everything is committed on branch `stage2-unet-stage3-finetune`: 11 commits on top of `73057ad`, **not pushed and not merged into `main`**. The working tree was clean. All tests passed at the last run: backend 323, validation + calibration 61, frontend 278, lint clean.
+- **Waiting on the user or team:**
+  1. Messidor-2 images. ADCIS requires the user to accept its licence; Claude does not download from unofficial mirrors. Then run `stage_3/finetune/evaluateFinetuned.m` and add a Messidor-2 row to `validation/results/benchmark.md`.
+  2. Clinician review of `docs/CLINICAL_REVIEW.md`, then turn on the lesion overlay (`ENABLE_LESION_OVERLAY` / `VITE_ENABLE_LESION_OVERLAY`).
+  3. Native-speaker check of the hi/kn/ta strings (gap 8).
+  4. Decide whether to push the branch and merge it into `main`.
+- **Possible next technical steps:**
+  - a trained vessel model on DRIVE, to close the ~0.05 accuracy gap;
+  - a direct fovea detector, since the estimate from the disc is about 4x the challenge winner's error;
+  - improving IDRiD specificity with more IDRiD-like training data or per-site calibration;
+  - pixel-level new-vessel data (FGADR, on request) for real NV segmentation;
+  - optionally, switching the backend's Stage 1 to the MATLAB port.
+- **Local-only files** (not in git): `stage_3/Stage3_previous_224px_Model.mat` (backup of the old deployed model), `Stage3_Finetuned_run1.mat`, `Stage3_Finetuned_Model.mat` (a copy of run 2), and `trainedNet.mat`. `backend/.env` still has `DISABLE_MATLAB=true`; remove it to run Stages 2-4 locally.
+
 ## Environment notes
 - Training runs on Manosh's machine: RTX 3050 6 GB, 24 GB RAM, **MATLAB R2026a at `D:\MATLAB`** (`D:/MATLAB/bin/matlab.exe -batch ...` works headless). C: has about 5 GB free.
 - **Run one MATLAB job at a time and close the MATLAB desktop while training.** RAM ran out twice; lesion training uses about 9 GB.
-- `data/` (gitignored) has APTOS (224 px copies in `aptos2019/`, full resolution in `aptos2019_full/`), IDRiD grading/segmentation/localization, the Messidor-2 grades CSV, and caches in `stage2_cache/` and `stage3_cache/`. `stage_3/finetune/manifest.csv` is machine-specific (ignored); `splits.csv` is the record.
+- Kaggle CLI and credentials (`~/.kaggle/kaggle.json`) are set up; DRIVE came from Kaggle. `matlabengine` 26.1 is installed in the local Python (miniconda).
+- `data/` (gitignored) has DRIVE (`drive/DRIVE/`), APTOS (224 px copies in `aptos2019/`, full resolution in `aptos2019_full/`), IDRiD grading/segmentation/localization, the Messidor-2 grades CSV, and caches in `stage2_cache/` and `stage3_cache/`. `stage_3/finetune/manifest.csv` is machine-specific (ignored); `splits.csv` is the record.
 
 ## Repo notes
 - `*.mat`, `*.png` and `results/` are gitignored except `validation/results/`. The tracked ones were force-added (the deployed Stage 3 model, `Stage2_LesionUNet_v2.mat`, `stage5_simulink/results/`). The model `.mat` files are large binaries in git with no LFS.
-- Work since 2026-09-24 is on branch `stage2-unet-stage3-finetune` (not pushed). `stage_3/trainedNet.mat` was removed from the repo (restore with `git checkout 73057ad -- stage_3/trainedNet.mat`).
+- Work since 2026-09-24 is on branch `stage2-unet-stage3-finetune` (not pushed; see "Where we left off"). `stage_3/trainedNet.mat` was removed from the repo (restore with `git checkout 73057ad -- stage_3/trainedNet.mat`).
 - On 2026-09-23 upstream `main` was force-pushed (history rewritten, new hashes). A clone from before that date must be reset to `origin/main`, not merged.
