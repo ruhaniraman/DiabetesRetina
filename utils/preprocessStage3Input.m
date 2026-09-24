@@ -1,7 +1,8 @@
-function imgReady = preprocessStage3Input(img)
+function imgReady = preprocessStage3Input(img, targetSize)
 % PREPROCESSSTAGE3INPUT  How every photograph is prepared for the Stage 3 network (grading and Grad-CAM both use this).
 %
 %   imgReady = preprocessStage3Input(img)
+%   imgReady = preprocessStage3Input(img, targetSize)   % [h w]; default [224 224]. Pass net.Layers(1).InputSize(1:2)
 %
 % Crop away the black border around the retina, pad the crop to a square (so the round retina is not stretched), resize to 224x224.
 % The network applies its own normalisation internally.
@@ -21,5 +22,6 @@ function imgReady = preprocessStage3Input(img)
     elseif size(img, 3) == 4
         img = img(:, :, 1:3);
     end
-    imgReady = preprocessForNetwork(img, [224 224]);
+    if nargin < 2 || isempty(targetSize), targetSize = [224 224]; end
+    imgReady = preprocessForNetwork(img, targetSize(1:2));
 end

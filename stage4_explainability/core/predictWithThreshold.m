@@ -34,7 +34,7 @@ end
 
 % Same preparation and scoring as Stage 3 grading (retina crop, then the average of the image and its mirror image), so the class
 % explained here is the class that was graded. The Grad-CAM itself is computed on the un-mirrored prepared image.
-[imgReady, cropInfo] = preprocessForNetwork(img, [224 224]);   % what preprocessStage3Input does, keeping the crop box
+[imgReady, cropInfo] = preprocessForNetwork(img, net.Layers(1).InputSize(1:2));   % what preprocessStage3Input does, keeping the crop box
 [~, probs] = stage3Scores(net, imgReady);   % 1x5, in net.Layers(end).Classes order
 
 % ---- Referable-DR decision rule ----

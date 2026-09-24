@@ -164,7 +164,7 @@ function plotLesionOverlay(I, exMask, heMask, maMask, seMask, imagePath)
     end
     hold off;
 
-    outDir = fullfile('results', 'lesion_detection');
+    outDir = fullfile(fileparts(mfilename('fullpath')), 'results', 'lesion_detection');
     if ~exist(outDir, 'dir')
         mkdir(outDir);
     end

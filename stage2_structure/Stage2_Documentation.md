@@ -158,10 +158,12 @@ stage2_structure/
 ├── runBatch_opticDisc.m        — OD batch benchmark script
 ├── runBatch_fovea.m            — Chained OD+fovea batch benchmark script
 ├── evalLesionDetection.m       — Lesion Dice/IoU evaluation against ground truth
-results/
-├── od_localization/            — OD overlay visualizations (explainability output)
-├── vessel_segmentation/        — Vessel overlay visualizations
-├── lesion_detection/           — Lesion overlay visualizations (EX/HE/MA/SE color-coded)
+├── examples/                   — committed sample outputs (OD, vessel and lesion overlays; MA diagnostics)
+└── results/                    — where the scripts save new outputs (git-ignored, always this folder)
+    ├── od_localization/        — OD overlay visualizations (explainability output)
+    ├── vessel_segmentation/    — Vessel overlay visualizations
+    ├── lesion_detection/       — Lesion overlay visualizations (EX/HE/MA/SE color-coded)
+    └── microaneurysms/         — visualizeMA.m diagnostics
 ```
 
 ## Summary for Team Handoff

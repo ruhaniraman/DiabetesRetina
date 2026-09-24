@@ -31,9 +31,10 @@ function predictFiles(paths, labels, outCsv, ids, method)
         end
     end
     ids = ids(:);                       % a list passed from Python arrives as a row; the output table needs a column
-    batch = zeros(224, 224, 3, n, 'uint8');
+    sz = net.Layers(1).InputSize(1:2);  % the size this network was trained at
+    batch = zeros(sz(1), sz(2), 3, n, 'uint8');
     for k = 1:n
-        batch(:, :, :, k) = prepare(imread(paths{k}), method);
+        batch(:, :, :, k) = prepare(imread(paths{k}), method, sz);
         if mod(k, 100) == 0, fprintf('  preprocessed %d/%d\n', k, n); end
     end
     if strcmp(method, 'crop_mirror')
@@ -52,7 +53,7 @@ function predictFiles(paths, labels, outCsv, ids, method)
     fprintf('Wrote %d rows to %s\n', n, outCsv);
 end
 
-function out = prepare(img, method)
+function out = prepare(img, method, sz)
     if size(img, 3) == 1
         img = repmat(img, 1, 1, 3);
     elseif size(img, 3) == 4
@@ -60,26 +61,26 @@ function out = prepare(img, method)
     end
     switch method
         case 'resize'
-            out = imresize(img, [224 224]);        % what the network was trained with (the app no longer does this)
+            out = imresize(img, sz);        % what the network was trained with (the app no longer does this)
         case {'crop', 'crop_mirror'}
-            out = preprocessStage3Input(img);      % the app's own preparation
+            out = preprocessStage3Input(img, sz);  % the app's own preparation
         case 'pad'
             [h, w, ~] = size(img);
             s = max(h, w);
             canvas = zeros(s, s, 3, 'like', img);
             y = floor((s - h) / 2); x = floor((s - w) / 2);
             canvas(y+1:y+h, x+1:x+w, :) = img;
-            out = imresize(canvas, [224 224]);
+            out = imresize(canvas, sz);
         case 'cropsquash'
             mask = getFOVMask(img);
             st = regionprops(mask, 'BoundingBox');
             if isempty(st)
-                out = imresize(img, [224 224]);
+                out = imresize(img, sz);
             else
                 b = st(1).BoundingBox;
                 x = max(1, floor(b(1))); y = max(1, floor(b(2)));
                 w = min(size(img, 2) - x, ceil(b(3))); h = min(size(img, 1) - y, ceil(b(4)));
-                out = imresize(img(y:y+h-1, x:x+w-1, :), [224 224]);
+                out = imresize(img(y:y+h-1, x:x+w-1, :), sz);
             end
         otherwise
             error('predictFiles:method', 'Unknown method "%s".', method);

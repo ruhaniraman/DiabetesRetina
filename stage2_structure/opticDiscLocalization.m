@@ -374,7 +374,7 @@ function plotExplainability(I, candidates, bestIdx, vesselSkel, gtCoord, imagePa
         name = 'od_localization';
     end
 
-    outDir = fullfile('results', 'od_localization');
+    outDir = fullfile(fileparts(mfilename('fullpath')), 'results', 'od_localization');
     if ~exist(outDir, 'dir')
         mkdir(outDir);
     end

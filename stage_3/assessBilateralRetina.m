@@ -43,7 +43,7 @@ function [overallGrade, leftResult, rightResult] = assessBilateralRetina(trained
 end
 
 function [pred, probs, referableProb] = gradeOneEye(net, imgPath)
-    imgReady = preprocessStage3Input(imread(imgPath));
+    imgReady = preprocessStage3Input(imread(imgPath), net.Layers(1).InputSize(1:2));   % the size this network was trained at
     [predAll, scores] = stage3Scores(net, imgReady);   % average of the image and its mirror image
     pred = predAll(1);
     probs = scores(1, :);

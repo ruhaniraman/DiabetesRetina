@@ -27,7 +27,9 @@ overlay(:,:,1) = lesRes.maMask;     % predicted = red
 h = imshow(overlay);
 set(h, 'AlphaData', 0.6 * any(overlay,3));
 title('GT MA (green) vs Predicted MA (red) - yellow = overlap');
-saveas(f, 'ma_diagnostic_overlay.png');
+maOut = fullfile(fileparts(mfilename('fullpath')), 'results', 'microaneurysms');   % fixed folder, whatever the current one is
+if ~exist(maOut, 'dir'), mkdir(maOut); end
+saveas(f, fullfile(maOut, 'ma_diagnostic_overlay.png'));
 fprintf('Saved ma_diagnostic_overlay.png\n');
 
 %% Isolated mask views - run after the overlay section above
@@ -42,5 +44,5 @@ subplot(1,2,2);
 imshow(gtMA);
 title(sprintf('Ground truth MA mask only (%d px)', nnz(gtMA)));
 
-saveas(f2, 'ma_masks_isolated.png');
+saveas(f2, fullfile(maOut, 'ma_masks_isolated.png'));
 fprintf('Saved ma_masks_isolated.png\n');

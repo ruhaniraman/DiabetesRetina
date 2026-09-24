@@ -101,7 +101,7 @@ function plotVesselOverlay(I, vesselMask, imagePath)
         name = 'vessel_segmentation';
     end
 
-    outDir = fullfile('results', 'vessel_segmentation');
+    outDir = fullfile(fileparts(mfilename('fullpath')), 'results', 'vessel_segmentation');
     if ~exist(outDir, 'dir')
         mkdir(outDir);
     end

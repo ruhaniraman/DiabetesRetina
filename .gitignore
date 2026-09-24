@@ -65,3 +65,6 @@ calibration/output/
 
 # Raw Grad-CAM maps (135 MB); regenerate with validation/gradcam_eval.py. The summary (gradcam.md/.json) is committed.
 validation/results/gradcam_*.mat
+
+# Stage 3 fine-tuning: local manifest has machine-specific paths (splits.csv is the committed record)
+stage_3/finetune/manifest.csv
