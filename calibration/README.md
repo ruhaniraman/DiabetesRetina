@@ -1,9 +1,10 @@
 # Site calibration: choosing the referral threshold on your own images
 
 The app flags an eye for referral when its referral score (probability of Moderate + Severe + Proliferate DR) reaches a
-threshold. The model's own threshold is **0.20**, tuned on APTOS. On a second public dataset (IDRiD) the same threshold kept
-sensitivity (about 92%) but flagged about 70% of all photographs, because specificity fell to about 67% (it was 46% before the input preparation was improved)
-(`validation/QUALITY.md`). A clinic's camera and patients differ from both datasets, so this tool measures the trade-off on
+threshold. The deployed model's own threshold is **0.096**, chosen on validation data that is mostly APTOS for 99% sensitivity. On IDRiD's
+official test set it keeps sensitivity (90.6%) but flags 74% of all photographs, because specificity is only 53.8% (`validation/REPORT.md`).
+Choosing the threshold on IDRiD's own validation photographs instead gives 89.1% / 74.4% on its test set
+(`validation/results/site_calibration_idrid.md`). A clinic's camera and patients differ from both datasets, so this tool measures the trade-off on
 **your** graded photographs and shows what a different threshold would cost.
 
 > **This produces evidence, not approval.** How many referable cases a screening programme may miss is a clinical decision.
@@ -53,7 +54,7 @@ python calibration/calibrate_site.py --images D:/site_images --labels D:/site_gr
 | `--target-sensitivity` | the sensitivity the clinical lead requires (0.5 to 1). Without it nothing is recommended |
 | `--bound lower` (default) / `point` | `lower`: the 95% **lower** confidence limit must reach the target (conservative). `point`: the estimate must |
 | `--prevalence` | the share of referable eyes in your real screening population. A graded sample is usually enriched with disease, so this changes how many flags are true referrals |
-| `--current-threshold` | the threshold in use now (default 0.20) |
+| `--current-threshold` | the threshold in use now (default: the deployed model's, 0.096) |
 | `--predictions <csv>` | reuse `predictions.csv` from an earlier run, skipping the slow model run |
 | `--limit N` | first N labelled images, for a quick trial only (a prefix may contain only one kind of eye) |
 | `--out` | output folder (default `calibration/output/<time>`, git-ignored) |

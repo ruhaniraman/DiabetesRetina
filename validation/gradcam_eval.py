@@ -1,4 +1,5 @@
-"""Run validation/gradcam_eval.m on (a) held-out APTOS test photographs and (b) the 81 lesion-annotated IDRiD photographs (needs MATLAB; about 20 minutes).
+"""Run validation/gradcam_eval.m on (a) held-out APTOS test photographs (full resolution) and (b) the 81 lesion-annotated IDRiD photographs
+(needs MATLAB; about 30 minutes). Uses the deployed model (stage_3/loadStage3Model.m). Delete results/gradcam_*.mat to re-run.
 
     python validation/gradcam_eval.py           # writes results/gradcam_aptos.mat and results/gradcam_idrid_seg.mat
     python validation/analyze_gradcam.py        # summarises them
@@ -11,7 +12,7 @@ import matlab.engine
 
 ROOT = Path(__file__).resolve().parent.parent
 RES = ROOT / "validation" / "results"
-APTOS = ROOT / "data" / "aptos2019" / "colored_images"
+APTOS = ROOT / "data" / "aptos2019_full" / "train_images"
 SEG = ROOT / "data" / "idrid_segmentation" / "A. Segmentation" / "A. Segmentation" / "1. Original Images"
 
 
@@ -21,7 +22,7 @@ def aptos_sample(n_referable=60, n_healthy=30):
     ref = [r for r in rows if r["label"] in ("Moderate", "Severe", "Proliferate_DR")]
     non = [r for r in rows if r["label"] == "No_DR"]
     pick = rng.sample(ref, n_referable) + rng.sample(non, n_healthy)
-    return [str(APTOS / r["label"] / f"{r['id']}.png") for r in pick], [r["label"] for r in pick]
+    return [str(APTOS / f"{r['id']}.png") for r in pick], [r["label"] for r in pick]
 
 
 def idrid_segmentation_images():

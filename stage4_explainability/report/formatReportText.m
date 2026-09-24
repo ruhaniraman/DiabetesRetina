@@ -63,7 +63,7 @@ end
 
 % ---- Referral recommendation ----
 % Driven by isReferable / referableProb, NOT by confidenceBand. The tuned threshold decision was technically validated on
-% held-out APTOS images (sensitivity 95.1%, specificity 89.2%; validation/REPORT.md). It has NOT been clinically validated
+% held-out APTOS images (sensitivity 96.9%, specificity 88.3%; validation/REPORT.md). It has NOT been clinically validated
 % and it misses some referable cases, so a 'not referred' result must never read as reassurance.
 thr = 0.2;
 if isfield(result, 'threshold') && ~isempty(result.threshold)

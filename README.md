@@ -139,19 +139,21 @@ Gmail limits how much a personal account may send (about 500 messages/day), so u
 intervals, threshold behaviour, a data-leakage audit, and a plain statement of what it does *not* show). It found and fixed
 problems in the app: the wrong image preprocessing, a decision rule that ignored the model's tuned referral threshold, and (later) an input
 preparation that suited wide-frame cameras badly; the app now crops the retina and averages the image with its mirror image.
-Headline: on 548 unseen images the referral decision flags 95.1% of referable patients at 89.2% specificity; the exact stage is
-much less reliable (78% correct). On a second public dataset (IDRiD) sensitivity held (92.3%) but specificity fell to 67% (46% before the input change), so performance depends on
-the camera and population. `validation/QUALITY.md` covers the Stage 1 photo-quality gate, which was rebuilt after validation showed the old one
+Headline for the deployed model (fine-tuned at 384 px on full-resolution APTOS + IDRiD, deployed 2026-09-24): on 548 unseen full-resolution
+photographs the referral decision flags 96.9% of referable patients at 88.3% specificity (threshold 0.096); the exact stage is
+less reliable (79% correct). The confidence the app shows is temperature-calibrated (`validation/results/calibration.md`). On IDRiD's official
+test set sensitivity is 90.6% but specificity only 53.8% (the previous model: 30.8%), so performance depends on the camera and population. `validation/QUALITY.md` covers the Stage 1 photo-quality gate, which was rebuilt after validation showed the old one
 rejected good full-resolution photos and claimed to "enhance" images it never touched. This is an internal technical validation, **not** clinical
 validation. Reproduce it with `validation/README.md`.
 
 ## Calibrating the threshold for a clinic
 
-The referral threshold (0.20) was tuned on APTOS and over-refers on other data (IDRiD: 67% specificity). `calibration/` is a tool that
+The referral threshold (0.096) was chosen on validation data that is mostly APTOS and over-refers on other cameras (IDRiD test: 53.8% specificity;
+a threshold calibrated on IDRiD's own validation photographs raises it to 74.4% at 89.1% sensitivity, `validation/results/site_calibration_idrid.md`). `calibration/` is a tool that
 takes a clinic's own clinician-graded photographs, runs the model, and reports what each sensitivity target would cost, with confidence
 intervals, an honest hold-out estimate, and predictive values at the clinic's prevalence. It recommends a threshold only when told a target,
 and the target is a clinical decision. The result is applied with `REFERRAL_THRESHOLD` in `backend/.env`. See `calibration/README.md`;
-`calibration/example/` is a real run on IDRiD. This is evidence, not approval.
+`calibration/example/` is a real run on IDRiD with the previous model. This is evidence, not approval.
 
 ## Clinical wording review
 

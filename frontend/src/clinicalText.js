@@ -74,8 +74,8 @@ export const CONFIDENCE = {
 };
 
 export const STAGE_NOTE =
-  'The referral decision is the more reliable output. On held-out test images it found about 95% of referable cases, while the exact stage ' +
-  'matched the reference grade about 78% of the time. Results depend on the camera and population: on a second public dataset it flagged many more eyes that had no disease ' +
+  'The referral decision is the more reliable output. On held-out test images it found about 97% of referable cases, while the exact stage ' +
+  'matched the reference grade about 79% of the time. Results depend on the camera and population: on a second public dataset it flagged many more eyes that had no disease ' +
   '(see validation/REPORT.md).';
 
 export const REFERRAL_CHIP = {

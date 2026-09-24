@@ -1,0 +1,826 @@
+[
+  {
+    "id": "IDRiD_001",
+    "odErrPx": 36.893468255511,
+    "foveaErrPx": 509.77798227897125,
+    "foveaBaselineErrPx": 203.33838791531716,
+    "discDiamPx": 509.44126256124957,
+    "discFound": true
+  },
+  {
+    "id": "IDRiD_002",
+    "odErrPx": 20.141035873329812,
+    "foveaErrPx": 206.44615930367229,
+    "foveaBaselineErrPx": 129.99423064120961,
+    "discDiamPx": 500.08639253632964,
+    "discFound": true
+  },
+  {
+    "id": "IDRiD_003",
+    "odErrPx": 60.328633711348921,
+    "foveaErrPx": 331.792820786529,
+    "foveaBaselineErrPx": 627.9749198813596,
+    "discDiamPx": 592.39365290320256,
+    "discFound": true
+  },
+  {
+    "id": "IDRiD_004",
+    "odErrPx": 41.552584495229304,
+    "foveaErrPx": 197.35026999039241,
+    "foveaBaselineErrPx": 446.98014497290592,
+    "discDiamPx": 529.7789727801586,
+    "discFound": true
+  },
+  {
+    "id": "IDRiD_005",
+    "odErrPx": 22.797366894545604,
+    "foveaErrPx": 366.28271936114561,
+    "foveaBaselineErrPx": 258.26827137687667,
+    "discDiamPx": 436.55267723380183,
+    "discFound": true
+  },
+  {
+    "id": "IDRiD_006",
+    "odErrPx": 37.443682224823291,
+    "foveaErrPx": 109.8635283545829,
+    "foveaBaselineErrPx": 294.41509811828604,
+    "discDiamPx": 488.22371921077331,
+    "discFound": true
+  },
+  {
+    "id": "IDRiD_007",
+    "odErrPx": 23.585722380229182,
+    "foveaErrPx": 170.16173865779723,
+    "foveaBaselineErrPx": 359.62549965206858,
+    "discDiamPx": 591.525485503372,
+    "discFound": true
+  },
+  {
+    "id": "IDRiD_008",
+    "odErrPx": 20.510981841644949,
+    "foveaErrPx": 234.91672436372551,
+    "foveaBaselineErrPx": 241.20167909863315,
+    "discDiamPx": 528.35139821902624,
+    "discFound": true
+  },
+  {
+    "id": "IDRiD_009",
+    "odErrPx": 22.226788197864842,
+    "foveaErrPx": 141.05308668509278,
+    "foveaBaselineErrPx": 246.19606008220359,
+    "discDiamPx": 493.01375234368459,
+    "discFound": true
+  },
+  {
+    "id": "IDRiD_010",
+    "odErrPx": 65.408976228423441,
+    "foveaErrPx": 207.21099014431238,
+    "foveaBaselineErrPx": 426.39711537485806,
+    "discDiamPx": 474.27519437558612,
+    "discFound": true
+  },
+  {
+    "id": "IDRiD_011",
+    "odErrPx": 40.526130487550553,
+    "foveaErrPx": 275.75797584809993,
+    "foveaBaselineErrPx": 210.28849231472464,
+    "discDiamPx": 469.066306613468,
+    "discFound": true
+  },
+  {
+    "id": "IDRiD_012",
+    "odErrPx": 32.150596797359221,
+    "foveaErrPx": 339.68344422467482,
+    "foveaBaselineErrPx": 102.47194738073441,
+    "discDiamPx": 501.76073979537296,
+    "discFound": true
+  },
+  {
+    "id": "IDRiD_013",
+    "odErrPx": 25.873334437128808,
+    "foveaErrPx": 265.0383747272939,
+    "foveaBaselineErrPx": 155.11689140773805,
+    "discDiamPx": 524.1717275855309,
+    "discFound": true
+  },
+  {
+    "id": "IDRiD_014",
+    "odErrPx": 72.72705747201023,
+    "foveaErrPx": 970.96067788689743,
+    "foveaBaselineErrPx": 508.86171992005842,
+    "discDiamPx": 520.28622891635337,
+    "discFound": true
+  },
+  {
+    "id": "IDRiD_015",
+    "odErrPx": 78.24599929386045,
+    "foveaErrPx": 170.29649350730537,
+    "foveaBaselineErrPx": 170.17197184025341,
+    "discDiamPx": 449.94044050296259,
+    "discFound": true
+  },
+  {
+    "id": "IDRiD_016",
+    "odErrPx": 23.422617692477637,
+    "foveaErrPx": 149.86356370876203,
+    "foveaBaselineErrPx": 152.27770683852577,
+    "discDiamPx": 521.80992708073313,
+    "discFound": true
+  },
+  {
+    "id": "IDRiD_017",
+    "odErrPx": 93.45715486747514,
+    "foveaErrPx": 396.0771265355408,
+    "foveaBaselineErrPx": 220.19650315116269,
+    "discDiamPx": 520.29668459447248,
+    "discFound": true
+  },
+  {
+    "id": "IDRiD_018",
+    "odErrPx": 55.882288414274711,
+    "foveaErrPx": 272.46717509106259,
+    "foveaBaselineErrPx": 272.51513719424833,
+    "discDiamPx": 482.68333304559,
+    "discFound": true
+  },
+  {
+    "id": "IDRiD_019",
+    "odErrPx": 38.074042491949072,
+    "foveaErrPx": 354.50129197014979,
+    "foveaBaselineErrPx": 304.79706363414988,
+    "discDiamPx": 496.18141843483016,
+    "discFound": true
+  },
+  {
+    "id": "IDRiD_020",
+    "odErrPx": 57.7136981949825,
+    "foveaErrPx": 338.14386256103643,
+    "foveaBaselineErrPx": 520.00600958065854,
+    "discDiamPx": 484.51806983847365,
+    "discFound": true
+  },
+  {
+    "id": "IDRiD_021",
+    "odErrPx": 38.673000532205172,
+    "foveaErrPx": 271.67988637482023,
+    "foveaBaselineErrPx": 259.63532117183132,
+    "discDiamPx": 410.08760039776871,
+    "discFound": true
+  },
+  {
+    "id": "IDRiD_022",
+    "odErrPx": 23.786453729475518,
+    "foveaErrPx": 248.21508868325341,
+    "foveaBaselineErrPx": 62.163091943692763,
+    "discDiamPx": 455.03336141430339,
+    "discFound": true
+  },
+  {
+    "id": "IDRiD_023",
+    "odErrPx": 96.672453143653215,
+    "foveaErrPx": 607.40325298358437,
+    "foveaBaselineErrPx": 157.28715777201901,
+    "discDiamPx": 517.699681282498,
+    "discFound": true
+  },
+  {
+    "id": "IDRiD_024",
+    "odErrPx": 52.129713473031835,
+    "foveaErrPx": 358.57438190065631,
+    "foveaBaselineErrPx": 306.13804075939339,
+    "discDiamPx": 550.12318620469,
+    "discFound": true
+  },
+  {
+    "id": "IDRiD_025",
+    "odErrPx": 69.498611891836958,
+    "foveaErrPx": 433.4567907902,
+    "foveaBaselineErrPx": 526.86098735814551,
+    "discDiamPx": 552.8800231514972,
+    "discFound": true
+  },
+  {
+    "id": "IDRiD_026",
+    "odErrPx": 42.938791191928019,
+    "foveaErrPx": 289.72220896221171,
+    "foveaBaselineErrPx": 444.5812636627864,
+    "discDiamPx": 562.00697504568393,
+    "discFound": true
+  },
+  {
+    "id": "IDRiD_027",
+    "odErrPx": 18.413385085430146,
+    "foveaErrPx": 52.951908038340953,
+    "foveaBaselineErrPx": 277.55449915286908,
+    "discDiamPx": 527.96393816244677,
+    "discFound": true
+  },
+  {
+    "id": "IDRiD_028",
+    "odErrPx": 12.022012365229203,
+    "foveaErrPx": 46.086568596643161,
+    "foveaBaselineErrPx": 331.99774095616976,
+    "discDiamPx": 498.18566820011995,
+    "discFound": true
+  },
+  {
+    "id": "IDRiD_029",
+    "odErrPx": 163.65219519435769,
+    "foveaErrPx": 661.02444528886906,
+    "foveaBaselineErrPx": 454.49367432341671,
+    "discDiamPx": 550.76877180900522,
+    "discFound": true
+  },
+  {
+    "id": "IDRiD_030",
+    "odErrPx": 22.031488199840133,
+    "foveaErrPx": 223.44745335212593,
+    "foveaBaselineErrPx": 399.03414640854987,
+    "discDiamPx": 508.94982070927188,
+    "discFound": true
+  },
+  {
+    "id": "IDRiD_031",
+    "odErrPx": 6.3094361348092916,
+    "foveaErrPx": 149.8655076800066,
+    "foveaBaselineErrPx": 434.03484883128914,
+    "discDiamPx": 531.27288656584,
+    "discFound": true
+  },
+  {
+    "id": "IDRiD_032",
+    "odErrPx": 19.903034081058973,
+    "foveaErrPx": 69.123347596258171,
+    "foveaBaselineErrPx": 567.02072272536918,
+    "discDiamPx": 575.65017154518421,
+    "discFound": true
+  },
+  {
+    "id": "IDRiD_033",
+    "odErrPx": 32.349375140730849,
+    "foveaErrPx": 711.09667092678455,
+    "foveaBaselineErrPx": 99.8060619401447,
+    "discDiamPx": 527.53873791409865,
+    "discFound": true
+  },
+  {
+    "id": "IDRiD_034",
+    "odErrPx": 17.928580705082538,
+    "foveaErrPx": 146.92173754632023,
+    "foveaBaselineErrPx": 403.50278809445666,
+    "discDiamPx": 523.41906728738877,
+    "discFound": true
+  },
+  {
+    "id": "IDRiD_035",
+    "odErrPx": 25.605343761473659,
+    "foveaErrPx": 61.6813716114671,
+    "foveaBaselineErrPx": 588.70918117522172,
+    "discDiamPx": 526.1108628416639,
+    "discFound": true
+  },
+  {
+    "id": "IDRiD_036",
+    "odErrPx": 56.234763579471533,
+    "foveaErrPx": 191.7343156453023,
+    "foveaBaselineErrPx": 405.11788407820262,
+    "discDiamPx": 547.93649267045544,
+    "discFound": true
+  },
+  {
+    "id": "IDRiD_037",
+    "odErrPx": 41.184802007513021,
+    "foveaErrPx": 672.43930613656494,
+    "foveaBaselineErrPx": 364.09785772509014,
+    "discDiamPx": 487.2903036178742,
+    "discFound": true
+  },
+  {
+    "id": "IDRiD_038",
+    "odErrPx": 22.865631260713975,
+    "foveaErrPx": 194.70011677921656,
+    "foveaBaselineErrPx": 331.46115911219522,
+    "discDiamPx": 533.93063219860312,
+    "discFound": true
+  },
+  {
+    "id": "IDRiD_039",
+    "odErrPx": 53.175676737896794,
+    "foveaErrPx": 324.67175091556345,
+    "foveaBaselineErrPx": 712.08180709803275,
+    "discDiamPx": 547.8499064524882,
+    "discFound": true
+  },
+  {
+    "id": "IDRiD_040",
+    "odErrPx": 56.503953727863092,
+    "foveaErrPx": 712.0083507560081,
+    "foveaBaselineErrPx": 508.03789228757336,
+    "discDiamPx": 546.996745876975,
+    "discFound": true
+  },
+  {
+    "id": "IDRiD_041",
+    "odErrPx": 55.384793845573519,
+    "foveaErrPx": 179.08740011101372,
+    "foveaBaselineErrPx": 416.204877434179,
+    "discDiamPx": 489.71828636472208,
+    "discFound": true
+  },
+  {
+    "id": "IDRiD_042",
+    "odErrPx": 82.803481962309363,
+    "foveaErrPx": 537.5240640976308,
+    "foveaBaselineErrPx": 375.55325853998391,
+    "discDiamPx": 485.99539092464659,
+    "discFound": true
+  },
+  {
+    "id": "IDRiD_043",
+    "odErrPx": 14.464679675365387,
+    "foveaErrPx": 77.306952485859966,
+    "foveaBaselineErrPx": 784.41267837790588,
+    "discDiamPx": 538.30103102260546,
+    "discFound": true
+  },
+  {
+    "id": "IDRiD_044",
+    "odErrPx": 16.84400781266519,
+    "foveaErrPx": 241.7251700982836,
+    "foveaBaselineErrPx": 262.28467358959426,
+    "discDiamPx": 498.51812404365,
+    "discFound": true
+  },
+  {
+    "id": "IDRiD_045",
+    "odErrPx": 106.40706831854422,
+    "foveaErrPx": 484.75940554277048,
+    "foveaBaselineErrPx": 222.61233119483745,
+    "discDiamPx": 525.54581151408672,
+    "discFound": true
+  },
+  {
+    "id": "IDRiD_046",
+    "odErrPx": 41.296563801691633,
+    "foveaErrPx": 386.26092014172337,
+    "foveaBaselineErrPx": 255.59391620302702,
+    "discDiamPx": 574.43690689230618,
+    "discFound": true
+  },
+  {
+    "id": "IDRiD_047",
+    "odErrPx": 0.31766075288702456,
+    "foveaErrPx": 249.03092984737785,
+    "foveaBaselineErrPx": 232.89160568813983,
+    "discDiamPx": 482.29617456496578,
+    "discFound": true
+  },
+  {
+    "id": "IDRiD_048",
+    "odErrPx": 44.542064665936358,
+    "foveaErrPx": 236.43901487790367,
+    "foveaBaselineErrPx": 219.76919711369925,
+    "discDiamPx": 502.42101866860628,
+    "discFound": true
+  },
+  {
+    "id": "IDRiD_049",
+    "odErrPx": 31.033514160397218,
+    "foveaErrPx": 240.25034553848454,
+    "foveaBaselineErrPx": 223.46923725649577,
+    "discDiamPx": 494.51794709595725,
+    "discFound": true
+  },
+  {
+    "id": "IDRiD_050",
+    "odErrPx": 48.905970068555476,
+    "foveaErrPx": 387.03451352011672,
+    "foveaBaselineErrPx": 135.25623830345128,
+    "discDiamPx": 505.76532107292604,
+    "discFound": true
+  },
+  {
+    "id": "IDRiD_051",
+    "odErrPx": 28.796408350129067,
+    "foveaErrPx": 270.99998453429686,
+    "foveaBaselineErrPx": 543.3474947029755,
+    "discDiamPx": 533.72547250435787,
+    "discFound": true
+  },
+  {
+    "id": "IDRiD_052",
+    "odErrPx": 43.078359225035548,
+    "foveaErrPx": 597.09831934971373,
+    "foveaBaselineErrPx": 159.44434765773292,
+    "discDiamPx": 494.48559129665244,
+    "discFound": true
+  },
+  {
+    "id": "IDRiD_053",
+    "odErrPx": 21.952337323597188,
+    "foveaErrPx": 191.6127277390114,
+    "foveaBaselineErrPx": 460.41421567975073,
+    "discDiamPx": 536.43027505911709,
+    "discFound": true
+  },
+  {
+    "id": "IDRiD_054",
+    "odErrPx": 49.457108694982608,
+    "foveaErrPx": 202.67283241207255,
+    "foveaBaselineErrPx": 528.9447041043137,
+    "discDiamPx": 534.7335785229875,
+    "discFound": true
+  },
+  {
+    "id": "IDRiD_055",
+    "odErrPx": 75.224837382943036,
+    "foveaErrPx": 374.57188800770234,
+    "foveaBaselineErrPx": 444.97247105860379,
+    "discDiamPx": 524.97222783686379,
+    "discFound": true
+  },
+  {
+    "id": "IDRiD_056",
+    "odErrPx": 24.170052509918136,
+    "foveaErrPx": 249.46522893141969,
+    "foveaBaselineErrPx": 530.89405722799347,
+    "discDiamPx": 550.44709100875446,
+    "discFound": true
+  },
+  {
+    "id": "IDRiD_057",
+    "odErrPx": 24.661929568179563,
+    "foveaErrPx": 120.35568533739446,
+    "foveaBaselineErrPx": 149.15176834352317,
+    "discDiamPx": 516.8749171704892,
+    "discFound": true
+  },
+  {
+    "id": "IDRiD_058",
+    "odErrPx": 110.9082372172435,
+    "foveaErrPx": 236.88469579034515,
+    "foveaBaselineErrPx": 377.360901525317,
+    "discDiamPx": 467.26386549785764,
+    "discFound": true
+  },
+  {
+    "id": "IDRiD_059",
+    "odErrPx": 18.878193086650704,
+    "foveaErrPx": 169.11615374964003,
+    "foveaBaselineErrPx": 158.56386725859079,
+    "discDiamPx": 484.90246441939223,
+    "discFound": true
+  },
+  {
+    "id": "IDRiD_060",
+    "odErrPx": 25.111014507869438,
+    "foveaErrPx": 233.25696047607468,
+    "foveaBaselineErrPx": 548.94284766266878,
+    "discDiamPx": 539.20534121983621,
+    "discFound": true
+  },
+  {
+    "id": "IDRiD_061",
+    "odErrPx": 58.950465418736243,
+    "foveaErrPx": 380.7204481343062,
+    "foveaBaselineErrPx": 413.39115858953733,
+    "discDiamPx": 471.54571358458981,
+    "discFound": true
+  },
+  {
+    "id": "IDRiD_062",
+    "odErrPx": 22.389369624936712,
+    "foveaErrPx": 113.38082807994088,
+    "foveaBaselineErrPx": 240.46725348787098,
+    "discDiamPx": 506.96840138217686,
+    "discFound": true
+  },
+  {
+    "id": "IDRiD_063",
+    "odErrPx": 64.9716719310459,
+    "foveaErrPx": 477.12075589990178,
+    "foveaBaselineErrPx": 557.74232401710378,
+    "discDiamPx": 528.45223057529051,
+    "discFound": true
+  },
+  {
+    "id": "IDRiD_064",
+    "odErrPx": 35.721898228865783,
+    "foveaErrPx": 301.65603688201173,
+    "foveaBaselineErrPx": 599.943747363034,
+    "discDiamPx": 520.3637189505049,
+    "discFound": true
+  },
+  {
+    "id": "IDRiD_065",
+    "odErrPx": 42.69179168451786,
+    "foveaErrPx": 306.10521454540026,
+    "foveaBaselineErrPx": 705.77652270389387,
+    "discDiamPx": 561.74371380550406,
+    "discFound": true
+  },
+  {
+    "id": "IDRiD_066",
+    "odErrPx": 36.681566019928368,
+    "foveaErrPx": 169.3371762203619,
+    "foveaBaselineErrPx": 111.66579601650632,
+    "discDiamPx": 502.1121787011345,
+    "discFound": true
+  },
+  {
+    "id": "IDRiD_067",
+    "odErrPx": 1101.6567215947837,
+    "foveaErrPx": 361.8714905007086,
+    "foveaBaselineErrPx": 443.95298174468883,
+    "discDiamPx": 565.40958605244748,
+    "discFound": true
+  },
+  {
+    "id": "IDRiD_068",
+    "odErrPx": 44.113685791841419,
+    "foveaErrPx": 329.21701070706382,
+    "foveaBaselineErrPx": 296.63192680492097,
+    "discDiamPx": 487.14449601735214,
+    "discFound": true
+  },
+  {
+    "id": "IDRiD_069",
+    "odErrPx": 46.751306316070263,
+    "foveaErrPx": 249.37015406779201,
+    "foveaBaselineErrPx": 576.98050227022406,
+    "discDiamPx": 515.63537504713543,
+    "discFound": true
+  },
+  {
+    "id": "IDRiD_070",
+    "odErrPx": 48.328144351136423,
+    "foveaErrPx": 168.55209329487209,
+    "foveaBaselineErrPx": 522.83123472110958,
+    "discDiamPx": 494.31617412340455,
+    "discFound": true
+  },
+  {
+    "id": "IDRiD_071",
+    "odErrPx": 33.554677256270637,
+    "foveaErrPx": 304.43260623592107,
+    "foveaBaselineErrPx": 664.97687929731808,
+    "discDiamPx": 513.7141617670278,
+    "discFound": true
+  },
+  {
+    "id": "IDRiD_072",
+    "odErrPx": 45.593115906917575,
+    "foveaErrPx": 188.46126637679504,
+    "foveaBaselineErrPx": 503.32146785131272,
+    "discDiamPx": 513.47443948068144,
+    "discFound": true
+  },
+  {
+    "id": "IDRiD_073",
+    "odErrPx": 47.265886271676777,
+    "foveaErrPx": 94.472235898784646,
+    "foveaBaselineErrPx": 160.5381574579701,
+    "discDiamPx": 496.43593745819817,
+    "discFound": true
+  },
+  {
+    "id": "IDRiD_074",
+    "odErrPx": 16.087489146374921,
+    "foveaErrPx": 209.1200289205199,
+    "foveaBaselineErrPx": 420.42032538877089,
+    "discDiamPx": 513.95252699057721,
+    "discFound": true
+  },
+  {
+    "id": "IDRiD_075",
+    "odErrPx": 31.7689796999309,
+    "foveaErrPx": 124.33732271913458,
+    "foveaBaselineErrPx": 442.3858609856332,
+    "discDiamPx": 515.86122164783819,
+    "discFound": true
+  },
+  {
+    "id": "IDRiD_076",
+    "odErrPx": 51.572092442076361,
+    "foveaErrPx": 237.26220952863463,
+    "foveaBaselineErrPx": 172.34413247917666,
+    "discDiamPx": 521.54738998484117,
+    "discFound": true
+  },
+  {
+    "id": "IDRiD_077",
+    "odErrPx": 47.056645003834625,
+    "foveaErrPx": 129.06658043823512,
+    "foveaBaselineErrPx": 378.41676759890015,
+    "discDiamPx": 514.17662335038142,
+    "discFound": true
+  },
+  {
+    "id": "IDRiD_078",
+    "odErrPx": 34.226441285896776,
+    "foveaErrPx": 190.1925980398608,
+    "foveaBaselineErrPx": 393.36052165920262,
+    "discDiamPx": 531.32438302792013,
+    "discFound": true
+  },
+  {
+    "id": "IDRiD_079",
+    "odErrPx": 34.149558424252476,
+    "foveaErrPx": 234.678257099719,
+    "foveaBaselineErrPx": 474.78547787395519,
+    "discDiamPx": 579.27540945564056,
+    "discFound": true
+  },
+  {
+    "id": "IDRiD_080",
+    "odErrPx": 51.732659803142852,
+    "foveaErrPx": 436.45804274461995,
+    "foveaBaselineErrPx": 448.83460205291658,
+    "discDiamPx": 563.69126301549147,
+    "discFound": true
+  },
+  {
+    "id": "IDRiD_081",
+    "odErrPx": 86.855269700035223,
+    "foveaErrPx": 200.31547227092253,
+    "foveaBaselineErrPx": 69.097756837686134,
+    "discDiamPx": 491.77376912560112,
+    "discFound": true
+  },
+  {
+    "id": "IDRiD_082",
+    "odErrPx": 50.534188098601945,
+    "foveaErrPx": 166.72018584288102,
+    "foveaBaselineErrPx": 257.096285465193,
+    "discDiamPx": 477.61809010966073,
+    "discFound": true
+  },
+  {
+    "id": "IDRiD_083",
+    "odErrPx": 143.36720953969186,
+    "foveaErrPx": 240.83718933624112,
+    "foveaBaselineErrPx": 541.41712200483653,
+    "discDiamPx": 499.20144230560874,
+    "discFound": true
+  },
+  {
+    "id": "IDRiD_084",
+    "odErrPx": 9.3134850622672118,
+    "foveaErrPx": 297.13860199957708,
+    "foveaBaselineErrPx": 377.19027028808682,
+    "discDiamPx": 493.54181180524108,
+    "discFound": true
+  },
+  {
+    "id": "IDRiD_085",
+    "odErrPx": 54.742723324471029,
+    "foveaErrPx": 410.28043888903107,
+    "foveaBaselineErrPx": 242.28598803892891,
+    "discDiamPx": 478.002677816767,
+    "discFound": true
+  },
+  {
+    "id": "IDRiD_086",
+    "odErrPx": 37.461491070337694,
+    "foveaErrPx": 307.87473616855,
+    "foveaBaselineErrPx": 13.729530217745982,
+    "discDiamPx": 504.211542906348,
+    "discFound": true
+  },
+  {
+    "id": "IDRiD_087",
+    "odErrPx": 37.945294002994196,
+    "foveaErrPx": 108.05125100654422,
+    "foveaBaselineErrPx": 192.67913742800491,
+    "discDiamPx": 447.53279209461289,
+    "discFound": true
+  },
+  {
+    "id": "IDRiD_088",
+    "odErrPx": 5.8676481675638419,
+    "foveaErrPx": 129.96333734632211,
+    "foveaBaselineErrPx": 446.35467959908294,
+    "discDiamPx": 536.66302276195631,
+    "discFound": true
+  },
+  {
+    "id": "IDRiD_089",
+    "odErrPx": 10.965563593855848,
+    "foveaErrPx": 299.38875670795761,
+    "foveaBaselineErrPx": 457.25293875490837,
+    "discDiamPx": 531.67343360374889,
+    "discFound": true
+  },
+  {
+    "id": "IDRiD_090",
+    "odErrPx": 19.741281689015352,
+    "foveaErrPx": 293.95500578721425,
+    "foveaBaselineErrPx": 469.02718471321043,
+    "discDiamPx": 537.87522716704484,
+    "discFound": true
+  },
+  {
+    "id": "IDRiD_091",
+    "odErrPx": 20.11662980426955,
+    "foveaErrPx": 194.3681231475411,
+    "foveaBaselineErrPx": 281.87674611432567,
+    "discDiamPx": 586.70742282674416,
+    "discFound": true
+  },
+  {
+    "id": "IDRiD_092",
+    "odErrPx": 51.349395515437934,
+    "foveaErrPx": 223.94697206486819,
+    "foveaBaselineErrPx": 227.84314780128895,
+    "discDiamPx": 523.55477268381378,
+    "discFound": true
+  },
+  {
+    "id": "IDRiD_093",
+    "odErrPx": 87.639931344327962,
+    "foveaErrPx": 278.83071613881913,
+    "foveaBaselineErrPx": 215.58872883339703,
+    "discDiamPx": 483.87237986890716,
+    "discFound": true
+  },
+  {
+    "id": "IDRiD_094",
+    "odErrPx": 67.298750776092618,
+    "foveaErrPx": 357.10042009444396,
+    "foveaBaselineErrPx": 302.36153855938755,
+    "discDiamPx": 516.69658408005751,
+    "discFound": true
+  },
+  {
+    "id": "IDRiD_095",
+    "odErrPx": 42.931931467911987,
+    "foveaErrPx": 82.42317774972004,
+    "foveaBaselineErrPx": 520.238887435378,
+    "discDiamPx": 473.65472656778167,
+    "discFound": true
+  },
+  {
+    "id": "IDRiD_096",
+    "odErrPx": 21.672158757162514,
+    "foveaErrPx": 298.26259062317621,
+    "foveaBaselineErrPx": 253.13336405934322,
+    "discDiamPx": 551.47859432619873,
+    "discFound": true
+  },
+  {
+    "id": "IDRiD_097",
+    "odErrPx": 41.583315140992383,
+    "foveaErrPx": 168.27670866704818,
+    "foveaBaselineErrPx": 186.68824280066488,
+    "discDiamPx": 508.22735070045172,
+    "discFound": true
+  },
+  {
+    "id": "IDRiD_098",
+    "odErrPx": 26.982942299064266,
+    "foveaErrPx": 312.100353129334,
+    "foveaBaselineErrPx": 235.51061547199947,
+    "discDiamPx": 496.19689640303068,
+    "discFound": true
+  },
+  {
+    "id": "IDRiD_099",
+    "odErrPx": 20.593767378138388,
+    "foveaErrPx": 171.12064532753445,
+    "foveaBaselineErrPx": 520.00240384059759,
+    "discDiamPx": 554.55784188847247,
+    "discFound": true
+  },
+  {
+    "id": "IDRiD_100",
+    "odErrPx": 33.171337752061469,
+    "foveaErrPx": 287.08225548713006,
+    "foveaBaselineErrPx": 251.19414802100783,
+    "discDiamPx": 516.96251314771359,
+    "discFound": true
+  },
+  {
+    "id": "IDRiD_101",
+    "odErrPx": 32.309709311536949,
+    "foveaErrPx": 182.17324179877809,
+    "foveaBaselineErrPx": 548.1902042174778,
+    "discDiamPx": 494.0568388353712,
+    "discFound": true
+  },
+  {
+    "id": "IDRiD_102",
+    "odErrPx": 1348.6991025994475,
+    "foveaErrPx": 979.88849990504184,
+    "foveaBaselineErrPx": 505.95701398438979,
+    "discDiamPx": 552.97320007392761,
+    "discFound": true
+  },
+  {
+    "id": "IDRiD_103",
+    "odErrPx": 54.61136189408515,
+    "foveaErrPx": 133.49708567900552,
+    "foveaBaselineErrPx": 587.36743185164767,
+    "discDiamPx": 498.50352054925349,
+    "discFound": true
+  }
+]

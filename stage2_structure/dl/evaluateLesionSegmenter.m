@@ -13,7 +13,7 @@ function R = evaluateLesionSegmenter(opts)
 %      total lesion area separates referable from non-referable eyes (AUC). The old overlay flagged 100% of healthy eyes and
 %      had AUC 0.51 here.
 %
-% Writes validation/results/<OutName>.json and .md (OutName: lesions_dl for Stage2_LesionUNet.mat, else lesions_dl_<model file>).
+% Writes validation/results/<OutName>.json and .md (default OutName: lesions_dl_<model file name>).
 
     here = fileparts(mfilename('fullpath'));
     root = fileparts(fileparts(here));
@@ -21,9 +21,9 @@ function R = evaluateLesionSegmenter(opts)
     if nargin < 1, opts = struct(); end
     if ~isfield(opts, 'Classical'), opts.Classical = true; end
     if ~isfield(opts, 'AptosMax'), opts.AptosMax = Inf; end
-    if ~isfield(opts, 'ModelFile'), opts.ModelFile = fullfile(here, 'Stage2_LesionUNet.mat'); end
+    if ~isfield(opts, 'ModelFile'), opts.ModelFile = fullfile(here, 'Stage2_LesionUNet_v2.mat'); end
     [~, modelName] = fileparts(opts.ModelFile);
-    if ~isfield(opts, 'OutName'), opts.OutName = ternaryName(strcmp(modelName, 'Stage2_LesionUNet'), 'lesions_dl', ['lesions_dl_' modelName]); end
+    if ~isfield(opts, 'OutName'), opts.OutName = ['lesions_dl_' modelName]; end
     S = load(opts.ModelFile, 'model');
     model = S.model;
     ch = model.channels; C = numel(ch);
@@ -184,6 +184,3 @@ function writeMarkdown(file, R, model, ch, lesions, grades)
     fclose(fid);
 end
 
-function out = ternaryName(cond, a, b)
-    if cond, out = a; else, out = b; end
-end

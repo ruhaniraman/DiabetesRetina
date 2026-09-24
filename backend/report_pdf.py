@@ -19,7 +19,7 @@ from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
 from reportlab.lib.units import mm
 from reportlab.platypus import Image, KeepTogether, Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
 
-from clinical_text import LESION_LABELS, PDF_TEXT
+from clinical_text import LESION_EVIDENCE_TEXT, LESION_LABELS, PDF_TEXT, lesion_evidence_lines
 
 NAVY = colors.HexColor("#1c2033")
 MUTED = colors.HexColor("#6b7280")
@@ -139,7 +139,12 @@ def _lesion_block(eye: str, images: dict) -> list:
     pictures = Table([[_image(images["lesions"], width), count_table]], colWidths=[width + 3 * mm, rest])
     pictures.setStyle(TableStyle([("VALIGN", (0, 0), (-1, -1), "TOP"), ("LEFTPADDING", (0, 0), (-1, -1), 0), ("RIGHTPADDING", (0, 0), (-1, -1), 1 * mm)]))
     note = PDF_TEXT["lesion_note"] if sum(int(v) for v in counts.values()) else PDF_TEXT["lesion_none_note"]
-    return [Paragraph(f"{EYE_NAMES[eye]}: {escape(PDF_TEXT['lesion_caption'].lower())}", H2), pictures, Spacer(1, 1 * mm), Paragraph(escape(note), SMALL)]
+    block = [Paragraph(f"{EYE_NAMES[eye]}: {escape(PDF_TEXT['lesion_caption'].lower())}", H2), pictures, Spacer(1, 1 * mm), Paragraph(escape(note), SMALL)]
+    lines = lesion_evidence_lines(images.get("lesion_evidence")) if sum(int(v) for v in counts.values()) else []   # nothing marked: the note says so
+    if lines:
+        block += [Spacer(1, 1.5 * mm), Paragraph(f"<b>{escape(LESION_EVIDENCE_TEXT['title'])}</b>", SMALL)]
+        block += [Paragraph("&bull; " + escape(line), SMALL) for line in lines]
+    return block
 
 
 def build_report_pdf(result: dict, eyes: dict, *, patient: dict | None = None, generated_at: _dt.datetime | None = None, compress: bool = True) -> bytes:

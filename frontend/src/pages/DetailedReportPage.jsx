@@ -318,6 +318,19 @@ export default function DetailedReportPage({ patient, session, onBack }) {
                   {candidateCount(scan) === 0 && (
                     <p className="font-semibold text-slate-600 text-[11px] pt-1">{t('clinical.lesionNoneNote')}</p>
                   )}
+                  {scan.mask.evidence && candidateCount(scan) > 0 && (
+                    <div className="bg-slate-50 p-3 rounded-2xl border border-slate-200 text-[11px] text-slate-700 space-y-1">
+                      <p className="font-bold text-slate-900">{t('report.evidenceTitle')}</p>
+                      <ul className="list-disc pl-4 space-y-1">
+                        {scan.mask.evidence.onlyMA && <li>{t('report.evidenceOnlyMA')}</li>}
+                        {scan.mask.evidence.heQuadrants > 0 && (
+                          <li>{t('report.evidenceHemorrhages', { quadrants: scan.mask.evidence.heQuadrants, with20: scan.mask.evidence.heQuadrantsWith20 })}</li>
+                        )}
+                        {scan.mask.evidence.exNearFovea && <li>{t('report.evidenceExudatesNearFovea')}</li>}
+                        <li>{t('report.evidenceNotAssessed')}</li>
+                      </ul>
+                    </div>
+                  )}
                 </div>
               ) : (
                 <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200 text-xs text-slate-600">

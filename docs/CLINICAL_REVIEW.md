@@ -11,7 +11,7 @@
 
 ## 1. What the tool is, and what it decides
 
-A screening aid for diabetic retinopathy (DR). For each eye it takes one fundus photograph and produces (a) an estimated **stage** (0 No DR, 1 Mild, 2 Moderate, 3 Severe, 4 Proliferative) and (b) a **referral score**: the model's summed probability of Moderate, Severe and Proliferative. An eye is **flagged for referral** when that score is at least **20%** (the model's tuned "high sensitivity" operating point). "Referable" therefore means moderate non-proliferative DR or worse; **macular oedema and other eye disease are not assessed.**
+A screening aid for diabetic retinopathy (DR). For each eye it takes one fundus photograph and produces (a) an estimated **stage** (0 No DR, 1 Mild, 2 Moderate, 3 Severe, 4 Proliferative) and (b) a **referral score**: the model's summed probability of Moderate, Severe and Proliferative. An eye is **flagged for referral** when that score is at least **9.6%** (chosen on validation images for 99% sensitivity). "Referable" therefore means moderate non-proliferative DR or worse; **macular oedema and other eye disease are not assessed.**
 
 The patient-level result is the worse of the two eyes. If the threshold flags an eye whose most likely stage is milder than Stage 2, the overall result is **raised to Stage 2 and explained in the text** (an "escalation"), so a referable result can never appear routine.
 
@@ -21,38 +21,38 @@ Full detail: `validation/REPORT.md`. Test set: 548 images never used in training
 
 | Measure | Result |
 |---|---|
-| Referable patients found (sensitivity) | **95.1%** (95% CI 91.4% to 97.2%) |
-| Non-referable correctly not flagged (specificity) | **89.2%** (85.4% to 92.2%) |
-| Excluding test images duplicated in training | sensitivity 94.3%, specificity 88.9% |
-| Exact stage correct (5 classes) | 78.1% |
-| **Second dataset (IDRiD, 516 full-resolution photographs, never seen in training):** sensitivity | 94.4% |
-| **Second dataset (IDRiD):** specificity | **46.1%**: it flagged more than half of the healthy eyes |
-| Referable patients found if decided from the single most likely stage instead | 82.1% (this is why the threshold rule is used) |
+| Referable patients found (sensitivity) | **96.9%** (95% CI 93.7% to 98.5%) |
+| Non-referable correctly not flagged (specificity) | **88.3%** (84.4% to 91.4%) |
+| Excluding test images duplicated in training | sensitivity 96.4%, specificity 87.8% |
+| Exact stage correct (5 classes) | 79.4% |
+| **Second dataset (IDRiD official test set, 103 photographs; the model trained on IDRiD's other photographs):** sensitivity | 90.6% |
+| **Second dataset (IDRiD):** specificity | **53.8%**: it flagged 46% of the eyes without referable disease |
+| Referable patients found if decided from the single most likely stage instead | 89.2% (this is why the threshold rule is used) |
 
 **Where it fails (test set):**
 
-- Missed referable cases at the deployed threshold: 11 of 223 (Moderate 15 of 150, Severe 0 of 29, Proliferative 2 of 44).
-- A **proliferative** case (`eaa0dfbd5024`) was called Mild with referral score 0.04: the tool said nothing was flagged.
-- The exact stage is unreliable at the severe end: only 52% of Severe and 48% of Proliferative cases were graded as such (most were graded a neighbouring or two-away stage).
-- **It does not transfer cleanly to other data.** On the second public dataset it found 94.4% of referable patients but only 46.1% of healthy eyes were left unflagged, so a clinic using a different camera or population could see many false referrals. Nothing is known about other cameras, age groups or diabetes types. The reference grades themselves are imperfect (the same photograph appears with different grades).
+- Missed referable cases at the deployed threshold: 7 of 223 (Moderate 6 of 150, Severe 0 of 29, Proliferative 1 of 44).
+- A **proliferative** case (`eaa0dfbd5024`) was called Mild with referral score 0.03: the tool said nothing was flagged.
+- The exact stage is unreliable at the severe end: only 62% of Severe and 57% of Proliferative cases were graded as such (most were graded a neighbouring or two-away stage).
+- **It does not transfer cleanly to other data.** On the second public dataset it found 90.6% of referable patients but only 53.8% of healthy eyes were left unflagged, so a clinic using a different camera or population could see many false referrals. Nothing is known about other cameras, age groups or diabetes types. The reference grades themselves are imperfect (the same photograph appears with different grades).
 
 **What a flag means in a real clinic** (positive predictive value falls as disease becomes rarer):
 
 | Referable prevalence | Chance a flag is truly referable | Chance a "no referral" is truly fine | Flagged per 1,000 patients |
 |---|---|---|---|
-| 20% | 68% | 98.4% | 278 |
-| 10% | 49% | 99.3% | 194 |
-| 5% | 31% | 99.7% | 153 |
+| 20% | 66% | 99.0% | 290 |
+| 10% | 47% | 99.5% | 206 |
+| 5% | 29% | 99.8% | 164 |
 
-**Confidence bands.** The interface shows High / Moderate / Low, not a percentage, because the model's raw probabilities are over-confident. Measured on the test set:
+**Confidence bands.** The interface shows High / Moderate / Low, not a percentage. The band comes from temperature-scaled probabilities (the raw network is over-confident; the temperature was fitted on validation images, see `validation/results/calibration.md`). Measured on the test set:
 
-| Band (raw top probability) | Images | Model claims | Exact stage actually right | Referral decision wrong |
+| Band (calibrated top probability) | Images | Model claims | Exact stage actually right | Referral decision wrong |
 |---|---|---|---|---|
-| High | 293 | 98% | 94% | 1.7% |
-| Moderate | 100 | 81% | 68% | 17.0% |
-| Low | 155 | 54% | 54% | 18.1% |
+| High | 270 | 99% | 98% | 0.7% |
+| Moderate | 96 | 80% | 71% | 19.8% |
+| Low | 182 | 55% | 56% | 13.2% |
 
-The referral decision was wrong in 1.7% of High-confidence results and 17.6% of the rest.
+The referral decision was wrong in 0.7% of High-confidence results and 15.5% of the rest.
 
 ## 3. Everything the tool says
 
@@ -82,7 +82,7 @@ Source: `backend/clinical_text.py`. Every summary ends with the standard disclai
 
 **Escalation: most likely stage is Mild, but the referral threshold is reached in the left eye**
 
-> The most likely grade was mild retinopathy (Stage 1), but the screening model's referral threshold (20%) was reached in the left eye (referral score 35%). This is treated as referable (Stage 2 or worse) until a clinician reviews it. The exact stage is an estimate; the referral decision is the more reliable result.
+> The most likely grade was mild retinopathy (Stage 1), but the screening model's referral threshold (10%) was reached in the left eye (referral score 35%). This is treated as referable (Stage 2 or worse) until a clinician reviews it. The exact stage is an estimate; the referral decision is the more reliable result.
 
 **Standard disclaimer appended to every summary:**
 
@@ -120,7 +120,7 @@ Basis line: "Basis: referral score compared with a 20% threshold".
 
 - **Before an assessment is run:** "Upload fundus images for both eyes and run the AI assessment to see the screening result."
 - **On-screen disclaimer:** "Screening aid only. Results are produced by automated image analysis and are not a medical diagnosis, and the tool can miss disease. It has not been clinically validated. Always have a qualified eye-care professional review the findings before making any treatment decision."
-- **Note about stage reliability:** "The referral decision is the more reliable output. On held-out test images it found about 95% of referable cases, while the exact stage matched the reference grade about 78% of the time. Results depend on the camera and population: on a second public dataset it flagged many more eyes that had no disease (see validation/REPORT.md)."
+- **Note about stage reliability:** "The referral decision is the more reliable output. On held-out test images it found about 97% of referable cases, while the exact stage matched the reference grade about 79% of the time. Results depend on the camera and population: on a second public dataset it flagged many more eyes that had no disease (see validation/REPORT.md)."
 - **Note when a heatmap is shown:** "Shows the regions that raised this eye's referral score, on a coarse grid. A rough guide, not a lesion detection: warm colours do not by themselves mean disease, and disease can be present outside them."
 - **Note under the heatmap of an eye that was not flagged:** "This eye's referral score is below the threshold, so it was not flagged. The map shows where the score was relatively highest, not a finding."
 - **Shown when text is machine-translated:** "Machine-translated and not clinically reviewed. If anything is unclear, the English text is authoritative."
@@ -178,7 +178,7 @@ Source: `backend/report_pdf.py`, wording in `backend/clinical_text.py` (`PDF_TEX
 | Note under an eye that was not flagged | This eye's referral score is below the threshold, so it was not flagged. The map shows where the score was relatively highest, not a finding. |
 | Eye flagged although its most likely stage is milder | Referral flagged although the most likely stage is lower |
 | Note on confidence | Lower confidence means the grade is less likely to be right. In testing, the referral decision was wrong in about 1% of high-confidence results and about 15% of the rest. |
-| Note on stage reliability | The referral decision is the more reliable output. On held-out test images it found about 95% of referable cases, while the exact stage matched the reference grade about 78% of the time. Results depend on the camera and population: on a second public dataset it flagged many more eyes that had no disease (see validation/REPORT.md). |
+| Note on stage reliability | The referral decision is the more reliable output. On held-out test images it found about 97% of referable cases, while the exact stage matched the reference grade about 79% of the time. Results depend on the camera and population: on a second public dataset it flagged many more eyes that had no disease (see validation/REPORT.md). |
 | Note when the site set its own threshold | The referral threshold used here was set by this site from its own calibration, not the model's default. It is only appropriate if the site's clinical lead has approved it. |
 | Last line of the notes | Generated on request from the photographs supplied. The server does not keep this report file. |
 | Instead of a name the font cannot print | (name uses characters this report cannot print; see the application record) |
@@ -201,6 +201,13 @@ Source: wording in `backend/clinical_text.py` (`PDF_TEXT`, `LESION_LABELS`) and 
 | Count row: hemorrhages | Possible hemorrhages |
 | Count row: exudates | Possible hard exudates |
 | Count row: softExudates | Possible soft exudates |
+| Evidence heading (app and PDF) | What the lesion marks show against the ICDR criteria (for the reviewer) |
+| When only possible microaneurysms are marked | Only possible microaneurysms were marked. On the ICDR scale, microaneurysms alone correspond to mild non-proliferative DR. |
+| When possible hemorrhages are marked ({quadrants}, {with20} filled in) | Possible hemorrhages were marked in {quadrants} of 4 quadrants, with 20 or more in {with20} of them. On the ICDR scale, 20 or more hemorrhages in each of the 4 quadrants is a sign of severe non-proliferative DR. |
+| When possible hard exudates are near the estimated fovea | Possible hard exudates were marked near the estimated centre of the macula. Macular oedema is not assessed by this tool. |
+| Always, under the evidence | Venous beading, IRMA and new vessels are not detected by the lesion model, so the marks alone cannot establish a grade. |
+
+The quadrants are centred on the fovea, which is estimated from the optic disc found by the lesion network (about 2.5 disc diameters temporal to it); accuracy on IDRiD's labelled centres is in `validation/results/localisation.md`. Hemorrhage counts are connected regions, so touching hemorrhages count once.
 
 - **Question for the reviewer:** is it acceptable to show possible lesions that also appear on about 1 in 3 eyes without retinopathy, and should the overlay be shown for eyes the referral model did not flag?
 
@@ -274,11 +281,11 @@ The PDF header reads "AI SCREENING AID", the badge reads "REFERRAL RECOMMENDED" 
 - **Caption under the class-probability chart** (titled "CLASS PROBABILITIES (RAW OUTPUT)"): "Raw model output, which is over-confident. The referral score is what decides."
 - **Shown instead when no region raised the score (web app):** "No region raised this eye's referral score, so nothing is highlighted. That does not rule out disease."
 
-**How far the heatmap can be trusted** (details and method: `validation/results/gradcam.md`). The map shows the regions that raised the *referral score* (the quantity the decision is made on). Before this change it explained the single most likely grade instead, which for 51 of 247 referral-flagged test eyes was No DR or Mild.
+**How far the heatmap can be trusted** (details and method: `validation/results/gradcam.md`). The map shows the regions that raised the *referral score* (the quantity the decision is made on). Before this change it explained the single most likely grade instead, which for 42 of 254 referral-flagged test eyes was No DR or Mild.
 
-- It depends on what the network learned: with random weights it correlates only 0.15-0.22 with the real map.
-- The hottest regions matter more than others, but the effect is modest: hiding the 12 hottest cells lowers the referral score by 0.034 on average (+0.110 more than hiding 12 random cells; hottest more important in 90% of eyes). A flagged eye stays flagged: the evidence is spread across the retina.
-- It is only weakly hotter on lesions than elsewhere: on IDRiD photographs with expert lesion masks the pixel AUC is 0.66 (0.5 is chance) and the hottest point is on a lesion in 12% of photographs (chance 3.1%); the earlier map was at chance (AUC 0.51).
+- It depends on what the network learned: with random weights it correlates only 0.10-0.20 with the real map.
+- The hottest regions matter more than others, but the effect is modest: hiding the 35 hottest of about 112 cells lowers the referral score by 0.172 on average (+0.221 more than hiding 35 random cells; hottest more important in 94% of eyes). A flagged eye stays flagged: the evidence is spread across the retina.
+- It is only weakly hotter on lesions than elsewhere: on IDRiD photographs with expert lesion masks the pixel AUC is 0.70 (0.5 is chance) and the hottest point is on a lesion in 12% of photographs (chance 3.1%); the earlier map scored AUC 0.59.
 - **Question for the reviewer:** is a coarse "regions that raised the score" picture appropriate to show to patients, or only to clinicians?
 
 ### 3g. Not covered by this packet
@@ -313,12 +320,12 @@ These are engineering safeguards, not clinical judgements; please confirm or ove
 ## 5. Questions for the reviewer
 
 1. Is "referable = moderate NPDR or worse" the right referral criterion for your setting and guidelines? (Macular oedema is not assessed.)
-2. Is the operating point acceptable? At the 20% threshold about 5% of referable patients are missed in testing, including 2 of 44 proliferative cases. What miss rate is acceptable, and should the threshold be lower (more sensitive, more false alarms)?
+2. Is the operating point acceptable? At the 9.6% threshold about 3% of referable patients are missed in testing, including 1 of 44 proliferative cases. What miss rate is acceptable, and should the threshold be lower (more sensitive, more false alarms)?
 3. Is the "does not rule out disease" wording, and the safety-net sentence about changes in vision, appropriate for a no-referral result? Is anything else needed (for example emergency symptoms)?
 4. For a Mild result below the referral threshold, is "follow-up with an eye-care professional is recommended" right, and is there a local guideline interval that should be stated?
 5. For Severe and Proliferative results, is "URGENT ... prompt referral to an ophthalmologist is recommended" the right urgency and phrasing?
 6. Is the escalation policy sensible: showing Stage 2 when the threshold flags an eye whose most likely stage is Mild or None, with an explanation? Or would you rather present only the referral decision?
-7. Should per-eye stage labels be shown at all, given the exact stage is right only 78% of the time? (Or shown only to clinicians?)
+7. Should per-eye stage labels be shown at all, given the exact stage is right only 79% of the time? (Or shown only to clinicians?)
 8. Terminology: "Stage 0-4" versus the ICDR severity scale wording (the PDF uses ICDR names such as "No apparent retinopathy"). Should these be aligned, and which audience (patient or clinician) is each message for?
 9. Are "signs consistent with" and "detected" the right level of hedging?
 10. Image-quality messages: is asking the user to retake a blurry photo sufficient, and should poor-lighting images be blocked rather than enhanced?

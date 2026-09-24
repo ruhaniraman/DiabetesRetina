@@ -121,7 +121,7 @@ def main(argv=None):
     ap.add_argument("--target-sensitivity", type=float, help="the sensitivity you (and your clinical lead) require, e.g. 0.95. Without it no threshold is recommended.")
     ap.add_argument("--bound", choices=["lower", "point"], default="lower", help="lower: the 95%% lower confidence bound must reach the target (default, conservative)")
     ap.add_argument("--prevalence", type=float, help="share of referable eyes in your real screening population (default: the sample's, which is usually higher)")
-    ap.add_argument("--current-threshold", type=float, default=core.DEFAULT_THRESHOLD, help="the threshold the app uses now (default: the model's 0.20)")
+    ap.add_argument("--current-threshold", type=float, default=core.DEFAULT_THRESHOLD, help="the threshold the app uses now (default: the deployed model's, 0.096)")
     ap.add_argument("--site", help="a name for the report")
     ap.add_argument("--label-col")
     ap.add_argument("--image-col")

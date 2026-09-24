@@ -408,24 +408,38 @@ def _numbers(value) -> list[float]:
         return [float(value)]
 
 
+def _evidence(raw) -> dict:
+    """lesionEvidence's MATLAB struct (a dict from the engine) as plain JSON values."""
+    raw = dict(raw or {})
+    return {
+        "heQuadrants": int(round(_numbers(raw.get("heQuadrants", 0))[0])),
+        "heQuadrantsWith20": int(round(_numbers(raw.get("heQuadrantsWith20", 0))[0])),
+        "heByQuadrant": [int(round(x)) for x in _numbers(raw.get("heByQuadrant", [0, 0, 0, 0]))],
+        "onlyMA": bool(raw.get("onlyMA", False)),
+        "exNearFovea": bool(raw.get("exNearFovea", False)),
+        "foveaFrom": str(raw.get("foveaFrom", "")),
+    }
+
+
 def render_lesions(img: np.ndarray, with_composite: bool = False) -> tuple:
     """Stage 2 for one photograph (MATLAB, stage2_structure/dl/lesionOverlayToFile.m, calibrated v2 network).
 
-    Returns (overlay BGRA same size as the photo, counts, area percentages), plus the photo with the overlay drawn on it (square,
-    cropped to the retina) when `with_composite` is set. The overlay shows POSSIBLE lesions for review: on held-out test photographs it
+    Returns (overlay BGRA same size as the photo, counts, area percentages, ICDR evidence), plus the photo with the overlay drawn on it
+    (square, cropped to the retina) when `with_composite` is set. The overlay shows POSSIBLE lesions for review: on held-out test photographs it
     marked something in 34% of eyes without retinopathy (validation/results/lesions_dl_Stage2_LesionUNet_v2_calibrated.md)."""
     with tempfile.TemporaryDirectory(prefix="retina_") as tmp:
         src, dst, comp_path = Path(tmp) / "in.png", Path(tmp) / "lesions.png", Path(tmp) / "composite.png"
         cv2.imwrite(str(src), img)
         args = (str(src), str(dst), str(comp_path)) if with_composite else (str(src), str(dst))
-        counts, areas = matlab_service.call("lesionOverlayToFile", *args, nargout=2)
+        counts, areas, evidence = matlab_service.call("lesionOverlayToFile", *args, nargout=3)
         overlay = cv2.imread(str(dst), cv2.IMREAD_UNCHANGED)
         composite = cv2.imread(str(comp_path), cv2.IMREAD_COLOR) if with_composite else None
     if overlay is None or overlay.ndim != 3 or overlay.shape[2] != 4 or (with_composite and composite is None):
         raise RuntimeError("MATLAB did not produce a lesion overlay.")
     counts = dict(zip(LESION_KEYS, (int(round(c)) for c in _numbers(counts))))
     areas = dict(zip(LESION_KEYS, (round(a, 3) for a in _numbers(areas))))
-    return (overlay, counts, areas, composite) if with_composite else (overlay, counts, areas)
+    evidence = _evidence(evidence)
+    return (overlay, counts, areas, evidence, composite) if with_composite else (overlay, counts, areas, evidence)
 
 
 @app.post("/api/stage2-segmentation", dependencies=[Depends(require_user)])
@@ -440,14 +454,14 @@ async def run_stage2_segmentation(file: UploadFile = File(...)):
     if q["verdict"] == "reject":
         raise HTTPException(status_code=422, detail=q["reason"])
     try:
-        overlay, counts, areas = await run_in_threadpool(render_lesions, img)
+        overlay, counts, areas, evidence = await run_in_threadpool(render_lesions, img)
     except HTTPException:
         raise
     except Exception:
         log.exception("Stage 2 segmentation failed")
         raise HTTPException(status_code=500, detail="Lesion segmentation failed.")
     # method: which Stage 2 produced this ("unet-v2": the calibrated lesion network, not the old image-processing heuristic).
-    return {"status": "success", "maskUrl": png_data_url(overlay), "counts": counts, "areaPercent": areas, "method": "unet-v2"}
+    return {"status": "success", "maskUrl": png_data_url(overlay), "counts": counts, "areaPercent": areas, "evidence": evidence, "method": "unet-v2"}
 
 
 # --------------------------------------------------------------------------- #
@@ -460,7 +474,7 @@ def decide(g: dict) -> dict:
     """Turn the raw network output into the clinical decision.
 
     The network was tuned to flag an eye as referable when P(Moderate)+P(Severe)+P(Proliferate) reaches a threshold
-    (stored with the model). On the held-out test set that rule finds 95.1% of referable patients, against 82.1% when
+    (stored with the model). On the held-out test set that rule finds 96.9% of referable patients, against 89.2% when
     deciding from the single most-likely grade (validation/REPORT.md), so the threshold is what decides.
 
     The displayed grade is never lowered, and is raised to Moderate (Stage 2) when the threshold flags an eye whose most
@@ -654,8 +668,8 @@ async def run_report(
             heat, _score, empty, analysed = await run_in_threadpool(render_gradcam, img, True)
             eyes[eye] = {"analysed": analysed, "heatmap": heat, "heatmap_empty": empty}
             if LESION_OVERLAY_ENABLED:
-                _overlay, counts, _areas, composite = await run_in_threadpool(render_lesions, img, True)
-                eyes[eye] |= {"lesions": composite, "lesion_counts": counts}
+                _overlay, counts, _areas, evidence, composite = await run_in_threadpool(render_lesions, img, True)
+                eyes[eye] |= {"lesions": composite, "lesion_counts": counts, "lesion_evidence": evidence}
         pdf = await run_in_threadpool(lambda: build_report_pdf(result, eyes, patient=patient))
     except HTTPException:
         raise

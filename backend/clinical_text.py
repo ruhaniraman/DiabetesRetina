@@ -105,8 +105,8 @@ PDF_TEXT = {
         "results and about 15% of the rest."
     ),
     "stage_note": (
-        "The referral decision is the more reliable output. On held-out test images it found about 95% of referable cases, while the exact stage "
-        "matched the reference grade about 78% of the time. Results depend on the camera and population: on a second public dataset it flagged many more eyes that had no disease "
+        "The referral decision is the more reliable output. On held-out test images it found about 97% of referable cases, while the exact stage "
+        "matched the reference grade about 79% of the time. Results depend on the camera and population: on a second public dataset it flagged many more eyes that had no disease "
         "(see validation/REPORT.md)."
     ),
     "lesion_caption": "Possible lesions marked by the lesion model",
@@ -124,6 +124,35 @@ PDF_TEXT = {
     "name_unprintable": "(name uses characters this report cannot print; see the application record)",
     "not_provided": "Not provided",
 }
+
+
+# What the lesion marks show against the ICDR criteria (stage2_structure/dl/lesionEvidence.m). Evidence for the reviewer, never a grade.
+# {quadrants} and {with20} are filled in by lesion_evidence_lines(); the web app's report.evidence* texts say the same with {{...}} blanks.
+LESION_EVIDENCE_TEXT = {
+    "title": "What the lesion marks show against the ICDR criteria (for the reviewer)",
+    "only_ma": "Only possible microaneurysms were marked. On the ICDR scale, microaneurysms alone correspond to mild non-proliferative DR.",
+    "hemorrhages": (
+        "Possible hemorrhages were marked in {quadrants} of 4 quadrants, with 20 or more in {with20} of them. On the ICDR scale, 20 or more "
+        "hemorrhages in each of the 4 quadrants is a sign of severe non-proliferative DR."
+    ),
+    "exudates_near_fovea": "Possible hard exudates were marked near the estimated centre of the macula. Macular oedema is not assessed by this tool.",
+    "not_assessed": "Venous beading, IRMA and new vessels are not detected by the lesion model, so the marks alone cannot establish a grade.",
+}
+
+
+def lesion_evidence_lines(evidence: dict | None) -> list[str]:
+    """The evidence sentences for one eye, in the order a grader would check them. Empty when there is no evidence to report."""
+    if not evidence:
+        return []
+    lines = []
+    if evidence.get("onlyMA"):
+        lines.append(LESION_EVIDENCE_TEXT["only_ma"])
+    if evidence.get("heQuadrants", 0) > 0:
+        lines.append(LESION_EVIDENCE_TEXT["hemorrhages"].format(quadrants=evidence["heQuadrants"], with20=evidence.get("heQuadrantsWith20", 0)))
+    if evidence.get("exNearFovea"):
+        lines.append(LESION_EVIDENCE_TEXT["exudates_near_fovea"])
+    lines.append(LESION_EVIDENCE_TEXT["not_assessed"])
+    return lines
 
 
 # Names of the lesion types the Stage 2 overlay marks (PDF count rows; the web app's report.<key> texts say the same).

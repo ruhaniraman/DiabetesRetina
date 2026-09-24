@@ -14,10 +14,15 @@ RESULTS = Path(__file__).resolve().parent / "results"
 CLASSES = ["Mild", "Moderate", "No_DR", "Proliferate_DR", "Severe"]          # column order of the CSVs
 GRADE = {"No_DR": 0, "Mild": 1, "Moderate": 2, "Severe": 3, "Proliferate_DR": 4}  # clinical severity order
 REFERABLE = ["Moderate", "Severe", "Proliferate_DR"]                          # moderate NPDR or worse
-DEPLOYED_THRESHOLD = 0.2                                                      # stage3Results.threshold
-STORED = {"TP": 206, "TN": 292, "FP": 33, "FN": 17}                           # stage3Results, test split, threshold 0.2
+# The DEPLOYED model: fine-tuned run 2 (384 px, full-resolution APTOS + IDRiD; validation/results/stage3_finetune.md). Its predictions are
+# results/deployed_<split>.csv (run_deployed_predictions.py: full-resolution photographs, retina crop + mirror averaging, as the app runs).
+DEPLOYED_THRESHOLD = 0.0964      # stage3Results.threshold: chosen on the validation split for 99% referable sensitivity
+PRED = "deployed"
+# The PREVIOUS model (224 px, APTOS 224 px copies only), kept for the record: results/app_<split>_<method>.csv, threshold 0.2.
+PREVIOUS_THRESHOLD = 0.2
+STORED = {"TP": 206, "TN": 292, "FP": 33, "FN": 17}                           # previous model's stage3Results, test split, threshold 0.2
 BOOTSTRAPS = 2000
-METHOD = "cropmirror"   # the DEPLOYED pipeline: retina crop + mirror averaging (see results/stage3_pipeline.md); "resize" is what the network was trained with
+METHOD = "cropmirror"   # the app's pipeline for the previous model: retina crop + mirror averaging (see results/stage3_pipeline.md)
 
 
 # ------------------------------------------------------------------ loading
@@ -133,7 +138,7 @@ def fmt_ci(v, ci, pct=True):
 
 
 def sweep(labels, probs, thresholds):
-    return {round(t, 2): rates(confusion(labels, probs, t)) for t in thresholds}
+    return {round(t, 4): rates(confusion(labels, probs, t)) for t in thresholds}
 
 
 # ------------------------------------------------------------------ analysis
@@ -141,20 +146,20 @@ def main():
     out, md = {}, []
     P = md.append
 
-    ids_test, y_test, p_test = load(f"app_test_{METHOD}")
+    ids_test, y_test, p_test = load(f"{PRED}_test")
     leak = json.loads((RESULTS / "leakage.json").read_text(encoding="utf-8"))
     leaked = set(leak["test_leaked_ids"])
     clean = np.array([i not in leaked for i in ids_test])
 
     # 1) Which preprocessing reproduces the model's stored results?
-    P("## 1. Which preprocessing reproduces the stored test results?\n")
-    P(f"The model's own record (`stage3Results`, test split, threshold {DEPLOYED_THRESHOLD}): "
+    P("## 1. Previous model: which preprocessing reproduces its stored test results?\n")
+    P(f"The previous (224 px) model's own record (`stage3Results`, test split, threshold {PREVIOUS_THRESHOLD}): "
       f"TP {STORED['TP']}, TN {STORED['TN']}, FP {STORED['FP']}, FN {STORED['FN']}.\n")
     P("| Preprocessing | TP | TN | FP | FN | Matches stored result? |\n|---|---|---|---|---|---|")
     repro = {}
     for method, title in [("crop", "crop to retina + pad + resize (`preprocessForNetwork`)"), ("resize", "plain resize")]:
         _, y, p = load(f"app_test_{method}")
-        c = confusion(y, p, DEPLOYED_THRESHOLD)
+        c = confusion(y, p, PREVIOUS_THRESHOLD)
         exact = all(c[k] == STORED[k] for k in STORED)
         repro[method] = {**c, "exact_match": exact}
         P(f"| {title} | {c['TP']} | {c['TN']} | {c['FP']} | {c['FN']} | {'**yes, exactly**' if exact else 'no'} |")
@@ -175,7 +180,7 @@ def main():
     P(f"\nThe baseline's saved predictions are best reproduced by **{best_method}** preprocessing.\n")
 
     # 2) Held-out performance of the deployed model
-    P("## 2. Held-out performance of the deployed model\n")
+    P("## 2. Held-out performance of the deployed model (full-resolution photographs)\n")
     P(f"Referable = moderate NPDR or worse. Operating point: referable probability >= {DEPLOYED_THRESHOLD}. "
       "95% intervals: Wilson (rates), bootstrap (AUC, kappa).\n")
     P("| Data | n (referable) | Sensitivity | Specificity | AUC | Kappa (5-class) | 5-class accuracy |\n|---|---|---|---|---|---|---|")
@@ -184,9 +189,9 @@ def main():
         "test (all)": (y_test, p_test),
         "test (excluding images duplicated in train/val)": (y_test[clean], p_test[clean]),
     }
-    _, y_val, p_val = load(f"app_validation_{METHOD}")
+    _, y_val, p_val = load(f"{PRED}_validation")
     views["validation"] = (y_val, p_val)
-    _, y_tr, p_tr = load(f"app_train_{METHOD}")
+    _, y_tr, p_tr = load(f"{PRED}_train")
     views["training sample (500)"] = (y_tr, p_tr)
     for name, (y, p) in views.items():
         s = summarise(y, p, DEPLOYED_THRESHOLD)
@@ -217,11 +222,12 @@ def main():
     # 4) Threshold: was 0.2 a sound choice, and would validation have picked it?
     P("## 4. Threshold behaviour (deployed model and pipeline)\n")
     P("| Threshold | Val sens | Val spec | Test sens | Test spec |\n|---|---|---|---|---|")
-    ths = [0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.4, 0.5, 0.6, 0.7]
+    ths = sorted({0.05, DEPLOYED_THRESHOLD, 0.15, 0.2, 0.25, 0.3, 0.4, 0.5, 0.6, 0.7})
     sv, st = sweep(y_val, p_val, ths), sweep(y_test, p_test, ths)
     for t in ths:
         mark = " (deployed)" if abs(t - DEPLOYED_THRESHOLD) < 1e-9 else ""
-        P(f"| {t:.2f}{mark} | {sv[t]['sensitivity']:.1%} | {sv[t]['specificity']:.1%} | {st[t]['sensitivity']:.1%} | {st[t]['specificity']:.1%} |")
+        k = round(t, 4)
+        P(f"| {t:.3g}{mark} | {sv[k]['sensitivity']:.1%} | {sv[k]['specificity']:.1%} | {st[k]['sensitivity']:.1%} | {st[k]['specificity']:.1%} |")
     out["threshold_sweep"] = {"validation": {str(k): v for k, v in sv.items()}, "test": {str(k): v for k, v in st.items()}}
     fine = np.round(np.arange(0.02, 0.96, 0.01), 2)
     vfine = sweep(y_val, p_val, fine)
@@ -230,6 +236,8 @@ def main():
         ok = [t for t in fine if rule(vfine[t])]
         return None if not ok else ok
     picks = {}
+    a = pick(lambda r: r["sensitivity"] >= 0.99)
+    picks["highest threshold with validation sensitivity >= 99%"] = float(max(a)) if a else None
     a = pick(lambda r: r["sensitivity"] >= 0.90)
     picks["highest threshold with validation sensitivity >= 90%"] = float(max(a)) if a else None
     a = pick(lambda r: r["sensitivity"] >= 0.95)
@@ -277,10 +285,11 @@ def main():
     ct = confusion(y_test, p_test, DEPLOYED_THRESHOLD)
     P("| Rule (test set) | Referable found | Referable missed | False alarms | Sensitivity | Specificity |\n|---|---|---|---|---|---|")
     rules = {}
-    for name, c in (("most-likely grade (argmax)", ca), (f"referable probability >= {DEPLOYED_THRESHOLD}", ct)):
+    for name, c in (("most-likely grade (argmax)", ca), ("referable probability threshold", ct)):
         r = rates(c)
         rules[name] = r
-        P(f"| {name} | {c['TP']} | {c['FN']} | {c['FP']} | {fmt_ci(r['sensitivity'], r['sensitivity_ci'])} | {fmt_ci(r['specificity'], r['specificity_ci'])} |")
+        shown = f"referable probability >= {DEPLOYED_THRESHOLD:.3g}" if name == "referable probability threshold" else name
+        P(f"| {shown} | {c['TP']} | {c['FN']} | {c['FP']} | {fmt_ci(r['sensitivity'], r['sensitivity_ci'])} | {fmt_ci(r['specificity'], r['specificity_ci'])} |")
     out["rule_comparison"] = rules
 
     # Confusion matrix and the individual serious misses
@@ -303,12 +312,12 @@ def main():
     out["missed_severe_or_proliferate"] = [{"id": i, "label": t, "referable_probability": r_, "predicted": q} for i, t, r_, q, _ in bad]
 
     # 5d) crop vs resize on every split, for completeness
-    P("\n## 5d. Preprocessing comparison on held-out data (`cropmirror` is what the app runs now; `resize` is what the network was trained with)\n")
+    P("\n## 5d. Previous model: preprocessing comparison on held-out data (`cropmirror` is what the app ran; `resize` is what that network was trained with)\n")
     P("| Data | Preprocessing | Sensitivity | Specificity | AUC |\n|---|---|---|---|---|")
     for split in ("test", "validation"):
         for method in ("resize", "crop", "cropmirror"):
             _, yy, pp = load(f"app_{split}_{method}")
-            r = rates(confusion(yy, pp, DEPLOYED_THRESHOLD))
+            r = rates(confusion(yy, pp, PREVIOUS_THRESHOLD))
             P(f"| {split} | {method} | {r['sensitivity']:.1%} | {r['specificity']:.1%} | {auc(referable_prob(pp), is_referable(yy)):.3f} |")
 
     # 6) Leakage summary
@@ -320,6 +329,26 @@ def main():
     P(f"- Validation images with a duplicate in training: {L['validation_images_with_a_duplicate_in_train']} of 550.")
     P(f"- Duplicate pairs whose labels *disagree* (same image, different label): {L['duplicate_pairs_with_conflicting_labels']}.\n")
     out["leakage"] = L
+
+    # 7) Deployed vs previous model, like for like (full-resolution photographs, the app's pipeline, each at its own threshold)
+    P("\n## 7. Deployed model vs the previous model (full-resolution photographs, each at its own threshold)\n")
+    P("The previous model was trained only on 224 px APTOS copies; given the full-resolution photographs a clinic uploads, its specificity is lower "
+      "than on those copies. IDRiD: the official test set (103 photographs). The deployed model trained on IDRiD's training set, so IDRiD test is "
+      "held out but not an unseen camera for it; for the previous model it is fully external.\n")
+    P("| Data | Model | Threshold | Sensitivity | Specificity | AUC |\n|---|---|---|---|---|---|")
+    compare = {}
+    for data, prev_csv, new_csv in (("APTOS test", "ft_deployed_aptos_test", f"{PRED}_test"),
+                                    ("IDRiD test", "ft_deployed_idrid_test", "ft_run2_finetuned_idrid_test")):
+        for model, name, thr in (("previous", prev_csv, PREVIOUS_THRESHOLD), ("deployed", new_csv, DEPLOYED_THRESHOLD)):
+            _, yy, pp = load(name)
+            s = summarise(yy, pp, thr)
+            compare[f"{data}, {model}"] = s
+            r = s["at_threshold"]
+            P(f"| {data} | {model} | {thr:.3g} | {fmt_ci(r['sensitivity'], r['sensitivity_ci'])} | {fmt_ci(r['specificity'], r['specificity_ci'])} | "
+              f"{fmt_ci(s['auc'], s['auc_ci'], False)} |")
+    out["model_comparison"] = compare
+    out["external_idrid_test"] = compare["IDRiD test, deployed"]
+    out["deployed_threshold"] = DEPLOYED_THRESHOLD
 
     (RESULTS / "metrics.json").write_text(json.dumps(out, indent=1, default=float), encoding="utf-8")
     text = "\n".join(md)

@@ -14,7 +14,7 @@ function model = trainLesionSegmenter(opts)
 % Every opts.ValidateEvery iterations the whole validation photos are segmented; the network with the best mean lesion AUPR
 % is kept, and each channel's threshold is set to the value that maximises Dice on validation.
 %
-% Saves stage2_structure/dl/Stage2_LesionUNet.mat (model struct; use segmentLesionsDL to apply it).
+% Saves stage2_structure/dl/Stage2_LesionUNet_v2.mat (model struct; use segmentLesionsDL to apply it). The defaults reproduce v2.
 
     here = fileparts(mfilename('fullpath'));
     root = fileparts(fileparts(here));
@@ -24,8 +24,8 @@ function model = trainLesionSegmenter(opts)
     defaults = struct('TargetWidth', 1792, 'Patch', 256, 'Batch', 12, 'Iterations', 10000, 'LearnRate', 3e-4, ...
         'Warmup', 300, 'ClipNorm', 5, 'PosWeight', [10 3 3 5 1], ...   % BCE weight on lesion pixels: MA HE EX SE OD
         'ValidateEvery', 500, 'EncoderDepth', 4, 'FirstFilters', 32, 'LesionFraction', 0.8, 'Seed', 5, ...
-        'HealthyTrain', 0, 'HealthyVal', 0, 'HealthyFraction', 0.2, ...   % APTOS No_DR eyes as negatives (0 = IDRiD only)
-        'OutFile', fullfile(here, 'Stage2_LesionUNet.mat'));
+        'HealthyTrain', 100, 'HealthyVal', 12, 'HealthyFraction', 0.2, ...   % APTOS No_DR eyes as negatives (0 = IDRiD only, the first model)
+        'OutFile', fullfile(here, 'Stage2_LesionUNet_v2.mat'));
     if nargin < 1, opts = struct(); end
     for f = fieldnames(defaults)'
         if ~isfield(opts, f{1}), opts.(f{1}) = defaults.(f{1}); end

@@ -9,7 +9,7 @@ const initialState = {
   // status: idle | checking | accepted | rejected | error
   quality: { status: 'idle', verdict: null, reason: '' },
   // status: idle | loading | success | error
-  mask: { status: 'idle', url: null, counts: null, error: '' },
+  mask: { status: 'idle', url: null, counts: null, evidence: null, error: '' },
 };
 
 /**
@@ -72,9 +72,9 @@ export function useEyeScan({ lesionOverlay = LESION_OVERLAY_ENABLED } = {}) {
     if (!lesionOverlay) return;
     try {
       const seg = await segmentLesions(file);
-      if (isCurrent()) setScan((s) => ({ ...s, mask: { status: 'success', url: seg.maskUrl, counts: seg.counts, error: '' } }));
+      if (isCurrent()) setScan((s) => ({ ...s, mask: { status: 'success', url: seg.maskUrl, counts: seg.counts, evidence: seg.evidence || null, error: '' } }));
     } catch (err) {
-      if (isCurrent()) setScan((s) => ({ ...s, mask: { status: 'error', url: null, counts: null, error: err.message } }));
+      if (isCurrent()) setScan((s) => ({ ...s, mask: { status: 'error', url: null, counts: null, evidence: null, error: err.message } }));
     }
   }, [lesionOverlay]);
 

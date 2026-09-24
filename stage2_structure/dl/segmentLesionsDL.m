@@ -1,7 +1,7 @@
 function [prob, masks, info] = segmentLesionsDL(img, model)
 % SEGMENTLESIONSDL  Apply the trained Stage 2 lesion network to one fundus photograph (any camera, any size).
 %
-%   [prob, masks, info] = segmentLesionsDL(img)            loads stage2_structure/dl/Stage2_LesionUNet.mat (cached)
+%   [prob, masks, info] = segmentLesionsDL(img)            loads stage2_structure/dl/Stage2_LesionUNet_v2.mat (cached)
 %   [prob, masks, info] = segmentLesionsDL(img, model)
 %
 %   img    RGB fundus photograph (uint8), or a file path
@@ -16,7 +16,7 @@ function [prob, masks, info] = segmentLesionsDL(img, model)
     persistent cached
     if nargin < 2 || isempty(model)
         if isempty(cached)
-            S = load(fullfile(fileparts(mfilename('fullpath')), 'Stage2_LesionUNet.mat'), 'model');
+            S = load(fullfile(fileparts(mfilename('fullpath')), 'Stage2_LesionUNet_v2.mat'), 'model');
             cached = S.model;
         end
         model = cached;

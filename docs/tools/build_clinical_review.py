@@ -27,6 +27,9 @@ import numpy as np  # noqa: E402
 
 import clinical_text as ct  # noqa: E402
 
+sys.path.insert(0, str(ROOT / "validation"))
+import calibration_eval  # noqa: E402  (temperature and threshold of the deployed model)
+
 OUT = ROOT / "docs" / "CLINICAL_REVIEW.md"
 RESULTS = ROOT / "validation" / "results"
 STAGE4 = ROOT / "docs" / "clinical_text_stage4.json"
@@ -53,13 +56,16 @@ def pct(x, digits=1):
 
 
 def calibration():
-    rows = list(csv.DictReader(open(RESULTS / "app_test_resize.csv", encoding="utf-8")))
-    p = np.array([[float(r[f"p_{c}"]) for c in CLASSES] for r in rows])
+    """Confidence bands as the app computes them: the DEPLOYED model's test predictions, temperature-scaled (validation/calibration_eval.py);
+    the referral decision uses the raw referral score at the deployed threshold."""
+    rows = list(csv.DictReader(open(RESULTS / "deployed_test.csv", encoding="utf-8")))
+    raw = np.array([[float(r[f"p_{c}"]) for c in CLASSES] for r in rows])
+    p = calibration_eval.temperature_scale(raw, calibration_eval.TEMPERATURE)
     y = np.array([r["label"] for r in rows])
     top = p.max(1)
     correct = np.array([CLASSES[i] for i in p.argmax(1)]) == y
     truth = np.isin(y, list(REFERABLE))
-    flagged = p[:, [CLASSES.index(c) for c in REFERABLE]].sum(1) >= 0.2
+    flagged = raw[:, [CLASSES.index(c) for c in REFERABLE]].sum(1) >= calibration_eval.THRESHOLD
     bands = []
     for name, lo, hi in (("High", 0.9, 1.01), ("Moderate", 0.7, 0.9), ("Low", 0.0, 0.7)):
         m = (top >= lo) & (top < hi)
@@ -71,8 +77,9 @@ def calibration():
 
 def build():
     metrics = json.loads((RESULTS / "metrics.json").read_text(encoding="utf-8"))
-    ext = json.loads((RESULTS / "quality.json").read_text(encoding="utf-8"))["external"]["IDRiD, variant 'app'"]
+    ext = metrics["external_idrid_test"]
     ext_rate = ext["at_threshold"]
+    thr = metrics["deployed_threshold"]
     web = frontend_text()
     s4 = json.loads(STAGE4.read_text(encoding="utf-8"))
     L = []
@@ -82,7 +89,7 @@ def build():
     rate = perf["at_threshold"]
     clean = metrics["performance"]["test (excluding images duplicated in train/val)"]["at_threshold"]
     rules = metrics["rule_comparison"]
-    argmax, thr_rule = rules["most-likely grade (argmax)"], rules["referable probability >= 0.2"]
+    argmax, thr_rule = rules["most-likely grade (argmax)"], rules["referable probability threshold"]
     pcr = metrics["per_class_recall_test"]
     missed = metrics["missed_severe_or_proliferate"]
     pv = metrics["predictive_values"]
@@ -99,7 +106,8 @@ def build():
     add("## 1. What the tool is, and what it decides\n")
     add("A screening aid for diabetic retinopathy (DR). For each eye it takes one fundus photograph and produces (a) an estimated **stage** "
         "(0 No DR, 1 Mild, 2 Moderate, 3 Severe, 4 Proliferative) and (b) a **referral score**: the model's summed probability of Moderate, Severe "
-        "and Proliferative. An eye is **flagged for referral** when that score is at least **20%** (the model's tuned \"high sensitivity\" operating point). "
+        "and Proliferative. An eye is **flagged for referral** when that score is at least "
+        f"**{thr:.1%}** (chosen on validation images for 99% sensitivity). "
         "\"Referable\" therefore means moderate non-proliferative DR or worse; **macular oedema and other eye disease are not assessed.**\n")
     add("The patient-level result is the worse of the two eyes. If the threshold flags an eye whose most likely stage is milder than Stage 2, the "
         "overall result is **raised to Stage 2 and explained in the text** (an \"escalation\"), so a referable result can never appear routine.\n")
@@ -111,8 +119,8 @@ def build():
     add(f"| Non-referable correctly not flagged (specificity) | **{pct(rate['specificity'])}** ({pct(rate['specificity_ci'][0])} to {pct(rate['specificity_ci'][1])}) |")
     add(f"| Excluding test images duplicated in training | sensitivity {pct(clean['sensitivity'])}, specificity {pct(clean['specificity'])} |")
     add(f"| Exact stage correct (5 classes) | {pct(perf['accuracy_5class'])} |")
-    add(f"| **Second dataset (IDRiD, {ext['n']} full-resolution photographs, never seen in training):** sensitivity | {pct(ext_rate['sensitivity'])} |")
-    add(f"| **Second dataset (IDRiD):** specificity | **{pct(ext_rate['specificity'])}**: it flagged more than half of the healthy eyes |")
+    add(f"| **Second dataset (IDRiD official test set, {ext['n']} photographs; the model trained on IDRiD's other photographs):** sensitivity | {pct(ext_rate['sensitivity'])} |")
+    add(f"| **Second dataset (IDRiD):** specificity | **{pct(ext_rate['specificity'])}**: it flagged {pct(1 - ext_rate['specificity'], 0)} of the eyes without referable disease |")
     add(f"| Referable patients found if decided from the single most likely stage instead | {pct(argmax['sensitivity'])} (this is why the threshold rule is used) |\n")
     add("**Where it fails (test set):**\n")
     add(f"- Missed referable cases at the deployed threshold: {thr_rule['FN']} of {thr_rule['TP'] + thr_rule['FN']} "
@@ -131,9 +139,9 @@ def build():
         v = pv[prev]
         add(f"| {float(prev):.0%} | {pct(v['ppv'], 0)} | {pct(v['npv'], 1)} | {v['flagged_per_1000']:.0f} |")
     add("")
-    add("**Confidence bands.** The interface shows High / Moderate / Low, not a percentage, because the model's raw probabilities are over-confident. "
-        "Measured on the test set:\n")
-    add("| Band (raw top probability) | Images | Model claims | Exact stage actually right | Referral decision wrong |\n|---|---|---|---|---|")
+    add("**Confidence bands.** The interface shows High / Moderate / Low, not a percentage. The band comes from temperature-scaled probabilities "
+        "(the raw network is over-confident; the temperature was fitted on validation images, see `validation/results/calibration.md`). Measured on the test set:\n")
+    add("| Band (calibrated top probability) | Images | Model claims | Exact stage actually right | Referral decision wrong |\n|---|---|---|---|---|")
     for name, n, claimed, actual, err in bands:
         add(f"| {name} | {n} | {pct(claimed, 0)} | {pct(actual, 0)} | {pct(err)} |")
     add(f"\nThe referral decision was wrong in {pct(err_high)} of High-confidence results and {pct(err_rest)} of the rest.\n")
@@ -148,7 +156,7 @@ def build():
         ("Severe in the right eye", "Severe", "No_DR", "Severe", None),
         ("Proliferative in both eyes", "Proliferate_DR", "Proliferate_DR", "Proliferate_DR", None),
         ("Escalation: most likely stage is Mild, but the referral threshold is reached in the left eye", "Moderate", "Mild", "No_DR",
-         {"escalated": True, "threshold": 0.2, "left_ref": 0.35, "right_ref": 0.02, "left_flagged": True, "right_flagged": False}),
+         {"escalated": True, "threshold": thr, "left_ref": 0.35, "right_ref": 0.02, "left_flagged": True, "right_flagged": False}),
     ]:
         add(f"**{title}**\n")
         text = ct.build_summary(overall, left, right, decision=decision).removesuffix(ct.DISCLAIMER)
@@ -241,6 +249,13 @@ def build():
         add(f"| {label} | {ct.PDF_TEXT[key]} |")
     for key, label in ct.LESION_LABELS.items():
         add(f"| Count row: {key} | {label} |")
+    add(f"| Evidence heading (app and PDF) | {ct.LESION_EVIDENCE_TEXT['title']} |")
+    for key, label in [("only_ma", "When only possible microaneurysms are marked"), ("hemorrhages", "When possible hemorrhages are marked ({quadrants}, {with20} filled in)"),
+                       ("exudates_near_fovea", "When possible hard exudates are near the estimated fovea"), ("not_assessed", "Always, under the evidence")]:
+        add(f"| {label} | {ct.LESION_EVIDENCE_TEXT[key]} |")
+    add("\nThe quadrants are centred on the fovea, which is estimated from the optic disc found by the lesion network (about 2.5 disc diameters "
+        "temporal to it); accuracy on IDRiD's labelled centres is in `validation/results/localisation.md`. Hemorrhage counts are connected regions, "
+        "so touching hemorrhages count once.")
     add("\n- **Question for the reviewer:** is it acceptable to show possible lesions that also appear on about 1 in 3 eyes without retinopathy, "
         "and should the overlay be shown for eyes the referral model did not flag?\n")
 
@@ -267,17 +282,17 @@ def build():
     gc_path = RESULTS / "gradcam.json"
     if gc_path.exists():
         g = json.loads(gc_path.read_text(encoding="utf-8"))
-        loc, old, dele = g["localisation_referral_map"], g["localisation_earlier_map"], g["deletion_12_cells"]
+        loc, old, dele = g["localisation_referral_map"], g["localisation_earlier_map"], g["deletion_largest"]
         mm = g["old_map_mismatch"]
         add("**How far the heatmap can be trusted** (details and method: `validation/results/gradcam.md`). The map shows the regions that raised the *referral score* "
             "(the quantity the decision is made on). Before this change it explained the single most likely grade instead, which for "
             f"{mm['mismatched']} of {mm['flagged']} referral-flagged test eyes was No DR or Mild.\n")
         add(f"- It depends on what the network learned: with random weights it correlates only {g['randomised_all_layers_abs_corr']:.2f}-{g['randomised_classifier_abs_corr']:.2f} with the real map.")
-        add(f"- The hottest regions matter more than others, but the effect is modest: hiding the 12 hottest cells lowers the referral score by {dele['hottest_drop']:.3f} on average "
-            f"({dele['hottest_minus_random']:+.3f} more than hiding 12 random cells; hottest more important in {dele['share_of_eyes_hottest_larger'] * 100:.0f}% of eyes). "
+        add(f"- The hottest regions matter more than others, but the effect is modest: hiding the {dele['cells']} hottest of about {dele['cells_inside_retina']} cells lowers the referral score by {dele['hottest_drop']:.3f} on average "
+            f"({dele['hottest_minus_random']:+.3f} more than hiding {dele['cells']} random cells; hottest more important in {dele['share_of_eyes_hottest_larger'] * 100:.0f}% of eyes). "
             "A flagged eye stays flagged: the evidence is spread across the retina.")
         add(f"- It is only weakly hotter on lesions than elsewhere: on IDRiD photographs with expert lesion masks the pixel AUC is {loc['pixel_auc']:.2f} (0.5 is chance) and the hottest point is on a lesion in "
-            f"{loc['hottest_pixel_on_lesion'] * 100:.0f}% of photographs (chance {loc['chance'] * 100:.1f}%); the earlier map was at chance (AUC {old['pixel_auc']:.2f}).")
+            f"{loc['hottest_pixel_on_lesion'] * 100:.0f}% of photographs (chance {loc['chance'] * 100:.1f}%); the earlier map scored AUC {old['pixel_auc']:.2f}.")
         add("- **Question for the reviewer:** is a coarse \"regions that raised the score\" picture appropriate to show to patients, or only to clinicians?\n")
 
     add("### 3g. Not covered by this packet\n")
@@ -313,7 +328,7 @@ def build():
     add("## 5. Questions for the reviewer\n")
     for i, q in enumerate([
         "Is \"referable = moderate NPDR or worse\" the right referral criterion for your setting and guidelines? (Macular oedema is not assessed.)",
-        f"Is the operating point acceptable? At the 20% threshold about {pct(1 - rate['sensitivity'], 0)} of referable patients are missed in testing, including {misses['Proliferate_DR'][1]} of {misses['Proliferate_DR'][0]} proliferative cases. What miss rate is acceptable, and should the threshold be lower (more sensitive, more false alarms)?",
+        f"Is the operating point acceptable? At the {thr:.1%} threshold about {pct(1 - rate['sensitivity'], 0)} of referable patients are missed in testing, including {misses['Proliferate_DR'][1]} of {misses['Proliferate_DR'][0]} proliferative cases. What miss rate is acceptable, and should the threshold be lower (more sensitive, more false alarms)?",
         "Is the \"does not rule out disease\" wording, and the safety-net sentence about changes in vision, appropriate for a no-referral result? Is anything else needed (for example emergency symptoms)?",
         "For a Mild result below the referral threshold, is \"follow-up with an eye-care professional is recommended\" right, and is there a local guideline interval that should be stated?",
         "For Severe and Proliferative results, is \"URGENT ... prompt referral to an ophthalmologist is recommended\" the right urgency and phrasing?",

@@ -18,15 +18,15 @@ The full problem statement is in `context.txt` at the repo root. That file is lo
 | Path | What it is |
 |---|---|
 | `stage1_quality/` | Original MATLAB quality gate (`assessImageQuality.m`). **The app does not use it.** The web app runs `backend/quality.py`, which was rebuilt after validation. |
-| `stage2_structure/` | MATLAB classical CV: OD, fovea, vessels, lesions (MA, HE, EX, SE) on IDRiD. Design notes are in `Stage2_Documentation.md`. Sample outputs are tracked in `examples/`. New outputs always go to the git-ignored `stage2_structure/results/`. |
-| `stage_3/` | CNN `Stage3_Final_HighSensitivity_Model.mat` (class-weighted ResNet, referral threshold 0.20). `loadStage3Model.m` caches the model, `assessBilateralRetina.m` / `assessBilateralFromFiles.m` grade both eyes, and the patient gets the worse eye. `Stage3_checkpoint.mat` holds the train/val/test split that validation uses, so **keep it**. |
-| `utils/` | `preprocessStage3Input.m` crops the retina, pads it to a square and resizes it to 224. `stage3Scores.m` averages the scores of the image and its mirror image. `projectRoot.m` gives paths that don't depend on the working directory. Also contains the IDRiD loader. |
-| `stage4_explainability/` | `core/referralGradCAM.m` and `gradCamToFile.m` produce Grad-CAM of the *referral* score, and the backend calls them. `report/formatReportText.m` holds the MATLAB report wording. `createMedicalReport.m` is a legacy dev tool. Tests are the `test_*.m` files and need APTOS under `data/`. |
-| `stage5_simulink/` | `DRScreeningFlow.slx` plus `simulateFullPipeline.m` (capture → AI → specialist-review queue). They write `pipeline_results.json`, which `/api/simulation` serves. |
-| `backend/` | FastAPI on port 5000. Stage 1 is `quality.py` (OpenCV). The Stage 2 overlay is **off by default**. Stages 3 and 4 run through `MatlabService` (`matlab.engine`). Wording lives in `clinical_text.py` and the PDF is built by `report_pdf.py`. Every route checks the session with the auth-server. Tests are in `tests/`. |
+| `stage2_structure/` | Classical MATLAB CV (OD, fovea, vessels, lesions; `Stage2_Documentation.md`, samples in `examples/`, new outputs in the git-ignored `results/`). **`dl/`** holds the trained lesion U-Net the app uses (`Stage2_LesionUNet_v2.mat`, see `dl/README.md`): `lesionOverlayToFile.m` (overlay + counts + ICDR evidence), `lesionEvidence.m`, `estimateFovea.m`, `calibrateLesionMasks.m`, `evaluateLesionSegmenter.m`, `validateLocalisation.m`. |
+| `stage_3/` | `Stage3_Final_HighSensitivity_Model.mat` is the **fine-tuned ResNet-18 (run 2), deployed 2026-09-24**: 384 px, full-resolution APTOS + IDRiD, referral threshold **0.0964**, temperature 1.217 for calibrated confidence. `loadStage3Model.m` returns net, threshold, classes, temperature. `assessBilateralFromFiles.m` reports temperature-scaled confidence; the referral decision uses the raw score. `finetune/` has the training pipeline. `Stage3_checkpoint.mat` holds the split validation uses, so **keep it**. The previous 224 px model is in git history (and locally as the untracked `Stage3_previous_224px_Model.mat`). |
+| `utils/` | `preprocessStage3Input.m` crops the retina, pads it to a square and resizes it to the network's input size. `stage3Scores.m` averages the scores of the image and its mirror image. `projectRoot.m` gives paths that don't depend on the working directory. |
+| `stage4_explainability/` | `core/referralGradCAM.m` and `gradCamToFile.m` produce Grad-CAM of the *referral* score (12x12 grid with the 384 px model), and the backend calls them. `report/formatReportText.m` holds the MATLAB report wording. `createMedicalReport.m` is a legacy dev tool. |
+| `stage5_simulink/` | **`DistrictScreening.slx`** (core Simulink: capture → upload → AI → review backlog queues, one step per working day), `districtParameters.m` (measured vs assumed inputs), `runDistrictModel.m`, `optimiseDistrictResources.m` (cheapest resources per scenario, writes `results/district_plan.md` and `backend/pipeline_results.json` for `/api/simulation`), `measureAiSeconds.m`. The old `DRScreeningFlow.slx` needs SimEvents, which is licensed but not installed here. See its README. |
+| `backend/` | FastAPI on port 5000. Stage 1 is `quality.py` (OpenCV). Stages 2, 3 and 4 run through `MatlabService` (`matlab.engine`). The Stage 2 overlay is **off by default** (`ENABLE_LESION_OVERLAY`). Wording lives in `clinical_text.py` (incl. `LESION_EVIDENCE_TEXT`) and the PDF is built by `report_pdf.py`. Every route checks the session with the auth-server. Tests are in `tests/`. |
 | `auth-server/` | Express + `node:sqlite` on port 4000. It handles signup, email verification, login (HttpOnly cookie), password reset, account deletion, and AES-GCM-encrypted patient profiles and exam history (`vault.js`). |
-| `frontend/` | React 19 + Vite + Tailwind + i18next (en, hi, kn, ta). Routes are protected. It has Dashboard, PatientDetails, DetailedReport (Grad-CAM and PDF), Exam History, and Listen-to-result (Web Speech; Hindi and Kannada are off until reviewed). Tests use Vitest. |
-| `validation/` | Held-out Stage 3 evaluation (`REPORT.md`), the Stage 1 gate (`QUALITY.md`), the Stage 2 overlay (`LESIONS.md`) and the Grad-CAM trust tests (`results/gradcam.md`). `results/` is committed. |
+| `frontend/` | React 19 + Vite + Tailwind + i18next (en, hi, kn, ta). Routes are protected. It has Dashboard, PatientDetails, DetailedReport (Grad-CAM, possible-lesion overlay with ICDR evidence, PDF), Exam History, and Listen-to-result (Web Speech; Hindi and Kannada are off until reviewed). Tests use Vitest. |
+| `validation/` | `REPORT.md` (deployed Stage 3 model, full-resolution photos), `results/calibration.md` (temperature scaling), `results/site_calibration_idrid.md`, `results/gradcam.md` (Grad-CAM trust tests), `results/localisation.md` (disc/fovea), `results/lesions_dl_*.md` (lesion U-Net), `QUALITY.md` (Stage 1), `LESIONS.md` (the retired OpenCV overlay). `results/` is committed. |
 | `calibration/` | Per-site referral threshold calibration from clinician-graded images. The result is applied through `REFERRAL_THRESHOLD`. |
 | `docs/` | Clinician review packet (`CLINICAL_REVIEW.md`, generated by `docs/tools/`) and a review packet for the spoken translations. |
 | `deploy/` | Caddy HTTPS, systemd units, `DEPLOYMENT.md`. |
@@ -34,69 +34,36 @@ The full problem statement is in `context.txt` at the repo root. That file is lo
 
 ## Running
 - Auth: `cd auth-server && cp .env.example .env && npm install && npm run dev`. Without Gmail configured, codes print to the terminal.
-- Backend: `cd backend && pip install -r requirements.txt && cp env.example .env && python server.py`. The MATLAB engine is installed separately and its version must match the MATLAB release (see `requirements.txt`). `DISABLE_MATLAB=true` runs without MATLAB, and Stages 3 and 4 then return 503. `SERVICE_KEY` must match between backend and auth-server, or history isn't saved.
-- Frontend: `cd frontend && npm install && npm run dev` (port 5173). The env vars are `VITE_AUTH_API_URL` and `VITE_ML_API_URL` (see `.env.example`).
+- Backend: `cd backend && pip install -r requirements.txt && cp env.example .env && python server.py`. The MATLAB engine is installed separately and its version must match the MATLAB release (see `requirements.txt`; `matlabengine` 26.1 is installed on Manosh's machine). `DISABLE_MATLAB=true` runs without MATLAB, and Stages 2-4 then return 503. `SERVICE_KEY` must match between backend and auth-server, or history isn't saved.
+- Frontend: `cd frontend && npm install && npm run dev` (port 5173). The env vars are `VITE_AUTH_API_URL`, `VITE_ML_API_URL` and `VITE_ENABLE_LESION_OVERLAY` (see `.env.example`).
 - Tests: `frontend: npm run lint && npm test`, `auth-server: npm test`, `backend: pip install -r requirements-dev.txt && python -m pytest`, `python -m pytest validation`, `python -m pytest calibration`.
-- **Clinical wording** lives in three places: `backend/clinical_text.py`, `frontend/src/clinicalText.js` and `stage4_explainability/report/formatReportText.m`. Tests fail on reassuring or "required" phrasing, and they also fail when `docs/CLINICAL_REVIEW.md` is stale. After editing wording, regenerate with `python docs/tools/build_clinical_review.py` (and run `export_stage4_text.py` first if the MATLAB text changed).
+- **Clinical wording** lives in three places: `backend/clinical_text.py`, `frontend/src/clinicalText.js` (plus `frontend/src/locales/*.json`) and `stage4_explainability/report/formatReportText.m`. Tests fail on reassuring or "required" phrasing, when the web and PDF wording drift apart, and when `docs/CLINICAL_REVIEW.md` is stale. After editing wording, regenerate with `python docs/tools/build_clinical_review.py` (and run `export_stage4_text.py` first if the MATLAB text changed).
+- Rebuilding Stage 3 validation after a model change: `python validation/run_deployed_predictions.py`, `analyze.py`, `calibration_eval.py`, `gradcam_eval.py` + `analyze_gradcam.py`, then the review packet.
 
-## Validation headline (`validation/REPORT.md`)
-- APTOS test set (548 images, held out): referable DR **sensitivity 95.1%, specificity 89.2%**, AUC 0.977, 5-class kappa 0.837. This meets the PS targets. Excluding leaked duplicates gives 94.3% / 88.9%.
-- The 5-class grade is correct only 78% of the time, and proliferative recall is just 48%. One proliferative case was missed.
-- IDRiD (external): sensitivity 92.3%, specificity **67.4%**. That fails the >85% specificity target, so the model doesn't transfer cleanly and each site needs to calibrate.
-- The Stage 2 lesion overlay does not detect lesions: it paints about 2.7% of every retina, which is why it is disabled.
+## Validation headline (`validation/REPORT.md`, deployed model, full-resolution photographs)
+- APTOS test (548, held out): referable DR **sensitivity 96.9%, specificity 88.3%** at threshold 0.096, AUC 0.977, kappa 0.860. Meets the PS targets. Excluding leaked duplicates: 96.4% / 87.8%. The previous 224 px model reached 97.8% / 83.7% on the same photos.
+- 5-class grade right 79.4%; Severe 62%, Proliferative 57%. 7 referable cases missed (6 Moderate, 1 Proliferative `eaa0dfbd5024`).
+- IDRiD test (103): 90.6% / **53.8%** (previous model 30.8%), AUC 0.922. Below the specificity target. A threshold calibrated on IDRiD's validation photos gives 89.1% / 74.4% (`results/site_calibration_idrid.md`).
+- Confidence: temperature scaling cuts ECE 0.047→0.037 (APTOS) and 0.145→0.118 (IDRiD); the High band is right 98% of the time.
+- Grad-CAM: pixel AUC 0.70 on IDRiD lesion masks; deleting the hottest cells lowers the score +0.22 more than random cells.
+- Lesion U-Net v2 (calibrated): IDRiD test Dice MA 0.45, HE 0.42, EX 0.62, SE 0.51, OD 0.88; marks something in 34% of healthy APTOS test eyes vs 98-100% of eyes with DR.
+- Disc found in 103/103 IDRiD test photos (median error 0.08 disc diameters); fovea estimate 90% within 1 DD.
 
-## Gaps against the problem statement
-1. **The app doesn't use MATLAB for Stages 1 and 2.** Stage 1 is Python, on purpose, because the MATLAB gate failed validation. The Stage 2 MATLAB lesion detection is unvalidated and switched off. The PS asks for MATLAB, so the MATLAB Stage 1 would need fixing to match `quality.py` (fundus/partial-image rejection, OD-visibility warning, no false "enhanced" claims).
-2. **Neovascularization detection** is missing entirely.
-3. **Lesion segmentation quality**: the v2 U-Net is wired in (off by default). It still marks 34% of healthy eyes, and haemorrhage Dice is 0.42. Lesions are not yet tied to ICDR criteria in the report (for example, the 4-2-1 rule).
-4. **Calibrated confidence**: there is threshold calibration per site, but no probability calibration (temperature or Platt scaling, reliability diagrams).
-5. **Specificity on external data** (IDRiD 67%) is below the 85% target.
-6. **Simulink** has no bandwidth modelling and no district-scale (100k+/yr) resource optimization. This part is unchanged since the early commits.
-7. **Benchmarks**: there is no comparison of the integrated pipeline with single techniques or with published results, and DRIVE and Messidor-2 are unused.
-8. The MATLAB Stage 1 has no explicit denoising step or FOV-adequacy check.
+## Gaps against the problem statement (open)
+1. **The app doesn't use MATLAB for Stage 1.** Stage 1 is Python on purpose (the MATLAB gate failed validation). The MATLAB Stage 1 needs to match `quality.py`, plus a denoising step and an FOV-adequacy check.
+2. **Neovascularization detection** is missing: none of the PS datasets has NV masks.
+3. **Vessels** are only the classical `vesselSegmentation.m`, unvalidated; DRIVE is not downloaded.
+4. **Benchmarks**: no comparison of the integrated pipeline with single techniques or published results yet.
+5. **Messidor-2** images are awaited from ADCIS (`data/messidor2/IMAGES/` is empty); `evaluateFinetuned` includes them automatically.
+6. **`validation/evaluate_lesions.py` / `test_lesions.py` are broken**: they import the retired OpenCV overlay (`server.segment_lesions`), removed in the Stage 2 wiring commit. `LESIONS.md` can't be regenerated until that heuristic is kept as a legacy module under `validation/`.
+7. Wording needs clinician review (`CLINICAL_REVIEW.md`, incl. section 3e); the hi/kn/ta lesion-evidence strings are Claude's drafts.
 
-## Planned work (team decision, 2026-09-23)
-- **Stage 2 → trained segmentation model.** The current Stage 2 is rule-based (`stage2_structure/*.m`, and the Python overlay in `backend/server.py`), and the team has agreed it needs a trained ML model. Judge any new model with `validation/evaluate_lesions.py`, which checks against IDRiD masks and also checks that healthy APTOS eyes stay quiet.
-- **Stage 3 → fine-tune on APTOS + IDRiD, with Messidor-2 as the external test set** (the PS datasets; EyePACS is deliberately excluded). The scripts are in `stage_3/finetune/` (see its README). No full training run has been done yet. The original training script is with a teammate who hasn't responded. The fine-tune keeps the APTOS test split from `Stage3_checkpoint.mat`, uses IDRiD's official test set, and uses **Messidor-2 as test only** (the external benchmark, comparable with published whole-dataset results; decided 2026-09-24). The threshold and temperature are chosen on the validation split. The default is **full-resolution APTOS (competition data, `data/aptos2019_full/`) + IDRiD at 384 px**, with IDRiD oversampled 3×. App preprocessing reads the input size from `net.Layers(1).InputSize`. **First full run (2026-09-24, 384 px, full-res APTOS + IDRiD×3):** early-stopped at epoch 10 and kept the best validation loss (0.782, mid epoch 6). The model overfits from about epoch 3. Threshold 0.178, temperature 1.28. On the test sets (full-res inputs, `validation/results/ft_*_test.csv`):
-  - APTOS: fine-tuned 92.4% sensitivity / 93.8% specificity, AUC 0.980. Deployed 97.8% / 83.7%, AUC 0.974. At matched 95% sensitivity, specificity is 91.1% vs 89.2%.
-  - IDRiD: fine-tuned 90.6% / 43.6%, AUC 0.897. Deployed 92.2% / 30.8%, AUC 0.867. Neither AUC difference is significant.
-  - The fine-tuned model misses more Moderate cases (15/150 vs 4/150). It has **not been deployed**.
-  - Key finding: on full-res photos the **deployed** model's APTOS specificity is 83.7%, below the 85% target. REPORT.md's 89.2% was measured on the 224 px copies. It writes `Stage3_Finetuned_Model.mat` and never overwrites the deployed model. Re-run `validation/` after deploying.
-- Training runs on Manosh's machine: RTX 3050 6 GB, 24 GB RAM, **MATLAB R2026a at `D:\MATLAB`** (`D:/MATLAB/bin/matlab.exe -batch ...` works headless). C: has about 5 GB free. `trainedNet.mat` was checked: it is a duplicate of the baseline network. The deployed model was trained only on the 224 px APTOS copy, not on IDRiD. `data/` has APTOS (matches `validation/results/splits.csv` 3662/3662), IDRiD grading/segmentation/localization, and the Messidor-2 grades CSV. The Messidor-2 **images** and the `messidor-2.csv` exam list are still needed from ADCIS. Run `stage_3/finetune/checkSetup.m` after installing MATLAB.
-
-## Status 2026-09-24 morning (overnight work)
-- **Stage 3 run 2 is the best model:** `stage_3/Stage3_Finetuned_run2.mat`, with colour augmentation, dropout, L2 5e-4, learning rate 5e-5, and a threshold for 97% validation sensitivity.
-  - APTOS test: 95.1% / 92.0% (meets the PS targets).
-  - IDRiD test: 89.1% / 71.8%, AUC 0.922 vs 0.867, a significant gain.
-  - **Not deployed.** That's a team decision; see `validation/results/stage3_finetune.md`.
-  - **Threshold changed to 0.096 (decided 2026-09-24).** It was re-chosen on validation for 99% sensitivity (`stage_3/finetune/scoreValidation.m`) and is stored in the run 2 `.mat`; the old 0.236 is kept as `thresholdOriginal`. Test results: APTOS 96.9% / 88.3%, IDRiD 90.6% / 53.8%. IDRiD specificity is to be worked on later.
-- **Stage 2 lesion U-Net:** the code is in `stage2_structure/dl/` (see its README), and the data is cached in `data/stage2_cache/`.
-  - The first training attempt was unstable: the optic disc was learned, then lost. The loss and learning rate were fixed (weighted BCE, Dice only over classes present in the batch, learning rate 3e-4, warm-up, gradient clipping).
-  - The fixed run was **stopped at startup by Claude Code's low-memory guard, so no model exists yet.** It was restarted on 2026-09-24 (headless, GPU), with the log in `stage2_structure/results/train_lesion_unet.log`.
-  - **Trained 2026-09-24:** `stage2_structure/dl/Stage2_LesionUNet.mat`, best validation iteration 5500 (mean lesion AUPR 0.527). Results are in `validation/results/lesions_dl.md`.
-  - IDRiD test AUPR: MA 0.44, HE 0.55, EX 0.81, SE 0.53, OD 0.94.
-  - EX first read 0.30 because `IDRiD_81_EX.tif` is RGBA and its all-255 alpha channel was counted as lesion. Masks are now read with `readMask.m` (colour channels only), and `validation/evaluate_lesions.py` is fixed too; it had read the empty blue channel. `validation/LESIONS.md` has not been regenerated since that fix.
-  - It flags something in 100% of healthy APTOS eyes (median 0.2–0.4% of the retina), but the flagged area separates referable eyes with AUC 0.90, against 0.51 for the old overlay.
-  - **Not wired into the app.**
-  - Thresholds and size rules can't fix the healthy-eye false marks (`calibrateLesionMasks.m`): at best about 25% of healthy eyes are fully clear.
-  - **v2, the recommended model:** `stage2_structure/dl/Stage2_LesionUNet_v2.mat`.
-    - It was trained with 100 APTOS No_DR train-split eyes as negatives (20% of patches) and 12 validation-split healthy eyes counted in checkpoint selection. The best checkpoint is iteration 6000. The run used about 8.7 GB of RAM after memory reductions.
-    - Masks are calibrated with `calibrateLesionMasks` at a 90% target. Thresholds are MA/HE/EX/SE 0.85/0.99/0.85/0.99; minimum areas are 80/320/160/320 px.
-    - Test results (`validation/results/lesions_dl_Stage2_LesionUNet_v2_calibrated.md`):
-      - IDRiD Dice: MA 0.45, HE 0.42, EX 0.62, SE 0.51, OD 0.88. AUPR: EX 0.72 (v1 0.81), HE 0.59 (v1 0.55).
-      - APTOS: **34% of healthy eyes have something marked** (v1: 100%), against 98–100% of Mild-or-worse eyes. Area AUC for referable eyes is 0.95.
-    - **Wired into the app on 2026-09-24:**
-      - `lesionOverlayToFile.m` produces the overlay; the backend calls it through `render_lesions` and `/api/stage2-segmentation`, which now applies the Stage 1 gate.
-      - The PDF adds a "possible lesions" block per eye, and the frontend shows a "Possible lesions" view with a soft-exudate row.
-      - Wording is in `clinical_text.py` (`lesion_*`, `LESION_LABELS`) and `clinicalText.js`, and is section 3e of `CLINICAL_REVIEW.md`.
-      - It is still **off by default** (`ENABLE_LESION_OVERLAY` / `VITE_ENABLE_LESION_OVERLAY`) until a clinician reviews the wording.
-      - The hi/kn/ta overlay strings are Claude's drafts and have not been reviewed.
-      - `matlabengine` 26.1 is installed in the local Python, but the local `backend/.env` still has `DISABLE_MATLAB=true`.
-  - To train, run in MATLAB: `addpath('utils','stage1_quality','stage2_structure','stage2_structure/dl'); trainLesionSegmenter; evaluateLesionSegmenter`. It takes about 2 h plus about 1 h.
-- **Rule: run one MATLAB training job at a time, and close the MATLAB desktop while training.** RAM (24 GB) ran out twice.
+## Environment notes
+- Training runs on Manosh's machine: RTX 3050 6 GB, 24 GB RAM, **MATLAB R2026a at `D:\MATLAB`** (`D:/MATLAB/bin/matlab.exe -batch ...` works headless). C: has about 5 GB free.
+- **Run one MATLAB job at a time and close the MATLAB desktop while training.** RAM ran out twice; lesion training uses about 9 GB.
+- `data/` (gitignored) has APTOS (224 px copies in `aptos2019/`, full resolution in `aptos2019_full/`), IDRiD grading/segmentation/localization, the Messidor-2 grades CSV, and caches in `stage2_cache/` and `stage3_cache/`. `stage_3/finetune/manifest.csv` is machine-specific (ignored); `splits.csv` is the record.
 
 ## Repo notes
-- `*.mat`, `*.png` and `results/` are gitignored. The tracked ones were force-added. The model `.mat` files are large binaries in git with no LFS.
-- Cleanup on 2026-09-23 (uncommitted): `stage_3/trainedNet.mat` is untracked because no code uses it, and the stray Stage 2 PNGs moved to `stage2_structure/examples/`. When teammates pull, `trainedNet.mat` is deleted from their disk. To restore it, run `git checkout 73057ad -- stage_3/trainedNet.mat`.
-- Datasets go under `data/` (gitignored): `data/aptos2019/` and `data/idrid_segmentation/`.
+- `*.mat`, `*.png` and `results/` are gitignored except `validation/results/`. The tracked ones were force-added (the deployed Stage 3 model, `Stage2_LesionUNet_v2.mat`, `stage5_simulink/results/`). The model `.mat` files are large binaries in git with no LFS.
+- Work since 2026-09-24 is on branch `stage2-unet-stage3-finetune` (not pushed). `stage_3/trainedNet.mat` was removed from the repo (restore with `git checkout 73057ad -- stage_3/trainedNet.mat`).
 - On 2026-09-23 upstream `main` was force-pushed (history rewritten, new hashes). A clone from before that date must be reset to `origin/main`, not merged.

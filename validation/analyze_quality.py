@@ -23,7 +23,7 @@ sys.path.insert(0, str(HERE.parent / "backend"))
 import analyze as A  # noqa: E402
 
 RESULTS = HERE / "results"
-THRESHOLD = A.DEPLOYED_THRESHOLD
+THRESHOLD = A.PREVIOUS_THRESHOLD   # the quality experiments (QUALITY.md) scored the previous 224 px model
 OLD_GATE = {"blur": 12.0, "dark": 45.0, "bright": 210.0}       # the previous Stage 1 constants
 MEASURES = ["brightness", "under_fraction", "over_fraction", "contrast", "range_p5_p95", "lap_var", "lap_var_norm",
             "tenengrad_norm", "hf_ratio", "fov_fraction", "cur_lap_native", "cur_mean_native"]

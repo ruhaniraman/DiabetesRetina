@@ -1,0 +1,168 @@
+{
+ "site_sample": {
+  "n": 61,
+  "referable": 38
+ },
+ "test": {
+  "n": 103,
+  "referable": 64
+ },
+ "options": [
+  {
+   "rule": "deployed model threshold (no site calibration)",
+   "threshold": 0.0964,
+   "site": {
+    "TP": 38,
+    "FN": 0,
+    "TN": 19,
+    "FP": 4,
+    "sensitivity": 1.0,
+    "sensitivity_ci": [
+     0.90818706741616,
+     0.9999999999999999
+    ],
+    "specificity": 0.8260869565217391,
+    "specificity_ci": [
+     0.6286194521470433,
+     0.9302145964938723
+    ],
+    "flagged_share": 0.6885245901639344
+   },
+   "test": {
+    "TP": 58,
+    "FN": 6,
+    "TN": 21,
+    "FP": 18,
+    "sensitivity": 0.90625,
+    "sensitivity_ci": [
+     0.8101690141672233,
+     0.9563223421687121
+    ],
+    "specificity": 0.5384615384615384,
+    "specificity_ci": [
+     0.3856918682173881,
+     0.6843335276595165
+    ],
+    "flagged_share": 0.7378640776699029
+   }
+  },
+  {
+   "rule": "site sensitivity estimate >= 95%",
+   "threshold": 0.26,
+   "site": {
+    "TP": 37,
+    "FN": 1,
+    "TN": 19,
+    "FP": 4,
+    "sensitivity": 0.9736842105263158,
+    "sensitivity_ci": [
+     0.8650482156319974,
+     0.9953395324464698
+    ],
+    "specificity": 0.8260869565217391,
+    "specificity_ci": [
+     0.6286194521470433,
+     0.9302145964938723
+    ],
+    "flagged_share": 0.6721311475409836
+   },
+   "test": {
+    "TP": 57,
+    "FN": 7,
+    "TN": 29,
+    "FP": 10,
+    "sensitivity": 0.890625,
+    "sensitivity_ci": [
+     0.7910113670806147,
+     0.9459995524731695
+    ],
+    "specificity": 0.7435897435897436,
+    "specificity_ci": [
+     0.589180432321585,
+     0.854313741565478
+    ],
+    "flagged_share": 0.6504854368932039
+   }
+  },
+  {
+   "rule": "site sensitivity 95% lower bound >= 95%",
+   "threshold": null
+  },
+  {
+   "rule": "site sensitivity estimate >= 90%",
+   "threshold": 0.57,
+   "site": {
+    "TP": 35,
+    "FN": 3,
+    "TN": 20,
+    "FP": 3,
+    "sensitivity": 0.9210526315789473,
+    "sensitivity_ci": [
+     0.792003210797347,
+     0.972785898605735
+    ],
+    "specificity": 0.8695652173913043,
+    "specificity_ci": [
+     0.678721020269818,
+     0.954624234856553
+    ],
+    "flagged_share": 0.6229508196721312
+   },
+   "test": {
+    "TP": 53,
+    "FN": 11,
+    "TN": 37,
+    "FP": 2,
+    "sensitivity": 0.828125,
+    "sensitivity_ci": [
+     0.7178655850983409,
+     0.9012235873268377
+    ],
+    "specificity": 0.9487179487179487,
+    "specificity_ci": [
+     0.8311406095436208,
+     0.9858223423536004
+    ],
+    "flagged_share": 0.5339805825242718
+   }
+  },
+  {
+   "rule": "site sensitivity 95% lower bound >= 90%",
+   "threshold": 0.25,
+   "site": {
+    "TP": 38,
+    "FN": 0,
+    "TN": 19,
+    "FP": 4,
+    "sensitivity": 1.0,
+    "sensitivity_ci": [
+     0.90818706741616,
+     0.9999999999999999
+    ],
+    "specificity": 0.8260869565217391,
+    "specificity_ci": [
+     0.6286194521470433,
+     0.9302145964938723
+    ],
+    "flagged_share": 0.6885245901639344
+   },
+   "test": {
+    "TP": 57,
+    "FN": 7,
+    "TN": 29,
+    "FP": 10,
+    "sensitivity": 0.890625,
+    "sensitivity_ci": [
+     0.7910113670806147,
+     0.9459995524731695
+    ],
+    "specificity": 0.7435897435897436,
+    "specificity_ci": [
+     0.589180432321585,
+     0.854313741565478
+    ],
+    "flagged_share": 0.6504854368932039
+   }
+  }
+ ]
+}

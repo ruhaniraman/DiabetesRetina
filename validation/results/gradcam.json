@@ -1,28 +1,30 @@
 {
- "randomised_all_layers_abs_corr": 0.1501708976304372,
- "randomised_classifier_abs_corr": 0.21515233664373004,
- "deletion_12_cells": {
-  "hottest_drop": 0.033882491720410496,
-  "random_drop": -0.0762054421294194,
-  "hottest_minus_random": 0.1100879338498299,
+ "randomised_all_layers_abs_corr": 0.10436680929589374,
+ "randomised_classifier_abs_corr": 0.19698362412159112,
+ "deletion_largest": {
+  "cells": 35,
+  "cells_inside_retina": 112,
+  "hottest_drop": 0.17186189414757602,
+  "random_drop": -0.04916662759376021,
+  "hottest_minus_random": 0.22102852174133628,
   "ci": [
-   0.0640903431771753,
-   0.16671532041823064
+   0.14150341709478284,
+   0.3038402554800488
   ],
-  "share_of_eyes_hottest_larger": 0.9038461538461539
+  "share_of_eyes_hottest_larger": 0.9433962264150944
  },
  "localisation_referral_map": {
-  "pixel_auc": 0.6600798457925329,
+  "pixel_auc": 0.6988964052426644,
   "hottest_pixel_on_lesion": 0.12345679012345678,
-  "chance": 0.030946857702560605
+  "chance": 0.031067871814750885
  },
  "localisation_earlier_map": {
-  "pixel_auc": 0.5082623769349967,
-  "hottest_pixel_on_lesion": 0.037037037037037035
+  "pixel_auc": 0.5922052006755103,
+  "hottest_pixel_on_lesion": 0.1111111111111111
  },
  "old_map_mismatch": {
-  "flagged": 247,
-  "mismatched": 51,
+  "flagged": 254,
+  "mismatched": 42,
   "of": 548
  }
 }

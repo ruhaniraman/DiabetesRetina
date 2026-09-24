@@ -1,8 +1,8 @@
-function [counts, areaPct] = lesionOverlayToFile(src, dst, compositeDst)
+function [counts, areaPct, evidence] = lesionOverlayToFile(src, dst, compositeDst)
 % LESIONOVERLAYTOFILE  Stage 2 for the web app: run the lesion network on one photograph and write the overlay.
 %
-%   [counts, areaPct] = lesionOverlayToFile(src, dst)
-%   [counts, areaPct] = lesionOverlayToFile(src, dst, compositeDst)
+%   [counts, areaPct, evidence] = lesionOverlayToFile(src, dst)
+%   [counts, areaPct, evidence] = lesionOverlayToFile(src, dst, compositeDst)
 %
 %   src           fundus photograph (any size, any camera)
 %   dst           PNG written with an alpha channel, same size as src: possible lesions coloured, everything else transparent
@@ -10,6 +10,8 @@ function [counts, areaPct] = lesionOverlayToFile(src, dst, compositeDst)
 %                 (for the PDF report)
 %   counts        1x4 number of marked regions:  MA, HE, EX, SE
 %   areaPct       1x4 share of the retina marked, in percent (same order)
+%   evidence      the marks summarised against ICDR criteria (lesionEvidence): haemorrhage quadrants, microaneurysms only,
+%                 hard exudates near the estimated fovea
 %
 % Uses the calibrated v2 network (Stage2_LesionUNet_v2.mat: trained with healthy eyes as negatives, thresholds and minimum region
 % sizes set by calibrateLesionMasks so most healthy eyes stay clear). On held-out APTOS test photographs it still marked
@@ -23,7 +25,8 @@ function [counts, areaPct] = lesionOverlayToFile(src, dst, compositeDst)
 
     img = imread(src);
     if size(img, 3) == 1, img = repmat(img, 1, 1, 3); elseif size(img, 3) == 4, img = img(:, :, 1:3); end
-    [~, masks, info] = segmentLesionsDL(img, model);
+    [prob, masks, info] = segmentLesionsDL(img, model);
+    evidence = lesionEvidence(masks, prob, info, model.channels);
 
     % Colours match the web app's legend (frontend Dashboard): MA amber, HE rose, EX emerald, SE violet
     colours = uint8([251 191 36; 244 63 94; 52 211 153; 167 139 250]);

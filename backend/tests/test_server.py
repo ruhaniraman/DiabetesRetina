@@ -94,6 +94,9 @@ def test_oversized_upload_is_a_413(client, monkeypatch):
     assert r.status_code == 413
 
 
+EVIDENCE = {"heQuadrants": 2.0, "heQuadrantsWith20": 0.0, "heByQuadrant": [[1.0, 0.0, 2.0, 0.0]], "onlyMA": False, "exNearFovea": True, "foveaFrom": "disc"}
+
+
 def fake_lesion_matlab(counts=(3, 1, 5, 0), areas=(0.05, 0.2, 1.1, 0.0)):
     """Stands in for MATLAB's lesionOverlayToFile: writes the overlay (and composite) PNGs and returns 1x4 values shaped like matlab.double."""
     calls = []
@@ -106,7 +109,7 @@ def fake_lesion_matlab(counts=(3, 1, 5, 0), areas=(0.05, 0.2, 1.1, 0.0)):
         cv2.imwrite(dst, overlay)
         if rest:
             cv2.imwrite(rest[0], cv2.resize(img, (448, 448)))
-        return [list(counts)], [list(areas)]
+        return [list(counts)], [list(areas)], dict(EVIDENCE)
 
     return call, calls
 
@@ -120,12 +123,13 @@ def test_segmentation_returns_the_overlay_counts_and_areas_from_matlab(client, m
     assert body["maskUrl"].startswith("data:image/png;base64,") and body["method"] == "unet-v2"
     assert body["counts"] == {"microaneurysms": 3, "hemorrhages": 1, "exudates": 5, "softExudates": 0}
     assert body["areaPercent"]["exudates"] == 1.1
+    assert body["evidence"] == {"heQuadrants": 2, "heQuadrantsWith20": 0, "heByQuadrant": [1, 0, 2, 0], "onlyMA": False, "exNearFovea": True, "foveaFrom": "disc"}
 
 
 def test_the_overlay_keeps_its_transparency(monkeypatch):
     call, _ = fake_lesion_matlab()
     monkeypatch.setattr(server.matlab_service, "call", call)
-    overlay, counts, areas, composite = server.render_lesions(realistic_fundus(seed=1), True)
+    overlay, counts, areas, evidence, composite = server.render_lesions(realistic_fundus(seed=1), True)
     assert overlay.shape[2] == 4 and overlay[..., 3].max() == 200 and overlay[0, 0, 3] == 0
     assert composite.shape == (448, 448, 3) and sum(counts.values()) == 9
 

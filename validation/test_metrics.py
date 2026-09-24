@@ -71,7 +71,7 @@ def test_committed_predictions_are_valid_probabilities():
 def test_the_model_reproduces_its_own_stored_test_result():
     """The regression guard behind the preprocessing decision: plain resize matches stage3Results exactly."""
     _, labels, probs = analyze.load("app_test_resize")
-    assert analyze.confusion(labels, probs, analyze.DEPLOYED_THRESHOLD) == analyze.STORED
+    assert analyze.confusion(labels, probs, analyze.PREVIOUS_THRESHOLD) == analyze.STORED      # the previous (224 px) model
 
 
 # --- Stage 1 quality analysis helpers (validation/analyze_quality.py) -------------------------------------

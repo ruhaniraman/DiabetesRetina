@@ -110,6 +110,45 @@ def test_an_eye_with_nothing_marked_says_that_does_not_rule_out_disease():
     assert t.count(squash(ct.PDF_TEXT["lesion_none_note"])) == 2 and squash(ct.PDF_TEXT["lesion_note"]) not in t
 
 
+def test_the_evidence_lines_follow_what_was_marked():
+    only_ma = ct.lesion_evidence_lines({"onlyMA": True, "heQuadrants": 0, "exNearFovea": False})
+    assert only_ma == [ct.LESION_EVIDENCE_TEXT["only_ma"], ct.LESION_EVIDENCE_TEXT["not_assessed"]]
+    many = ct.lesion_evidence_lines({"onlyMA": False, "heQuadrants": 4, "heQuadrantsWith20": 1, "exNearFovea": True})
+    assert "in 4 of 4 quadrants, with 20 or more in 1 of them" in many[0] and many[1] == ct.LESION_EVIDENCE_TEXT["exudates_near_fovea"]
+    assert ct.lesion_evidence_lines(None) == [] and ct.lesion_evidence_lines({}) == []      # no evidence: say nothing
+    assert many[-1] == ct.LESION_EVIDENCE_TEXT["not_assessed"]            # every eye with marks says what is not assessed
+
+
+def test_an_eye_with_nothing_marked_gets_no_evidence_section():
+    e = with_lesions({"microaneurysms": 0, "hemorrhages": 0, "exudates": 0, "softExudates": 0})
+    for side in e.values():
+        side["lesion_evidence"] = {"onlyMA": False, "heQuadrants": 0, "heQuadrantsWith20": 0, "exNearFovea": False}
+    assert squash(ct.LESION_EVIDENCE_TEXT["title"]) not in squash(text_of(report_pdf.build_report_pdf(result(), e)))
+
+
+def test_the_evidence_is_printed_under_the_lesion_picture():
+    e = with_lesions({"microaneurysms": 3, "hemorrhages": 25, "exudates": 5, "softExudates": 0})
+    for side in e.values():
+        side["lesion_evidence"] = {"onlyMA": False, "heQuadrants": 3, "heQuadrantsWith20": 0, "exNearFovea": True}
+    t = squash(text_of(report_pdf.build_report_pdf(result(), e)))
+    assert t.count(squash(ct.LESION_EVIDENCE_TEXT["title"])) == 2 and squash(ct.LESION_EVIDENCE_TEXT["exudates_near_fovea"]) in t
+
+
+@pytest.mark.parametrize("key", list(ct.LESION_EVIDENCE_TEXT))
+def test_evidence_wording_follows_the_wording_rules(key):
+    text = ct.LESION_EVIDENCE_TEXT[key].lower()
+    for pattern in BANNED:
+        assert not re.search(pattern, text), f"{key}: {pattern!r}"
+
+
+@pytest.mark.parametrize("key, locale_key", [("title", "evidenceTitle"), ("only_ma", "evidenceOnlyMA"), ("hemorrhages", "evidenceHemorrhages"),
+                                             ("exudates_near_fovea", "evidenceExudatesNearFovea"), ("not_assessed", "evidenceNotAssessed")])
+def test_the_web_app_evidence_text_matches_the_pdf(key, locale_key):
+    import json
+    en = json.loads((ROOT / "frontend" / "src" / "locales" / "en.json").read_text(encoding="utf-8"))
+    assert en["report"][locale_key].replace("{{", "{").replace("}}", "}") == ct.LESION_EVIDENCE_TEXT[key]
+
+
 @pytest.mark.parametrize("label", list(ct.LESION_LABELS.values()))
 def test_lesion_labels_say_possible(label):
     assert label.startswith("Possible ")
@@ -214,7 +253,8 @@ def fake_matlab(monkeypatch):
         calls["lesions"] += 1
         counts = {"microaneurysms": 3, "hemorrhages": 1, "exudates": 5, "softExudates": 0}
         overlay = np.zeros((*img.shape[:2], 4), np.uint8)
-        return (overlay, counts, {k: 0.1 for k in counts}, realistic_fundus(seed=5)) if with_composite else (overlay, counts, {k: 0.1 for k in counts})
+        ev = {"heQuadrants": 1, "heQuadrantsWith20": 0, "heByQuadrant": [1, 0, 0, 0], "onlyMA": False, "exNearFovea": False, "foveaFrom": "disc"}
+        return (overlay, counts, {k: 0.1 for k in counts}, ev, realistic_fundus(seed=5)) if with_composite else (overlay, counts, {k: 0.1 for k in counts}, ev)
 
     monkeypatch.setattr(server, "grade_eyes", grade)
     monkeypatch.setattr(server, "render_gradcam", heat)

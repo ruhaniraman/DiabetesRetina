@@ -20,7 +20,7 @@ function model = calibrateLesionMasks(opts)
     addpath(here, fullfile(root, 'utils'), fullfile(root, 'stage1_quality'));
     if nargin < 1, opts = struct(); end
     if ~isfield(opts, 'QuietTarget'), opts.QuietTarget = 0.95; end
-    if ~isfield(opts, 'ModelFile'), opts.ModelFile = fullfile(here, 'Stage2_LesionUNet.mat'); end
+    if ~isfield(opts, 'ModelFile'), opts.ModelFile = fullfile(here, 'Stage2_LesionUNet_v2.mat'); end
     [~, modelName] = fileparts(opts.ModelFile);
     gridFile = fullfile(root, 'data', 'stage2_cache', ['mask_grid_' modelName '.mat']);
 
