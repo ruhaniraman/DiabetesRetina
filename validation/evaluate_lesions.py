@@ -53,8 +53,8 @@ def load_gt(split, stem, folder, code, shape):
     if not path.exists():                      # IDRiD omits the file when an image has none of that lesion
         return np.zeros(shape, bool)
     m = cv2.imread(str(path), cv2.IMREAD_UNCHANGED)
-    if m.ndim == 3:
-        m = m[:, :, 0]
+    if m.ndim == 3:                            # colour channels only: IDRiD_81_EX.tif is RGBA, lesion in red, alpha all 255
+        m = m[:, :, :3].max(axis=2)
     return m > 0
 
 
