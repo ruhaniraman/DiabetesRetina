@@ -17,7 +17,7 @@ The full problem statement is in `context.txt` at the repo root. That file is lo
 ## Layout
 | Path | What it is |
 |---|---|
-| `stage1_quality/` | Original MATLAB quality gate (`assessImageQuality.m`). **The app does not use it.** The web app runs `backend/quality.py`, which was rebuilt after validation. |
+| `stage1_quality/` | **`assessFundusQuality.m`**: MATLAB port of `backend/quality.py` (the gate the web app runs); same measures, thresholds and messages, including the FOV-adequacy (partial retina), colour-fundus and optic-disc checks. It gives the same verdict as the Python gate on 97.3% of 698 photos (same reject decision 99.4%; `validation/results/stage1_parity.md`). **`enhanceForReview.m`**: illumination normalisation + CLAHE + bilateral denoising, for display only; `validation/results/enhancement.md` shows it does not help the grader. The old `assessImageQuality.m` failed validation and is unused. |
 | `stage2_structure/` | Classical MATLAB CV (OD, fovea, vessels, lesions; `Stage2_Documentation.md`, samples in `examples/`, new outputs in the git-ignored `results/`). **`dl/`** holds the trained lesion U-Net the app uses (`Stage2_LesionUNet_v2.mat`, see `dl/README.md`): `lesionOverlayToFile.m` (overlay + counts + ICDR evidence), `lesionEvidence.m`, `estimateFovea.m`, `calibrateLesionMasks.m`, `evaluateLesionSegmenter.m`, `validateLocalisation.m`. |
 | `stage_3/` | `Stage3_Final_HighSensitivity_Model.mat` is the **fine-tuned ResNet-18 (run 2), deployed 2026-09-24**: 384 px, full-resolution APTOS + IDRiD, referral threshold **0.0964**, temperature 1.217 for calibrated confidence. `loadStage3Model.m` returns net, threshold, classes, temperature. `assessBilateralFromFiles.m` reports temperature-scaled confidence; the referral decision uses the raw score. `finetune/` has the training pipeline. `Stage3_checkpoint.mat` holds the split validation uses, so **keep it**. The previous 224 px model is in git history (and locally as the untracked `Stage3_previous_224px_Model.mat`). |
 | `utils/` | `preprocessStage3Input.m` crops the retina, pads it to a square and resizes it to the network's input size. `stage3Scores.m` averages the scores of the image and its mirror image. `projectRoot.m` gives paths that don't depend on the working directory. |
@@ -50,7 +50,7 @@ The full problem statement is in `context.txt` at the repo root. That file is lo
 - Disc found in 103/103 IDRiD test photos (median error 0.08 disc diameters); fovea estimate 90% within 1 DD.
 
 ## Gaps against the problem statement (open)
-1. **The app doesn't use MATLAB for Stage 1.** Stage 1 is Python on purpose (the MATLAB gate failed validation). The MATLAB Stage 1 needs to match `quality.py`, plus a denoising step and an FOV-adequacy check.
+1. **The web app runs Stage 1 in Python** (`quality.py`). The MATLAB port (`assessFundusQuality.m`) matches it, so the backend could switch to it through `MatlabService`, but that would make Stage 1 depend on MATLAB being up.
 2. **Neovascularization detection** is missing: none of the PS datasets has NV masks.
 3. **Vessels** are only the classical `vesselSegmentation.m`. DRIVE was downloaded on 2026-09-24 into `data/drive/DRIVE/` from the Kaggle mirror `andrewmvd/drive-digital-retinal-images-for-vessel-extraction`; that mirror has manual vessel masks for the 20 training photos only.
 4. **Benchmarks**: no comparison of the integrated pipeline with single techniques or published results yet.
