@@ -1,1 +1,286 @@
-{"avgWaitCapture":2.5971578061027891,"avgWaitCompute":2.1704177980970014,"avgWaitSpecialist":0,"totalTimeSimulated":370.44029191452393,"numFlagged":20}
+{
+  "generatedBy": "stage5_simulink/optimiseDistrictResources.m",
+  "created": "2026-09-24 14:13",
+  "plans": [
+    {
+      "scenario": "Base: 100,000 patients/year, APTOS-level specificity, 30 s review",
+      "resources": {
+        "cameraSites": 8,
+        "uplinkMbps": 0.1,
+        "aiServers": 1,
+        "reviewers": 1
+      },
+      "cost": 4.7596E+6,
+      "costPerPatient": 47.596,
+      "meetsTargets": true,
+      "utilisation": {
+        "capture": 0.75014249999999993,
+        "upload": 0.051168184508709635,
+        "ai": 0.02038873939986954,
+        "review": 0.18520184833333334
+      },
+      "worstBacklogDays": {
+        "capture": 0.046249999999999923,
+        "upload": 0,
+        "ai": 0,
+        "review": 0
+      },
+      "reviewCasesPerDay": 88.8968872,
+      "uploadMBPerDay": 387.273568,
+      "binding": "camera sites",
+      "iterations": 1
+    },
+    {
+      "scenario": "200,000 patients/year",
+      "resources": {
+        "cameraSites": 15,
+        "uplinkMbps": 0.1,
+        "aiServers": 1,
+        "reviewers": 1
+      },
+      "cost": 7.918E+6,
+      "costPerPatient": 39.59,
+      "meetsTargets": true,
+      "utilisation": {
+        "capture": 0.800152,
+        "upload": 0.054579396809290276,
+        "ai": 0.040777478799739079,
+        "review": 0.37040369666666673
+      },
+      "worstBacklogDays": {
+        "capture": 0.115,
+        "upload": 0,
+        "ai": 0,
+        "review": 0
+      },
+      "reviewCasesPerDay": 177.79377440000002,
+      "uploadMBPerDay": 774.54713599999991,
+      "binding": "camera sites",
+      "iterations": 1
+    },
+    {
+      "scenario": "Camera like IDRiD without site calibration (specificity 53.8%)",
+      "resources": {
+        "cameraSites": 8,
+        "uplinkMbps": 0.1,
+        "aiServers": 1,
+        "reviewers": 1
+      },
+      "cost": 4.7596E+6,
+      "costPerPatient": 47.596,
+      "meetsTargets": true,
+      "utilisation": {
+        "capture": 0.75014249999999993,
+        "upload": 0.051168184508709635,
+        "ai": 0.02038873939986954,
+        "review": 0.44400101083333343
+      },
+      "worstBacklogDays": {
+        "capture": 0.046249999999999923,
+        "upload": 0,
+        "ai": 0,
+        "review": 0
+      },
+      "reviewCasesPerDay": 213.12048520000005,
+      "uploadMBPerDay": 387.273568,
+      "binding": "camera sites",
+      "iterations": 1
+    },
+    {
+      "scenario": "IDRiD-like camera after site calibration (89.1% / 74.4%)",
+      "resources": {
+        "cameraSites": 8,
+        "uplinkMbps": 0.1,
+        "aiServers": 1,
+        "reviewers": 1
+      },
+      "cost": 4.7596E+6,
+      "costPerPatient": 47.596,
+      "meetsTargets": true,
+      "utilisation": {
+        "capture": 0.75014249999999993,
+        "upload": 0.051168184508709635,
+        "ai": 0.02038873939986954,
+        "review": 0.2829704208333334
+      },
+      "worstBacklogDays": {
+        "capture": 0.046249999999999923,
+        "upload": 0,
+        "ai": 0,
+        "review": 0
+      },
+      "reviewCasesPerDay": 135.82580200000004,
+      "uploadMBPerDay": 387.273568,
+      "binding": "camera sites",
+      "iterations": 1
+    },
+    {
+      "scenario": "Review without the annotated report (120 s per case)",
+      "resources": {
+        "cameraSites": 8,
+        "uplinkMbps": 0.1,
+        "aiServers": 1,
+        "reviewers": 1
+      },
+      "cost": 4.7596E+6,
+      "costPerPatient": 47.596,
+      "meetsTargets": true,
+      "utilisation": {
+        "capture": 0.75014249999999993,
+        "upload": 0.051168184508709635,
+        "ai": 0.02038873939986954,
+        "review": 0.74080739333333334
+      },
+      "worstBacklogDays": {
+        "capture": 0.046249999999999923,
+        "upload": 0,
+        "ai": 0,
+        "review": 0
+      },
+      "reviewCasesPerDay": 88.8968872,
+      "uploadMBPerDay": 387.273568,
+      "binding": "camera sites",
+      "iterations": 1
+    },
+    {
+      "scenario": "2G-grade links, uploads only in clinic hours",
+      "resources": {
+        "cameraSites": 8,
+        "uplinkMbps": 0.1,
+        "aiServers": 1,
+        "reviewers": 1
+      },
+      "cost": 4.7596E+6,
+      "costPerPatient": 47.596,
+      "meetsTargets": true,
+      "utilisation": {
+        "capture": 0.75014249999999993,
+        "upload": 0.175433775458433,
+        "ai": 0.02038873939986954,
+        "review": 0.18520184833333334
+      },
+      "worstBacklogDays": {
+        "capture": 0.046249999999999923,
+        "upload": 0,
+        "ai": 0,
+        "review": 0
+      },
+      "reviewCasesPerDay": 88.8968872,
+      "uploadMBPerDay": 387.273568,
+      "binding": "camera sites",
+      "iterations": 1
+    },
+    {
+      "scenario": "Lossless PNG uploads (1.93 MB per photo) instead of JPEG",
+      "resources": {
+        "cameraSites": 8,
+        "uplinkMbps": 0.1,
+        "aiServers": 1,
+        "reviewers": 1
+      },
+      "cost": 4.7596E+6,
+      "costPerPatient": 47.596,
+      "meetsTargets": true,
+      "utilisation": {
+        "capture": 0.75014249999999993,
+        "upload": 0.24688649025452403,
+        "ai": 0.02038873939986954,
+        "review": 0.18520184833333328
+      },
+      "worstBacklogDays": {
+        "capture": 0.046249999999999923,
+        "upload": 0,
+        "ai": 0,
+        "review": 0
+      },
+      "reviewCasesPerDay": 88.896887199999966,
+      "uploadMBPerDay": 1868.5949656000005,
+      "binding": "camera sites",
+      "iterations": 1
+    },
+    {
+      "scenario": "25% of patients need a retake",
+      "resources": {
+        "cameraSites": 9,
+        "uplinkMbps": 0.1,
+        "aiServers": 1,
+        "reviewers": 1
+      },
+      "cost": 5.2108E+6,
+      "costPerPatient": 52.108,
+      "meetsTargets": true,
+      "utilisation": {
+        "capture": 0.71442142857142854,
+        "upload": 0.051685034857282437,
+        "ai": 0.02038873939986954,
+        "review": 0.18520184833333331
+      },
+      "worstBacklogDays": {
+        "capture": 0,
+        "upload": 0,
+        "ai": 0,
+        "review": 0
+      },
+      "reviewCasesPerDay": 88.896887199999981,
+      "uploadMBPerDay": 440.08360000000005,
+      "binding": "camera sites",
+      "iterations": 1
+    },
+    {
+      "scenario": "Stress: 200,000/year, uncalibrated IDRiD-like camera, 120 s review",
+      "resources": {
+        "cameraSites": 15,
+        "uplinkMbps": 0.1,
+        "aiServers": 1,
+        "reviewers": 4
+      },
+      "cost": 1.0618E+7,
+      "costPerPatient": 53.09,
+      "meetsTargets": true,
+      "utilisation": {
+        "capture": 0.800152,
+        "upload": 0.054579396809290276,
+        "ai": 0.040777478799739079,
+        "review": 0.88800202166666686
+      },
+      "worstBacklogDays": {
+        "capture": 0.115,
+        "upload": 0,
+        "ai": 0,
+        "review": 0.24035854166666817
+      },
+      "reviewCasesPerDay": 426.24097040000009,
+      "uploadMBPerDay": 774.54713599999991,
+      "binding": "reviewers",
+      "iterations": 2
+    },
+    {
+      "scenario": "Stress: PNG uploads over 2G-grade links in clinic hours only",
+      "resources": {
+        "cameraSites": 8,
+        "uplinkMbps": 0.25,
+        "aiServers": 1,
+        "reviewers": 1
+      },
+      "cost": 4.774E+6,
+      "costPerPatient": 47.74,
+      "meetsTargets": true,
+      "utilisation": {
+        "capture": 0.75014249999999993,
+        "upload": 0.33858718663477577,
+        "ai": 0.02038873939986954,
+        "review": 0.18520184833333328
+      },
+      "worstBacklogDays": {
+        "capture": 0.046249999999999923,
+        "upload": 0,
+        "ai": 0,
+        "review": 0
+      },
+      "reviewCasesPerDay": 88.896887199999966,
+      "uploadMBPerDay": 1868.5949656000005,
+      "binding": "camera sites",
+      "iterations": 1
+    }
+  ]
+}
