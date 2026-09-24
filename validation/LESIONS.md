@@ -1,12 +1,15 @@
 # Stage 2 lesion overlay: evaluation and decision
 
-**What was evaluated:** `segment_lesions` in `backend/server.py`, the exact code behind the "Mapped" / "Lesion Overlay" views. It is
+> **Retired on 2026-09-24.** The app's lesion overlay is now the trained U-Net in `stage2_structure/dl/` (possible lesions, calibrated so most healthy
+> eyes stay clear; `results/lesions_dl_Stage2_LesionUNet_v2_calibrated.md`). This file is the evidence for retiring the heuristic below, whose code is
+> kept in `validation/legacy_overlay.py` only so these numbers can be reproduced. Regenerated on 2026-09-24 after fixing the IDRiD mask reader
+> (`IDRiD_81_EX.tif` is RGBA; the exudate rows changed slightly, the conclusion did not).
+
+**What was evaluated:** `segment_lesions`, then in `backend/server.py`, the exact code behind the "Mapped" / "Lesion Overlay" views. It is
 classical image processing (not the neural network) that paints candidate microaneurysms, haemorrhages and exudates on a fundus photo
 and reports a count of each.
 
-**Decision: it is switched off by default and no longer presents lesion counts or labels as findings.** The evidence below shows it does
-not detect lesions. The code stays behind a flag for research only (`ENABLE_LESION_OVERLAY=true` on the backend and
-`VITE_ENABLE_LESION_OVERLAY=true` in the frontend build) and is labelled experimental when on.
+**Decision: it was switched off, and later replaced by the trained lesion network.** The evidence below shows it does not detect lesions.
 
 ## Evidence
 
@@ -16,11 +19,11 @@ Reproduce with `python validation/evaluate_lesions.py`; full tables are in [`res
 
 | Overlay label | Pixels drawn that lie on a real lesion | Chance level | Real lesions it touches |
 |---|---|---|---|
-| Hard exudates | 34.0% | 1.2% | **2.7%** of 11,342 |
+| Hard exudates | 35.0% | 1.3% | **2.7%** of 11,642 |
 | Haemorrhages | 0.0% | 1.5% | **0.0%** of 1,900 |
 | Microaneurysms | 0.0% | 0.1% | **0.0%** of 3,497 |
 
-The exudate pixels it does draw are far more often correct than chance (28 times), but it draws them for only 4.3% of the annotated exudate
+The exudate pixels it does draw are far more often correct than chance (27 times), but it draws them for only 4.3% of the annotated exudate
 area (Dice 0.077). For haemorrhages and microaneurysms **nothing it draws overlaps an annotated lesion at all** on these photographs.
 (The test-set-only rows in `lesions.md` are similar.)
 

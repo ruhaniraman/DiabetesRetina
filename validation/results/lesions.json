@@ -2885,14 +2885,14 @@
    "split": "test",
    "types": {
     "exudates": {
-     "gt_pixels": 0,
+     "gt_pixels": 312918,
      "pred_pixels": 20482,
-     "tp_pixels": 0,
+     "tp_pixels": 10892,
      "fov_pixels": 8428948,
-     "gt_lesions": 0,
-     "gt_lesions_found": 0,
+     "gt_lesions": 300,
+     "gt_lesions_found": 6,
      "pred_regions": 20,
-     "pred_regions_on_lesion": 0
+     "pred_regions_on_lesion": 11
     },
     "hemorrhages": {
      "gt_pixels": 46158,
@@ -2920,16 +2920,16 @@
  "idrid": {
   "all 81 images": {
    "exudates": {
-    "pixel_precision": 0.3399452829361659,
-    "pixel_recall": 0.04336523647316113,
-    "dice": 0.07691835645512311,
-    "chance_precision": 0.012476876879553254,
-    "lift_over_chance": 27.246023681876544,
-    "lesion_sensitivity": 0.027332040204549463,
-    "lesion_count": 11342,
-    "region_precision": 0.38228941684665224,
+    "pixel_precision": 0.34989151556769865,
+    "pixel_recall": 0.04306427778584501,
+    "dice": 0.07668967184693529,
+    "chance_precision": 0.012931676522468431,
+    "lift_over_chance": 27.056933798163897,
+    "lesion_sensitivity": 0.027143102559697648,
+    "lesion_count": 11642,
+    "region_precision": 0.3941684665226782,
     "regions_drawn": 926,
-    "regions_per_true_lesion": 0.08164344912713807
+    "regions_per_true_lesion": 0.07953959800721526
    },
    "hemorrhages": {
     "pixel_precision": 0.0,
@@ -2958,16 +2958,16 @@
   },
   "test set (27)": {
    "exudates": {
-    "pixel_precision": 0.3499957451636694,
-    "pixel_recall": 0.030232753303060765,
-    "dice": 0.05565776927991105,
-    "chance_precision": 0.014178869574095724,
-    "lift_over_chance": 24.684319390531584,
-    "lesion_sensitivity": 0.023060796645702306,
-    "lesion_count": 3816,
-    "region_precision": 0.37890625,
+    "pixel_precision": 0.3886154762580133,
+    "pixel_recall": 0.03063288167426885,
+    "dice": 0.056789307224545796,
+    "chance_precision": 0.015537773338744837,
+    "lift_over_chance": 25.011014627750143,
+    "lesion_sensitivity": 0.0228377065111759,
+    "lesion_count": 4116,
+    "region_precision": 0.421875,
     "regions_drawn": 256,
-    "regions_per_true_lesion": 0.06708595387840671
+    "regions_per_true_lesion": 0.062196307094266275
    },
    "hemorrhages": {
     "pixel_precision": 0.0,

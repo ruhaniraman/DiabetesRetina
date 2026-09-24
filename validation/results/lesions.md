@@ -6,7 +6,7 @@ Precision = share of drawn pixels that lie on a real lesion. Chance = precision 
 
 | Overlay label | Pixel precision | Chance | Pixel recall | Dice | Lesion sensitivity | Region precision | Regions drawn per true lesion |
 |---|---|---|---|---|---|---|---|
-| exudates | 34.0% | 1.2% | 4.3% | 0.077 | 2.7% of 11342 | 38.2% | 0.1 |
+| exudates | 35.0% | 1.3% | 4.3% | 0.077 | 2.7% of 11642 | 39.4% | 0.1 |
 | hemorrhages | 0.0% | 1.5% | 0.0% | 0.000 | 0.0% of 1900 | 0.0% | 0.0 |
 | microaneurysms | 0.0% | 0.1% | 0.0% | 0.000 | 0.0% of 3497 | 0.0% | 0.0 |
 
@@ -14,7 +14,7 @@ Precision = share of drawn pixels that lie on a real lesion. Chance = precision 
 
 | Overlay label | Pixel precision | Chance | Pixel recall | Dice | Lesion sensitivity | Region precision | Regions drawn per true lesion |
 |---|---|---|---|---|---|---|---|
-| exudates | 35.0% | 1.4% | 3.0% | 0.056 | 2.3% of 3816 | 37.9% | 0.1 |
+| exudates | 38.9% | 1.6% | 3.1% | 0.057 | 2.3% of 4116 | 42.2% | 0.1 |
 | hemorrhages | 0.0% | 1.5% | 0.0% | 0.000 | 0.0% of 535 | 0.0% | 0.0 |
 | microaneurysms | 0.0% | 0.1% | 0.0% | 0.000 | 0.0% of 1085 | 0.0% | 0.0 |
 

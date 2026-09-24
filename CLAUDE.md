@@ -52,11 +52,12 @@ The full problem statement is in `context.txt` at the repo root. That file is lo
 ## Gaps against the problem statement (open)
 1. **The app doesn't use MATLAB for Stage 1.** Stage 1 is Python on purpose (the MATLAB gate failed validation). The MATLAB Stage 1 needs to match `quality.py`, plus a denoising step and an FOV-adequacy check.
 2. **Neovascularization detection** is missing: none of the PS datasets has NV masks.
-3. **Vessels** are only the classical `vesselSegmentation.m`, unvalidated; DRIVE is not downloaded.
+3. **Vessels** are only the classical `vesselSegmentation.m`. DRIVE was downloaded on 2026-09-24 into `data/drive/DRIVE/` from the Kaggle mirror `andrewmvd/drive-digital-retinal-images-for-vessel-extraction`; that mirror has manual vessel masks for the 20 training photos only.
 4. **Benchmarks**: no comparison of the integrated pipeline with single techniques or published results yet.
 5. **Messidor-2** images are awaited from ADCIS (`data/messidor2/IMAGES/` is empty); `evaluateFinetuned` includes them automatically.
-6. **`validation/evaluate_lesions.py` / `test_lesions.py` are broken**: they import the retired OpenCV overlay (`server.segment_lesions`), removed in the Stage 2 wiring commit. `LESIONS.md` can't be regenerated until that heuristic is kept as a legacy module under `validation/`.
-7. Wording needs clinician review (`CLINICAL_REVIEW.md`, incl. section 3e); the hi/kn/ta lesion-evidence strings are Claude's drafts.
+6. The retired OpenCV overlay is kept in `validation/legacy_overlay.py` (copied from commit 73057ad) only so `LESIONS.md` can be reproduced; `evaluate_lesions.py` uses it.
+7. Wording needs clinician review (`CLINICAL_REVIEW.md`, incl. section 3e).
+8. **Translation review (team to do):** the hi/kn/ta strings Claude drafted on 2026-09-24 still need a native-speaker check. They are the `report.evidence*` keys (lesion evidence against ICDR) and the updated `clinical.stageNote` numbers in `frontend/src/locales/{hi,kn,ta}.json`. The earlier "Possible lesions" overlay strings were already verified by the team.
 
 ## Environment notes
 - Training runs on Manosh's machine: RTX 3050 6 GB, 24 GB RAM, **MATLAB R2026a at `D:\MATLAB`** (`D:/MATLAB/bin/matlab.exe -batch ...` works headless). C: has about 5 GB free.

@@ -1,4 +1,4 @@
-"""Evaluate the app's Stage 2 lesion overlay (`segment_lesions` in backend/server.py: the exact code that ships).
+"""Evaluate the RETIRED Stage 2 lesion overlay (`segment_lesions`, kept in validation/legacy_overlay.py; the app shipped it until 2026-09-24).
 
     python validation/evaluate_lesions.py            # both parts (about 15 minutes)
     python validation/evaluate_lesions.py --part idrid
@@ -22,8 +22,8 @@ import cv2
 import numpy as np
 
 ROOT = Path(__file__).resolve().parent.parent
-sys.path.insert(0, str(ROOT / "backend"))
-import server  # noqa: E402  (the shipped code under test)
+sys.path.insert(0, str(ROOT / "validation"))
+import legacy_overlay as server  # noqa: E402  (the retired code under test; named server so the evaluation reads as before)
 
 IDRID = ROOT / "data" / "idrid_segmentation" / "A. Segmentation" / "A. Segmentation"
 APTOS = ROOT / "data" / "aptos2019" / "colored_images"
