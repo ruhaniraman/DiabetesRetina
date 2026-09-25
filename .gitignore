@@ -69,3 +69,5 @@ validation/results/gradcam_*.mat
 
 # Stage 3 fine-tuning: local manifest has machine-specific paths (splits.csv is the committed record)
 stage_3/finetune/manifest.csv
+
+CLAUDE.md
