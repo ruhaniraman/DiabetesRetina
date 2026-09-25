@@ -66,6 +66,9 @@ IS_PROD = os.getenv("APP_ENV", "development").lower() == "production"
 # POSSIBLE lesions: on held-out test photographs it marked something in 34% of eyes without retinopathy and 98-100% of eyes with DR
 # (validation/results/lesions_dl_Stage2_LesionUNet_v2_calibrated.md). Needs MATLAB, like Stages 3 and 4.
 LESION_OVERLAY_ENABLED = os.getenv("ENABLE_LESION_OVERLAY", "").lower() in ("1", "true", "yes")
+# Stage 1 engine: "python" (quality.py, default: works without MATLAB) or "matlab" (stage1_quality/assessFundusQuality.m, the validated port:
+# validation/results/stage1_parity.md). With "matlab", a photo is checked in Python only when MATLAB is unavailable, and the response says so.
+STAGE1_ENGINE = "matlab" if os.getenv("STAGE1_ENGINE", "python").strip().lower() == "matlab" else "python"
 
 # A site may replace the model's referral threshold with one it calibrated on its own graded images
 # (calibration/README.md). Changing it changes the balance between missed disease and false referrals, so it needs a clinical
@@ -133,10 +136,12 @@ TRANSLATION_CACHE_SIZE = 1000
 MATLAB_PATHS = [
     "utils",
     "stage1_quality",
+    "stage2_structure",
     "stage2_structure/dl",
     "stage_3",
     "stage4_explainability/core",
     "stage4_explainability/report",
+    "stage5_simulink",
 ]
 
 
@@ -361,6 +366,13 @@ def assess_quality(img_bgr: np.ndarray) -> dict:
     verdict "reject": ask for a new photo; "warn": accept, but tell the user results may be less reliable; "accept".
     Nothing is "enhanced": the classifier was validated on unprocessed photographs, so the image is never altered.
     """
+    if STAGE1_ENGINE == "matlab":
+        try:
+            return _assess_quality_matlab(img_bgr)
+        except HTTPException:
+            log.warning("Stage 1: MATLAB is unavailable, checking the photo with quality.py instead")
+        except Exception:
+            log.exception("Stage 1 in MATLAB failed; checking the photo with quality.py instead")
     m = quality.measures(img_bgr)
     v = quality.verdict(m)
     return {
@@ -369,6 +381,24 @@ def assess_quality(img_bgr: np.ndarray) -> dict:
         "reason": v["message"],
         "reasons": v["reasons"],
         "score": m.get("lap_var_norm"),
+        "engine": "python",
+    }
+
+
+def _assess_quality_matlab(img_bgr: np.ndarray) -> dict:
+    """Stage 1 through the MATLAB port (assessFundusQuality.m): same measures, thresholds and messages as quality.py."""
+    with tempfile.TemporaryDirectory(prefix="retina_") as tmp:
+        src = Path(tmp) / "in.png"
+        cv2.imwrite(str(src), img_bgr)
+        verdict, message, reasons, score = matlab_service.call("assessFundusQualityFile", str(src), nargout=4)
+    verdict = str(verdict)
+    return {
+        "verdict": verdict,
+        "status": "rejected" if verdict == "reject" else "accepted",
+        "reason": str(message),
+        "reasons": [r for r in str(reasons).split(",") if r],
+        "score": float(score),
+        "engine": "matlab",
     }
 
 
@@ -391,6 +421,32 @@ def check_pair(left_img: np.ndarray, right_img: np.ndarray) -> list[str]:
 async def check_image_quality(file: UploadFile = File(...)):
     img = await read_image(file)
     return await run_in_threadpool(assess_quality, img)
+
+
+@app.post("/api/stage1-enhance", dependencies=[Depends(require_user)])
+async def enhance_for_review(file: UploadFile = File(...)):
+    """Enhanced copy for the reviewer (MATLAB enhanceForReview: illumination normalisation, CLAHE, bilateral denoising). Display only:
+    grading always uses the unprocessed photograph, because enhancement did not help the network (validation/results/enhancement.md)."""
+    img = await read_image(file)
+
+    def run() -> np.ndarray:
+        with tempfile.TemporaryDirectory(prefix="retina_") as tmp:
+            src, dst = Path(tmp) / "in.png", Path(tmp) / "enhanced.png"
+            cv2.imwrite(str(src), img)
+            matlab_service.call("enhanceToFile", str(src), str(dst), nargout=0)
+            out = cv2.imread(str(dst), cv2.IMREAD_COLOR)
+        if out is None:
+            raise RuntimeError("MATLAB did not produce an enhanced image.")
+        return out
+
+    try:
+        out = await run_in_threadpool(run)
+    except HTTPException:
+        raise
+    except Exception:
+        log.exception("Stage 1 enhancement failed")
+        raise HTTPException(status_code=500, detail="Enhancement failed.")
+    return {"status": "success", "imageUrl": png_data_url(out), "method": "illumination+clahe+bilateral", "displayOnly": True}
 
 
 # --------------------------------------------------------------------------- #
@@ -464,6 +520,53 @@ async def run_stage2_segmentation(file: UploadFile = File(...)):
     return {"status": "success", "maskUrl": png_data_url(overlay), "counts": counts, "areaPercent": areas, "evidence": evidence, "method": "unet-v2"}
 
 
+def _point(value) -> list[float] | None:
+    """A MATLAB [x y] as two floats (image pixels), or None when it is missing or NaN."""
+    xy = _numbers(value)
+    if len(xy) < 2 or any(not np.isfinite(v) for v in xy[:2]):
+        return None
+    return [round(xy[0], 1), round(xy[1], 1)]
+
+
+def render_anatomy(img: np.ndarray) -> tuple:
+    """Stage 2 anatomy for one photograph (MATLAB, stage2_structure/dl/anatomyOverlayToFile.m): vessels (trained U-Net), optic disc and
+    fovea (trained localiser) with the macula zone. Returns (overlay BGRA same size as the photo, measurements)."""
+    with tempfile.TemporaryDirectory(prefix="retina_") as tmp:
+        src, dst = Path(tmp) / "in.png", Path(tmp) / "anatomy.png"
+        cv2.imwrite(str(src), img)
+        raw = dict(matlab_service.call("anatomyOverlayToFile", str(src), str(dst), nargout=1) or {})
+        overlay = cv2.imread(str(dst), cv2.IMREAD_UNCHANGED)
+    if overlay is None or overlay.ndim != 3 or overlay.shape[2] != 4:
+        raise RuntimeError("MATLAB did not produce an anatomy overlay.")
+    confidence = _numbers(raw.get("foveaConfidence", float("nan")))[0]
+    return overlay, {
+        "disc": _point(raw.get("disc")),
+        "discDiameter": round(_numbers(raw.get("discDiameter", 0))[0], 1),
+        "fovea": _point(raw.get("fovea")),
+        "foveaSource": str(raw.get("foveaSource", "")),
+        "foveaConfidence": round(confidence, 3) if np.isfinite(confidence) else None,
+        "vesselDensity": round(_numbers(raw.get("vesselDensity", 0))[0], 2),
+        "vesselMethod": str(raw.get("vesselMethod", "")),
+    }
+
+
+@app.post("/api/stage2-anatomy", dependencies=[Depends(require_user)])
+async def run_stage2_anatomy(file: UploadFile = File(...)):
+    """Vessels, optic disc and fovea. Anatomy, not findings, so it is not behind ENABLE_LESION_OVERLAY."""
+    img = await read_image(file)
+    q = await run_in_threadpool(assess_quality, img)
+    if q["verdict"] == "reject":
+        raise HTTPException(status_code=422, detail=q["reason"])
+    try:
+        overlay, anatomy = await run_in_threadpool(render_anatomy, img)
+    except HTTPException:
+        raise
+    except Exception:
+        log.exception("Stage 2 anatomy failed")
+        raise HTTPException(status_code=500, detail="Anatomy overlay failed.")
+    return {"status": "success", "overlayUrl": png_data_url(overlay), **anatomy}
+
+
 # --------------------------------------------------------------------------- #
 # Stage 3 - bilateral grading (MATLAB)
 # --------------------------------------------------------------------------- #
@@ -499,14 +602,16 @@ def grade_eyes(left_img: np.ndarray, right_img: np.ndarray) -> dict:
         left_path, right_path = Path(tmp) / "left.png", Path(tmp) / "right.png"
         cv2.imwrite(str(left_path), left_img)
         cv2.imwrite(str(right_path), right_img)
-        overall, left, right, left_conf, right_conf, left_ref, right_ref, threshold = matlab_service.call(
-            "assessBilateralFromFiles", str(left_path), str(right_path), nargout=8
+        overall, left, right, left_conf, right_conf, left_ref, right_ref, threshold, left_pdr, right_pdr = matlab_service.call(
+            "assessBilateralFromFiles", str(left_path), str(right_path), nargout=10
         )
     site_set = REFERRAL_THRESHOLD_OVERRIDE is not None
     return {
         "overall": str(overall), "left": str(left), "right": str(right),
         "left_conf": float(left_conf), "right_conf": float(right_conf),
         "left_ref": float(left_ref), "right_ref": float(right_ref),
+        # calibrated P(Proliferate_DR): the new-vessel signal the specialist review shows (validation/results/nv.md)
+        "left_pdr": float(left_pdr), "right_pdr": float(right_pdr),
         # The threshold actually applied: the site's calibrated value if one is set, otherwise the model's own.
         "threshold": REFERRAL_THRESHOLD_OVERRIDE if site_set else float(threshold),
         "threshold_source": "site" if site_set else "model",
@@ -552,6 +657,11 @@ async def run_stage3_assessment(
     return result | {"saved": exam_id is not None, "examId": exam_id}
 
 
+def _finite(value) -> float | None:
+    """A float for JSON, or None when missing or NaN."""
+    return float(value) if value is not None and np.isfinite(value) else None
+
+
 async def assess_pair(left_img: np.ndarray, right_img: np.ndarray) -> dict:
     """Stage 1 gate + Stage 3 grading + the clinical decision for a pair of photographs. Used by the assessment and the report endpoints."""
     # Stage 1 is enforced here, not only in the browser: a direct API call cannot get a grade for an unfit picture.
@@ -576,6 +686,8 @@ async def assess_pair(left_img: np.ndarray, right_img: np.ndarray) -> dict:
         "rightConfidenceBand": confidence_band(d["right_conf"]),
         "leftReferableProbability": d["left_ref"],
         "rightReferableProbability": d["right_ref"],
+        "leftProliferativeProbability": _finite(d.get("left_pdr")),
+        "rightProliferativeProbability": _finite(d.get("right_pdr")),
         "leftReferable": d["left_flagged"],
         "rightReferable": d["right_flagged"],
         "referable": d["referable"],
@@ -720,9 +832,49 @@ async def get_simulation_data():
         raise HTTPException(status_code=500, detail="Simulation data could not be read.")
 
 
+class ScenarioOverrides(BaseModel):
+    """District inputs the planner may change (stage5_simulink/districtParameters.m); anything not given keeps its default."""
+    patientsPerYear: float | None = Field(None, ge=1000, le=2_000_000)
+    sensitivity: float | None = Field(None, ge=0, le=1)
+    specificity: float | None = Field(None, ge=0, le=1)
+    reviewSecondsPerCase: float | None = Field(None, ge=5, le=900)
+    imageMB: float | None = Field(None, ge=0.01, le=50)
+    uploadHoursPerDay: float | None = Field(None, ge=1, le=24)
+    retakeRate: float | None = Field(None, ge=0, le=1)
+    referablePrevalence: float | None = Field(None, ge=0, le=1)
+
+
+class ScenarioResources(BaseModel):
+    cameraSites: int = Field(ge=1, le=200)
+    uplinkMbps: float = Field(gt=0, le=100)
+    aiServers: int = Field(ge=1, le=20)
+    reviewers: int = Field(ge=1, le=50)
+
+
+class ScenarioRequest(BaseModel):
+    overrides: ScenarioOverrides = ScenarioOverrides()
+    resources: ScenarioResources
+
+
+@app.post("/api/simulation/run", dependencies=[Depends(require_user)])
+async def run_simulation(req: ScenarioRequest):
+    """Simulate a working year of the planner's scenario in DistrictScreening.slx (Simulink, via MATLAB)."""
+    import json
+
+    payload = json.dumps({"overrides": req.overrides.model_dump(exclude_none=True), "resources": req.resources.model_dump()})
+    try:
+        raw = await run_in_threadpool(matlab_service.call, "simulateScenarioJson", payload)
+        return json.loads(str(raw))
+    except HTTPException:
+        raise
+    except Exception:
+        log.exception("Simulink simulation failed")
+        raise HTTPException(status_code=500, detail="The Simulink simulation failed.")
+
+
 @app.get("/api/health")
 async def health():
-    return {"ok": True, "matlab": matlab_service.status, "lesionOverlay": LESION_OVERLAY_ENABLED, "referralThresholdOverride": REFERRAL_THRESHOLD_OVERRIDE}
+    return {"ok": True, "matlab": matlab_service.status, "stage1Engine": STAGE1_ENGINE, "lesionOverlay": LESION_OVERLAY_ENABLED, "referralThresholdOverride": REFERRAL_THRESHOLD_OVERRIDE}
 
 
 if __name__ == "__main__":

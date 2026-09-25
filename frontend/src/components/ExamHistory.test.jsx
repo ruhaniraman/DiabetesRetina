@@ -131,3 +131,16 @@ describe('EyePanel quality warning', () => {
     expect(screen.queryByText('Lower image quality')).not.toBeInTheDocument();
   });
 });
+
+describe('changeFromPrevious', () => {
+  const exam = (l, r) => ({ leftGrade: l, rightGrade: r });
+  it('compares each eye with the exam before', async () => {
+    const { changeFromPrevious } = await import('../utils/examChange');
+    expect(changeFromPrevious(exam('Stage 2 - Moderate', 'Stage 0 - No DR detected'), exam('Stage 1 - Mild', 'Stage 0 - No DR detected'))).toBe('higher');
+    expect(changeFromPrevious(exam('Stage 1 - Mild', 'Stage 0 - No DR detected'), exam('Stage 2 - Moderate', 'Stage 0 - No DR detected'))).toBe('lower');
+    expect(changeFromPrevious(exam('Stage 1 - Mild', 'Stage 3 - Severe'), exam('Stage 2 - Moderate', 'Stage 2 - Moderate'))).toBe('higher');
+    expect(changeFromPrevious(exam('Stage 1 - Mild', 'Stage 1 - Mild'), exam('Stage 1 - Mild', 'Stage 1 - Mild'))).toBe('same');
+    expect(changeFromPrevious(exam('Stage 1 - Mild', 'x'), undefined)).toBeNull();
+    expect(changeFromPrevious(exam('unknown', 'unknown'), exam('Stage 1 - Mild', 'Stage 1 - Mild'))).toBeNull();
+  });
+});

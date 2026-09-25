@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { FiEye, FiAlertTriangle, FiLogOut, FiRefreshCw, FiPlay, FiArrowRight, FiUser, FiX, FiEdit2, FiDroplet, FiHeart, FiActivity, FiClock } from 'react-icons/fi';
+import { FiEye, FiAlertTriangle, FiLogOut, FiRefreshCw, FiPlay, FiArrowRight, FiUser, FiX, FiEdit2, FiDroplet, FiHeart, FiActivity, FiClock, FiMap, FiCheckSquare, FiAward } from 'react-icons/fi';
 import Logo from '../components/Logo';
 import HeroBand, { cardClass } from '../components/HeroBand';
 import ListenToReport from '../components/ListenToReport';
@@ -14,6 +14,7 @@ import { useMessages } from '../messages';
 import { bannerConfig, getTagColors } from '../utils/drStyles';
 import { calcAge, formatDob } from '../utils/patient';
 import { LESION_OVERLAY_ENABLED } from '../config';
+import { formatBytes, secondsOn2G } from '../utils/compressImage';
 
 
 
@@ -47,7 +48,7 @@ const understated = (flagged, label) => Boolean(flagged) && /Stage [01]/.test(la
 
 const dash = (value, suffix = '') => (value === '' || value == null ? '—' : `${value}${suffix}`);
 
-export default function Dashboard({ user, patient, session, history, onEditPatient, onViewDetailedReport, onLogout, onDeleteAccount }) {
+export default function Dashboard({ user, patient, session, history, onEditPatient, onViewDetailedReport, onOpenDistrictPlanner, onOpenReview, onOpenEvidence, onLogout, onDeleteAccount }) {
   const { t, i18n } = useTranslation();
   const { grade, tm } = useMessages();
   const lang = i18n.resolvedLanguage || 'en';
@@ -88,6 +89,36 @@ export default function Dashboard({ user, patient, session, history, onEditPatie
               </div>
             </div>
             <div className="flex items-center gap-2.5 self-start sm:self-auto">
+              {onOpenReview && session.assessment && (
+                <button
+                  type="button"
+                  onClick={onOpenReview}
+                  title="30-second specialist review"
+                  className="flex items-center gap-2 rounded-xl border border-amber-300/40 bg-amber-500/20 px-3 py-2 text-xs font-bold text-amber-100 hover:bg-amber-500/30 transition cursor-pointer"
+                >
+                  <FiCheckSquare aria-hidden="true" /> <span className="hidden md:inline">Specialist review</span>
+                </button>
+              )}
+              {onOpenEvidence && (
+                <button
+                  type="button"
+                  onClick={onOpenEvidence}
+                  title="Evidence: requirements vs measured results"
+                  className="flex items-center gap-2 rounded-xl border border-white/20 bg-white/10 px-3 py-2 text-xs font-bold text-white hover:bg-white/20 transition cursor-pointer"
+                >
+                  <FiAward aria-hidden="true" /> <span className="hidden md:inline">Evidence</span>
+                </button>
+              )}
+              {onOpenDistrictPlanner && (
+                <button
+                  type="button"
+                  onClick={onOpenDistrictPlanner}
+                  title="District Planner (Stage 5)"
+                  className="flex items-center gap-2 rounded-xl border border-white/20 bg-white/10 px-3 py-2 text-xs font-bold text-white hover:bg-white/20 transition cursor-pointer"
+                >
+                  <FiMap aria-hidden="true" /> <span className="hidden md:inline">District Planner</span>
+                </button>
+              )}
               <LanguageSwitcher />
               <DeleteAccount onDelete={onDeleteAccount} />
               <button
@@ -192,6 +223,26 @@ export default function Dashboard({ user, patient, session, history, onEditPatie
                 </button>
                 {hint && <span className="text-[11px] text-slate-500 font-medium">{hint}</span>}
               </div>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-1 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-2.5">
+              <label className="flex items-center gap-2 text-xs font-bold text-slate-800 cursor-pointer">
+                <input type="checkbox" checked={session.lowBandwidth} onChange={(e) => session.setLowBandwidth(e.target.checked)} className="h-4 w-4 accent-blue-600" />
+                {t('dash.lowBandwidth')}
+              </label>
+              <span className="text-[11px] text-slate-500">{t('dash.lowBandwidthHint')}</span>
+              {[['left', t('leftEyeLabel')], ['right', t('rightEyeLabel')]].map(([eye, label]) =>
+                session.transfer?.[eye] ? (
+                  <span key={eye} className="text-[11px] font-semibold text-slate-600">
+                    {label}:{' '}
+                    {t('dash.transfer', {
+                      sent: formatBytes(session.transfer[eye].sentBytes),
+                      original: formatBytes(session.transfer[eye].originalBytes),
+                      seconds: Math.round(secondsOn2G(session.transfer[eye].sentBytes)),
+                    })}
+                  </span>
+                ) : null,
+              )}
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5 flex-1">

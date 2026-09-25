@@ -1,4 +1,4 @@
-function [overallGrade, leftGrade, rightGrade, leftConf, rightConf, leftReferable, rightReferable, threshold] = assessBilateralFromFiles(leftImgPath, rightImgPath)
+function [overallGrade, leftGrade, rightGrade, leftConf, rightConf, leftReferable, rightReferable, threshold, leftPDR, rightPDR] = assessBilateralFromFiles(leftImgPath, rightImgPath)
 % ASSESSBILATERALFROMFILES  Python-friendly wrapper around assessBilateralRetina.
 %
 % The MATLAB Engine for Python cannot marshal a trained network object, so the network is loaded
@@ -9,7 +9,9 @@ function [overallGrade, leftGrade, rightGrade, leftConf, rightConf, leftReferabl
 %   leftReferable/rightReferable    P(Moderate or worse) for each eye
 %   threshold                       the referable-probability threshold the model was tuned with; an eye
 %                                   is flagged when its referable probability is >= this value
-    [net, threshold, ~, temperature] = loadStage3Model();
+%   leftPDR/rightPDR                calibrated P(Proliferate_DR): the best new-vessel signal available (AUC 0.91 for PDR on both test
+%                                   sets, stronger than the NV feature model; validation/results/nv.md). Not a new-vessel finding.
+    [net, threshold, classNames, temperature] = loadStage3Model();
     [overallGrade, leftRes, rightRes] = assessBilateralRetina(net, leftImgPath, rightImgPath);
     leftGrade = leftRes.Grade;
     rightGrade = rightRes.Grade;
@@ -18,6 +20,15 @@ function [overallGrade, leftGrade, rightGrade, leftConf, rightConf, leftReferabl
     leftReferable = leftRes.ReferableProbability;
     rightReferable = rightRes.ReferableProbability;
     threshold = double(threshold);
+    pdr = strcmp(cellstr(classNames), 'Proliferate_DR');
+    leftPDR = pdrOf(leftRes.Probabilities, temperature, pdr);
+    rightPDR = pdrOf(rightRes.Probabilities, temperature, pdr);
+end
+
+function v = pdrOf(p, T, idx)
+    q = temperatureScale(p, T);
+    v = double(q(idx));
+    if isempty(v), v = NaN; end
 end
 
 function q = temperatureScale(p, T)

@@ -14,6 +14,9 @@ import ForgotPassword from './pages/ForgotPassword';
 import Dashboard from './pages/Dashboard';
 import PatientDetailsPage from './pages/PatientDetailsPage';
 import DetailedReportPage from './pages/DetailedReportPage';
+import DistrictPlannerPage from './pages/DistrictPlannerPage';
+import SpecialistReviewPage from './pages/SpecialistReviewPage';
+import EvidencePage from './pages/EvidencePage';
 
 function FullScreenMessage({ children }) {
   return (
@@ -108,6 +111,9 @@ function DashboardRoute() {
       history={history}
       onEditPatient={() => navigate('/patient-details')}
       onViewDetailedReport={() => navigate('/report')}
+      onOpenDistrictPlanner={() => navigate('/district')}
+      onOpenReview={() => navigate('/review')}
+      onOpenEvidence={() => navigate('/evidence')}
       onLogout={signOut}
       onDeleteAccount={deleteAccount}
     />
@@ -140,6 +146,22 @@ function ReportRoute() {
   return <DetailedReportPage patient={profile.patient} session={session} onBack={() => navigate('/')} />;
 }
 
+function DistrictRoute() {
+  const navigate = useNavigate();
+  return <DistrictPlannerPage onBack={() => navigate('/')} />;
+}
+
+function ReviewRoute() {
+  const { session } = useOutletContext();
+  const navigate = useNavigate();
+  return <SpecialistReviewPage session={session} onBack={() => navigate('/')} />;
+}
+
+function EvidenceRoute() {
+  const navigate = useNavigate();
+  return <EvidencePage onBack={() => navigate('/')} />;
+}
+
 export default function App() {
   return (
     <AuthProvider>
@@ -153,6 +175,9 @@ export default function App() {
           <Route path="/" element={<DashboardRoute />} />
           <Route path="/patient-details" element={<PatientRoute />} />
           <Route path="/report" element={<ReportRoute />} />
+          <Route path="/district" element={<DistrictRoute />} />
+          <Route path="/review" element={<ReviewRoute />} />
+          <Route path="/evidence" element={<EvidenceRoute />} />
         </Route>
 
         <Route path="*" element={<Navigate to="/" replace />} />

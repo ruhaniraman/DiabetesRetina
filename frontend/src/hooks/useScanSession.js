@@ -1,5 +1,6 @@
 import { useCallback, useRef, useState } from 'react';
 import { assessEyes } from '../api/ml';
+import { compressImage } from '../utils/compressImage';
 import { useEyeScan } from './useEyeScan';
 
 /**
@@ -16,6 +17,9 @@ export function useScanSession() {
   const [running, setRunning] = useState(false);
   const [error, setError] = useState('');
   const runId = useRef(0);
+  // Low-bandwidth mode: photos are compressed in the browser before upload; transfer[eye] = { originalBytes, sentBytes, compressed }
+  const [lowBandwidth, setLowBandwidth] = useState(false);
+  const [transfer, setTransfer] = useState({ left: null, right: null });
 
   // A new photo invalidates any existing result and any assessment still in flight.
   const invalidate = useCallback(() => {
@@ -27,8 +31,20 @@ export function useScanSession() {
 
   const { upload: uploadLeftRaw } = left;
   const { upload: uploadRightRaw } = right;
-  const uploadLeft = useCallback((file) => { invalidate(); return uploadLeftRaw(file); }, [invalidate, uploadLeftRaw]);
-  const uploadRight = useCallback((file) => { invalidate(); return uploadRightRaw(file); }, [invalidate, uploadRightRaw]);
+  const prepare = useCallback(
+    async (eye, file) => {
+      if (!lowBandwidth || !file.type.startsWith('image/')) {
+        setTransfer((t) => ({ ...t, [eye]: { originalBytes: file.size, sentBytes: file.size, compressed: false } }));
+        return file;
+      }
+      const out = await compressImage(file);
+      setTransfer((t) => ({ ...t, [eye]: { originalBytes: out.originalBytes, sentBytes: out.sentBytes, compressed: out.compressed } }));
+      return out.file;
+    },
+    [lowBandwidth],
+  );
+  const uploadLeft = useCallback(async (file) => { invalidate(); return uploadLeftRaw(await prepare('left', file)); }, [invalidate, uploadLeftRaw, prepare]);
+  const uploadRight = useCallback(async (file) => { invalidate(); return uploadRightRaw(await prepare('right', file)); }, [invalidate, uploadRightRaw, prepare]);
 
   const canRun = left.quality.status === 'accepted' && right.quality.status === 'accepted' && !running;
 
@@ -56,5 +72,8 @@ export function useScanSession() {
     error,
     canRun,
     runAssessment,
+    lowBandwidth,
+    setLowBandwidth,
+    transfer,
   };
 }

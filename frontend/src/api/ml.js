@@ -15,14 +15,14 @@ function detailMessage(data, fallback) {
   return fallback;
 }
 
-async function mlRequest(path, { formData, json } = {}) {
+async function mlRequest(path, { formData, json, method = 'POST' } = {}) {
   const headers = { ...REQUEST_HEADERS };
   if (json) headers['Content-Type'] = 'application/json';
 
   let res;
   try {
     res = await fetch(`${ML_API_URL}${path}`, {
-      method: 'POST',
+      method,
       headers,
       credentials: 'include',
       body: formData ?? JSON.stringify(json),
@@ -46,6 +46,14 @@ const singleFile = (file) => {
 export const checkQuality = (file) => mlRequest('/stage1-quality', { formData: singleFile(file) });
 export const segmentLesions = (file) => mlRequest('/stage2-segmentation', { formData: singleFile(file) });
 export const fetchHeatmap = (file) => mlRequest('/stage4-heatmap', { formData: singleFile(file) });
+/** Stage 1 enhancement for viewing (illumination normalisation + CLAHE + denoising); grading always uses the original. */
+export const fetchEnhanced = (file) => mlRequest('/stage1-enhance', { formData: singleFile(file) });
+/** Stage 2 anatomy: vessels, optic disc and fovea (with the macula zone) as a transparent overlay, plus the measurements. */
+export const fetchAnatomy = (file) => mlRequest('/stage2-anatomy', { formData: singleFile(file) });
+/** Stage 5: district plans from optimiseDistrictResources.m, each confirmed by a year simulated in DistrictScreening.slx. */
+export const fetchSimulation = () => mlRequest('/simulation', { method: 'GET' });
+/** Stage 5: simulate a working year of one scenario ({ overrides, resources }) in DistrictScreening.slx. */
+export const runSimulation = (scenario) => mlRequest('/simulation/run', { json: scenario });
 
 /**
  * The PDF report for both eyes. The server grades the two photographs again, draws the heatmaps and returns the PDF; it keeps neither the

@@ -1,0 +1,138 @@
+[
+ {
+  "stage": 1,
+  "requirement": "Quality gate: focus, illumination and field of view, in MATLAB",
+  "target": "MATLAB pipeline",
+  "result": "MATLAB port agrees with the app's gate on 97.3% of 698 photos (same reject decision 99.4%)",
+  "status": "met",
+  "source": "validation/results/stage1_parity.md"
+ },
+ {
+  "stage": 1,
+  "requirement": "Reject ungradable photos with recapture feedback",
+  "target": "reject bad photos, keep good ones",
+  "result": "Rejects 97% of heavily blurred and 92% of very dark photos; rejects 0.1% of curated APTOS photos",
+  "status": "met",
+  "source": "validation/QUALITY.md"
+ },
+ {
+  "stage": 1,
+  "requirement": "Enhance borderline images (illumination normalisation, CLAHE, denoising)",
+  "target": "enhancement available",
+  "result": "Enhanced view in the report (MATLAB enhanceForReview); display only, because it does not improve the grader",
+  "status": "met",
+  "source": "validation/results/enhancement.md"
+ },
+ {
+  "stage": 2,
+  "requirement": "Optic disc and fovea localisation",
+  "target": "IDRiD challenge winners: 21.1 px / 64.5 px",
+  "result": "Trained localiser: disc 14.9 px, fovea 53.8 px mean error on 103 IDRiD test photos; fovea within 1 disc diameter in 99%",
+  "status": "met",
+  "source": "validation/results/localisation.md"
+ },
+ {
+  "stage": 2,
+  "requirement": "Vessel segmentation",
+  "target": "published: accuracy 0.944-0.946, AUC 0.961 (DRIVE)",
+  "result": "Vessel U-Net: accuracy 0.950, sensitivity 0.811, AUC 0.974 (DRIVE, out-of-fold); classical method 0.896",
+  "status": "met",
+  "source": "validation/results/vessels_drive.md"
+ },
+ {
+  "stage": 2,
+  "requirement": "Microaneurysms, exudates, haemorrhages (lesion segmentation)",
+  "target": "IDRiD winners AUPR MA 0.50, HE 0.68, EX 0.89, SE 0.70",
+  "result": "Lesion U-Net AUPR MA 0.42, HE 0.59, EX 0.72, SE 0.51; marks 98-100% of eyes with DR vs 34% of healthy eyes",
+  "status": "partial",
+  "source": "validation/results/lesions_dl_Stage2_LesionUNet_v2_calibrated.md"
+ },
+ {
+  "stage": 2,
+  "requirement": "Neovascularisation",
+  "target": "no PS dataset has NV masks",
+  "result": "Image-level: calibrated P(PDR) AUC 0.91 (APTOS) / 0.91 (IDRiD), shown in the specialist review; pixel-level NV needs FGADR",
+  "status": "partial",
+  "source": "validation/results/nv.md"
+ },
+ {
+  "stage": 3,
+  "requirement": "Referable DR sensitivity",
+  "target": "> 90%",
+  "result": "96.9% (95% CI 93.7%-98.5%) on 548 held-out APTOS photos",
+  "status": "met",
+  "source": "validation/REPORT.md"
+ },
+ {
+  "stage": 3,
+  "requirement": "Referable DR specificity",
+  "target": "> 85%",
+  "result": "88.3% (95% CI 84.4%-91.4%); AUC 0.977",
+  "status": "met",
+  "source": "validation/REPORT.md"
+ },
+ {
+  "stage": 3,
+  "requirement": "Same targets on a second camera (IDRiD)",
+  "target": "> 90% / > 85%",
+  "result": "90.6% / 53.8%; site-calibrated threshold 89.1% / 74.4%",
+  "status": "partial",
+  "source": "validation/results/site_calibration_idrid.md"
+ },
+ {
+  "stage": 3,
+  "requirement": "ICDR 0-4 grading",
+  "target": "5 grades",
+  "result": "quadratic kappa 0.860, exact grade 79.4%",
+  "status": "met",
+  "source": "validation/REPORT.md"
+ },
+ {
+  "stage": 4,
+  "requirement": "Grad-CAM that points at disease",
+  "target": "better than chance",
+  "result": "Pixel AUC 0.70 on IDRiD lesion masks; deleting the hottest cells lowers the score +0.22 more than random",
+  "status": "met",
+  "source": "validation/results/gradcam.md"
+ },
+ {
+  "stage": 4,
+  "requirement": "Calibrated confidence",
+  "target": "confidence matches accuracy",
+  "result": "Temperature scaling: ECE 0.047→0.037 (APTOS), 0.145→0.118 (IDRiD); 'High' band right 98%",
+  "status": "met",
+  "source": "validation/results/calibration.md"
+ },
+ {
+  "stage": 4,
+  "requirement": "Annotated report reviewable in under 30 s",
+  "target": "< 30 s",
+  "result": "Specialist review page: one screen per case with a timer and decision log; ophthalmologists' timings still to be collected",
+  "status": "partial",
+  "source": "frontend/src/pages/SpecialistReviewPage.jsx"
+ },
+ {
+  "stage": 5,
+  "requirement": "Simulink model: acquisition, bandwidth, throughput, review capacity",
+  "target": "100k+ patients/year per district",
+  "result": "100,000/year: 8 camera sites, 0.1 Mbps links, 1 GPU server, 1 reviewer; all 10 scenarios meet their backlog targets in a simulated year",
+  "status": "met",
+  "source": "stage5_simulink/results/district_plan.md"
+ },
+ {
+  "stage": 5,
+  "requirement": "Low-bandwidth uploads (rural 2G links)",
+  "target": "decision unchanged",
+  "result": "1800 px JPEG uploads keep the referral decision for 99.5% (APTOS) and 98.1% (IDRiD) of test photos",
+  "status": "met",
+  "source": "validation/results/compression.md"
+ },
+ {
+  "stage": "V",
+  "requirement": "Integrated pipeline vs single techniques",
+  "target": "integrated beats single techniques",
+  "result": "Beats the classical rule-based detector by a wide margin; matches (does not beat) the CNN alone for referral",
+  "status": "partial",
+  "source": "validation/results/benchmark.md"
+ }
+]

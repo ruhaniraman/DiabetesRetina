@@ -2,8 +2,11 @@ import { useTranslation } from 'react-i18next';
 import { FiTrash2 } from 'react-icons/fi';
 import { bannerConfig } from '../utils/drStyles';
 import { useMessages } from '../messages';
+import { changeFromPrevious } from '../utils/examChange';
 
 const VISIBLE = 5;
+
+const CHANGE_STYLE = { higher: 'bg-rose-50 text-rose-800 border-rose-200', lower: 'bg-sky-50 text-sky-800 border-sky-200', same: 'bg-slate-100 text-slate-600 border-slate-200' };
 
 const formatWhen = (ms, lang) =>
   new Date(ms).toLocaleString(lang && lang !== 'en' ? lang : undefined, { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
@@ -48,6 +51,12 @@ export default function ExamHistory({ history }) {
                       <span className={`inline-block px-2 py-0.5 mr-1.5 rounded-full text-[9px] font-black uppercase text-white ${banner.badge}`}>{t(`clinical.banner.${bannerKey}.badge`)}</span>
                       OS {stage(exam.leftGrade)} · OD {stage(exam.rightGrade)}
                     </p>
+                    {(() => {
+                      const change = changeFromPrevious(exam, exams[i + 1]);
+                      return change ? (
+                        <span className={`mt-1 inline-block rounded-md border px-1.5 py-0.5 text-[10px] font-bold ${CHANGE_STYLE[change]}`}>{t(`history.${change}`)}</span>
+                      ) : null;
+                    })()}
                   </div>
                   <button
                     type="button"

@@ -136,6 +136,9 @@
 
   "dash": {
     "processing": "Processing…",
+    "lowBandwidth": "Low-bandwidth mode (2G)",
+    "lowBandwidthHint": "Photos are shrunk to a 1800 px JPEG in this browser before upload.",
+    "transfer": "Sent {{sent}} (photo {{original}}) · about {{seconds}} s on a 2G link",
     "awaitingUpload": "Awaiting Upload",
     "checking": "Checking quality…",
     "ready": "Ready for assessment",
@@ -191,7 +194,10 @@
     "more": "+ {{n}} earlier exam(s)",
     "confirmDelete": "Delete the exam from {{when}}? This cannot be undone.",
     "deleteFailed": "The exam could not be deleted. Please try again.",
-    "deleteAria": "Delete exam from {{when}}"
+    "deleteAria": "Delete exam from {{when}}",
+    "higher": "AI grade higher than the previous exam",
+    "lower": "AI grade lower than the previous exam",
+    "same": "Same AI grade as the previous exam"
   },
 
   "patient": {
@@ -234,6 +240,20 @@
     "viewGroup": "View",
     "originalPhoto": "Original Photo",
     "overlayBtn": "Possible lesions",
+    "enhancedBtn": "Enhanced",
+    "modeEnhanced": "Enhanced Mode",
+    "enhancedLoading": "Enhancing the photo…",
+    "enhancedUnavailable": "Enhancement is unavailable for this image.",
+    "enhancedNote": "Enhanced for viewing only (illumination correction, CLAHE, denoising). The AI grades the original photo.",
+    "anatomyBtn": "Anatomy",
+    "modeAnatomy": "Anatomy Mode",
+    "anatomyLoading": "Finding vessels, optic disc and fovea…",
+    "anatomyUnavailable": "Anatomy overlay is unavailable for this image.",
+    "anatomyTitle": "Anatomy",
+    "anatomyVessels": "Vessels cover {{pct}}% of the retina",
+    "anatomyFoveaDetected": "Fovea detected (confidence {{pct}}%)",
+    "anatomyFoveaEstimated": "Fovea estimated from the optic disc",
+    "anatomyLegend": "Cyan: vessels · Yellow: optic disc · White: fovea and macula (1 disc diameter)",
     "scanAlt": "Retinal scan",
     "maskAlt": "Lesion overlay mask",
     "overlayLoading": "Lesion overlay is still being generated…",

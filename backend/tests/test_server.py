@@ -151,6 +151,86 @@ def test_a_matlab_failure_in_stage_2_is_a_500_with_no_detail_leak(client, monkey
     assert r.status_code == 500 and "secret" not in r.text
 
 
+def fake_anatomy_matlab(source="detected"):
+    """Stands in for MATLAB's anatomyOverlayToFile: writes the overlay PNG and returns a struct (dict) like the engine does."""
+    calls = []
+
+    def call(name, src, dst, nargout=1):
+        calls.append(name)
+        img = cv2.imread(src)
+        overlay = np.zeros((*img.shape[:2], 4), np.uint8)
+        overlay[5:9, :] = (238, 211, 34, 170)
+        cv2.imwrite(dst, overlay)
+        return {"disc": [[120.0, 200.0]], "discDiameter": 60.0, "fovea": [[270.0, 205.0]], "foveaSource": source,
+                "foveaConfidence": 0.81 if source == "detected" else float("nan"), "vesselDensity": 11.234, "vesselMethod": "unet"}
+
+    return call, calls
+
+
+def test_anatomy_returns_overlay_and_landmarks(client, monkeypatch):
+    call, calls = fake_anatomy_matlab()
+    monkeypatch.setattr(server.matlab_service, "call", call)
+    r = client.post("/api/stage2-anatomy", files=upload("f.png", realistic_fundus(seed=1)))
+    body = r.json()
+    assert r.status_code == 200 and calls == ["anatomyOverlayToFile"]
+    assert body["overlayUrl"].startswith("data:image/png;base64,")
+    assert body["disc"] == [120.0, 200.0] and body["fovea"] == [270.0, 205.0] and body["discDiameter"] == 60.0
+    assert body["foveaSource"] == "detected" and body["foveaConfidence"] == 0.81
+    assert body["vesselDensity"] == 11.23 and body["vesselMethod"] == "unet"
+
+
+def test_anatomy_without_a_detected_fovea_has_no_confidence(client, monkeypatch):
+    call, _ = fake_anatomy_matlab(source="disc")
+    monkeypatch.setattr(server.matlab_service, "call", call)
+    body = client.post("/api/stage2-anatomy", files=upload("f.png", realistic_fundus(seed=1))).json()
+    assert body["foveaSource"] == "disc" and body["foveaConfidence"] is None
+
+
+def test_anatomy_applies_the_stage_1_gate_and_needs_matlab(client, monkeypatch):
+    assert client.post("/api/stage2-anatomy", files=upload("f.png", realistic_fundus(seed=1))).status_code == 503
+    call, calls = fake_anatomy_matlab()
+    monkeypatch.setattr(server.matlab_service, "call", call)
+    r = client.post("/api/stage2-anatomy", files=upload("black.png", np.zeros((64, 64, 3), np.uint8)))
+    assert r.status_code == 422 and calls == []
+
+
+def test_enhancement_returns_the_matlab_image_and_needs_matlab(client, monkeypatch):
+    assert client.post("/api/stage1-enhance", files=upload("f.png", realistic_fundus(seed=1))).status_code == 503
+    calls = []
+
+    def call(name, src, dst, nargout=0):
+        calls.append(name)
+        cv2.imwrite(dst, 255 - cv2.imread(src))
+
+    monkeypatch.setattr(server.matlab_service, "call", call)
+    r = client.post("/api/stage1-enhance", files=upload("f.png", realistic_fundus(seed=1)))
+    assert r.status_code == 200 and calls == ["enhanceToFile"]
+    assert r.json()["imageUrl"].startswith("data:image/png;base64,") and r.json()["displayOnly"] is True
+
+
+def test_simulation_run_passes_the_scenario_to_simulink(client, monkeypatch):
+    import json
+    seen = {}
+
+    def call(name, payload, nargout=1):
+        seen["name"], seen["payload"] = name, json.loads(payload)
+        return json.dumps({"meetsTargets": True, "reasons": [], "stages": {}})
+
+    body = {"overrides": {"patientsPerYear": 150000, "specificity": 0.744}, "resources": {"cameraSites": 12, "uplinkMbps": 0.1, "aiServers": 1, "reviewers": 1}}
+    assert client.post("/api/simulation/run", json=body).status_code == 503
+    monkeypatch.setattr(server.matlab_service, "call", call)
+    r = client.post("/api/simulation/run", json=body)
+    assert r.status_code == 200 and r.json()["meetsTargets"] is True
+    assert seen["name"] == "simulateScenarioJson"
+    assert seen["payload"] == {"overrides": {"patientsPerYear": 150000.0, "specificity": 0.744}, "resources": body["resources"]}
+
+
+def test_simulation_run_rejects_out_of_range_inputs(client):
+    bad = {"overrides": {"specificity": 3}, "resources": {"cameraSites": 12, "uplinkMbps": 0.1, "aiServers": 1, "reviewers": 1}}
+    assert client.post("/api/simulation/run", json=bad).status_code == 422
+    assert client.post("/api/simulation/run", json={"resources": {"cameraSites": 0, "uplinkMbps": 0.1, "aiServers": 1, "reviewers": 1}}).status_code == 422
+
+
 def test_stage3_and_stage4_report_503_without_matlab(client):
     assert client.post("/api/stage3-assessment", files=two_images()).status_code == 503
     assert client.post("/api/stage4-heatmap", files=upload("a.png", realistic_fundus(seed=1))).status_code == 503
@@ -464,13 +544,20 @@ def test_an_invalid_override_stops_the_server_with_a_clear_message():
 
 def test_without_an_override_the_models_own_threshold_is_used(monkeypatch):
     monkeypatch.setattr(server, "REFERRAL_THRESHOLD_OVERRIDE", None)
-    monkeypatch.setattr(server.matlab_service, "call", lambda *a, **k: ("Mild", "Mild", "No_DR", 0.9, 0.9, 0.15, 0.02, 0.2))
+    monkeypatch.setattr(server.matlab_service, "call", lambda *a, **k: ("Mild", "Mild", "No_DR", 0.9, 0.9, 0.15, 0.02, 0.2, 0.01, 0.002))
     g = server.grade_eyes(fake_fundus(), fake_fundus())
     assert g["threshold"] == 0.2 and g["threshold_source"] == "model"
+    assert g["left_pdr"] == 0.01 and g["right_pdr"] == 0.002
+
+
+def test_the_assessment_reports_the_proliferative_probability_when_known(client, monkeypatch):
+    monkeypatch.setattr(server, "grade_eyes", lambda l, r: raw("Moderate", "Moderate", "No_DR", 0.9, 0.8, 0.85, 0.03) | {"left_pdr": 0.31, "right_pdr": float("nan")})
+    body = client.post("/api/stage3-assessment", files=two_images()).json()
+    assert body["leftProliferativeProbability"] == 0.31 and body["rightProliferativeProbability"] is None
 
 
 def test_a_site_threshold_replaces_the_model_threshold_and_changes_who_is_flagged(client, monkeypatch):
-    call = lambda *a, **k: ("Mild", "Mild", "No_DR", 0.9, 0.9, 0.15, 0.02, 0.2)      # left referral score 0.15
+    call = lambda *a, **k: ("Mild", "Mild", "No_DR", 0.9, 0.9, 0.15, 0.02, 0.2, 0.01, 0.002)    # left referral score 0.15
     monkeypatch.setattr(server.matlab_service, "call", call)
     monkeypatch.setattr(server, "REFERRAL_THRESHOLD_OVERRIDE", None)
     default = client.post("/api/stage3-assessment", files=two_images()).json()
@@ -486,3 +573,24 @@ def test_a_site_threshold_replaces_the_model_threshold_and_changes_who_is_flagge
 def test_health_reports_the_override(client, monkeypatch):
     monkeypatch.setattr(server, "REFERRAL_THRESHOLD_OVERRIDE", 0.12)
     assert client.get("/api/health").json()["referralThresholdOverride"] == 0.12
+
+
+def test_stage1_can_run_in_matlab_and_falls_back_to_python(client, monkeypatch):
+    monkeypatch.setattr(server, "STAGE1_ENGINE", "matlab")
+    calls = []
+
+    def call(name, src, nargout=1):
+        calls.append(name)
+        return "warn", "The photo is slightly dark.", "dark_warn,disc_warn", 0.2
+
+    monkeypatch.setattr(server.matlab_service, "call", call)
+    body = client.post("/api/stage1-quality", files=upload("f.png", realistic_fundus(seed=1))).json()
+    assert calls == ["assessFundusQualityFile"] and body["engine"] == "matlab"
+    assert body["verdict"] == "warn" and body["reasons"] == ["dark_warn", "disc_warn"] and body["status"] == "accepted"
+
+    def unavailable(*a, **k):
+        raise server.HTTPException(status_code=503, detail="MATLAB Engine is unavailable")
+
+    monkeypatch.setattr(server.matlab_service, "call", unavailable)
+    body = client.post("/api/stage1-quality", files=upload("f.png", realistic_fundus(seed=1))).json()
+    assert body["engine"] == "python" and body["verdict"] in ("accept", "warn")

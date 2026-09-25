@@ -32,6 +32,7 @@ octave-workspace
 
 # Datasets (too large for Git, kept local only)
 data/
+!frontend/src/data/
 
 # Large trained models and workspaces
 *.mat

@@ -5,7 +5,7 @@ import Disclaimer from '../components/Disclaimer';
 import LanguageSwitcher from '../components/LanguageSwitcher';
 import HeroBand, { cardClass } from '../components/HeroBand';
 import ListenToReport from '../components/ListenToReport';
-import { downloadReportPdf, fetchHeatmap } from '../api/ml';
+import { downloadReportPdf, fetchAnatomy, fetchEnhanced, fetchHeatmap } from '../api/ml';
 import { saveBlob } from '../utils/download';
 import { bannerConfig, reportThemes } from '../utils/drStyles';
 import { LESION_OVERLAY_ENABLED } from '../config';
@@ -25,6 +25,10 @@ export default function DetailedReportPage({ patient, session, onBack }) {
   // eye -> { status: 'loading' | 'success' | 'error', url, error }. Reset per eye image (keyed by object URL).
   const [heatmaps, setHeatmaps] = useState({});
   const requested = useRef(new Set());
+  // Extra views fetched on demand, per eye image: 'anatomy' (vessels, disc, fovea) and 'enhanced' (Stage 1, display only).
+  // `${view}:${eye}:${imageUrl}` -> { status, url, ...result }
+  const [extraViews, setExtraViews] = useState({});
+  const requestedViews = useRef(new Set());
   // Download of the PDF report: idle | working | error
   const [pdf, setPdf] = useState({ status: 'idle', error: '' });
 
@@ -52,6 +56,27 @@ export default function DetailedReportPage({ patient, session, onBack }) {
     }
   };
 
+  const VIEW_FETCHERS = {
+    anatomy: [fetchAnatomy, (r) => r.overlayUrl],
+    enhanced: [fetchEnhanced, (r) => r.imageUrl],
+  };
+  const loadView = async (view, eye, eyeScan) => {
+    const key = `${view}:${eye}:${eyeScan.imageUrl}`;
+    if (!VIEW_FETCHERS[view] || !eyeScan.file || requestedViews.current.has(key)) return;
+    requestedViews.current.add(key);
+    const [fetcher, urlOf] = VIEW_FETCHERS[view];
+    setExtraViews((v) => ({ ...v, [key]: { status: 'loading' } }));
+    try {
+      const result = await fetcher(eyeScan.file);
+      setExtraViews((v) => ({ ...v, [key]: { ...result, status: 'success', url: urlOf(result) } }));
+    } catch (err) {
+      requestedViews.current.delete(key); // allow retry
+      setExtraViews((v) => ({ ...v, [key]: { status: 'error', error: err.message } }));
+    }
+  };
+  const anatomyView = heatmapKey ? extraViews[`anatomy:${heatmapKey}`] : null;
+  const enhancedView = heatmapKey ? extraViews[`enhanced:${heatmapKey}`] : null;
+
   const hasPhotos = Boolean(session.left.file && session.right.file);
   const canDownload = Boolean(assessment) && hasPhotos;
 
@@ -69,10 +94,12 @@ export default function DetailedReportPage({ patient, session, onBack }) {
   const chooseView = (mode) => {
     setViewMode(mode);
     if (mode === 'heatmap') loadHeatmap(selectedEye, scan);
+    loadView(mode, selectedEye, scan);
   };
   const chooseEye = (eye) => {
     setSelectedEye(eye);
     if (viewMode === 'heatmap') loadHeatmap(eye, eye === 'OS' ? session.left : session.right);
+    loadView(viewMode, eye, eye === 'OS' ? session.left : session.right);
   };
 
   const overall = assessment?.overallRisk || 'Pending';
@@ -206,6 +233,8 @@ export default function DetailedReportPage({ patient, session, onBack }) {
           <div className="flex bg-slate-100 p-1 rounded-2xl text-xs font-extrabold self-start md:self-auto" role="group" aria-label={t('report.viewGroup')}>
             <button type="button" aria-pressed={viewMode === 'original'} onClick={() => chooseView('original')} className={`px-3.5 py-2 rounded-xl transition cursor-pointer ${viewMode === 'original' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500'}`}>{t('report.originalPhoto')}</button>
             <button type="button" aria-pressed={viewMode === 'heatmap'} onClick={() => chooseView('heatmap')} className={`px-3.5 py-2 rounded-xl transition cursor-pointer ${viewMode === 'heatmap' ? 'bg-amber-500 text-white shadow-sm' : 'text-slate-500'}`}>{t('aiView')}</button>
+            <button type="button" aria-pressed={viewMode === 'enhanced'} onClick={() => chooseView('enhanced')} className={`px-3.5 py-2 rounded-xl transition cursor-pointer ${viewMode === 'enhanced' ? 'bg-indigo-600 text-white shadow-sm' : 'text-slate-500'}`}>{t('report.enhancedBtn')}</button>
+            <button type="button" aria-pressed={viewMode === 'anatomy'} onClick={() => chooseView('anatomy')} className={`px-3.5 py-2 rounded-xl transition cursor-pointer ${viewMode === 'anatomy' ? 'bg-cyan-600 text-white shadow-sm' : 'text-slate-500'}`}>{t('report.anatomyBtn')}</button>
             {LESION_OVERLAY_ENABLED && (
               <button type="button" aria-pressed={viewMode === 'overlay'} onClick={() => chooseView('overlay')} className={`px-3.5 py-2 rounded-xl transition cursor-pointer ${viewMode === 'overlay' ? 'bg-slate-900 text-white shadow-sm' : 'text-slate-500'}`}>{t('report.overlayBtn')}</button>
             )}
@@ -229,6 +258,35 @@ export default function DetailedReportPage({ patient, session, onBack }) {
                         {scan.mask.status === 'loading' ? t('report.overlayLoading') : tm(scan.mask.error) || t('report.overlayUnavailable')}
                       </div>
                     )}
+                  </>
+                )}
+
+                {viewMode === 'enhanced' && (
+                  <>
+                    <img src={enhancedView?.status === 'success' ? enhancedView.url : scan.imageUrl} alt={t('report.scanAlt')} className="absolute inset-0 w-full h-full object-contain z-10" />
+                    <div className="absolute inset-x-0 bottom-0 z-30 bg-slate-900 text-slate-200 text-[11px] font-semibold p-2.5">
+                      {enhancedView?.status === 'success'
+                        ? t('report.enhancedNote')
+                        : enhancedView?.status === 'error'
+                          ? tm(enhancedView.error) || t('report.enhancedUnavailable')
+                          : t('report.enhancedLoading')}
+                    </div>
+                  </>
+                )}
+
+                {viewMode === 'anatomy' && (
+                  <>
+                    <img src={scan.imageUrl} alt={t('report.scanAlt')} className="absolute inset-0 w-full h-full object-contain z-10" />
+                    {anatomyView?.status === 'success' && (
+                      <img src={anatomyView.url} alt={t('report.anatomyTitle')} className="absolute inset-0 w-full h-full object-contain z-20 pointer-events-none" />
+                    )}
+                    <div className="absolute inset-x-0 bottom-0 z-30 bg-slate-900 text-slate-200 text-[11px] font-semibold p-2.5">
+                      {anatomyView?.status === 'success'
+                        ? t('report.anatomyLegend')
+                        : anatomyView?.status === 'error'
+                          ? tm(anatomyView.error) || t('report.anatomyUnavailable')
+                          : t('report.anatomyLoading')}
+                    </div>
                   </>
                 )}
 
@@ -302,6 +360,18 @@ export default function DetailedReportPage({ patient, session, onBack }) {
                       )}
                     </div>
                   )}
+                </div>
+              )}
+
+              {anatomyView?.status === 'success' && (
+                <div className="bg-cyan-50 p-3.5 rounded-2xl border border-cyan-200 text-xs space-y-1">
+                  <p className="font-bold text-slate-900">{t('report.anatomyTitle')}</p>
+                  <p className="text-slate-700">{t('report.anatomyVessels', { pct: anatomyView.vesselDensity.toFixed(1) })}</p>
+                  <p className="text-slate-700">
+                    {anatomyView.foveaSource === 'detected'
+                      ? t('report.anatomyFoveaDetected', { pct: Math.round(100 * (anatomyView.foveaConfidence ?? 0)) })
+                      : t('report.anatomyFoveaEstimated')}
+                  </p>
                 </div>
               )}
 
