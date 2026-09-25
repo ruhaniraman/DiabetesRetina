@@ -34,8 +34,10 @@ Each model is fitted on the validation split only (APTOS 550 + IDRiD 61 photogra
 | Stage 3: 5-grade agreement, APTOS | Kaggle APTOS 2019 winner: quadratic kappa 0.936 [3] | kappa 0.860 | no: [3] is the competition's hidden test set and used 88,702 extra images; ours is a held-out split of the public training set |
 | Stage 3: 5-grade accuracy, IDRiD test | IDRiD challenge winner (LzyUNCC): 0.631 [4] | 0.553 | yes: same 103 test photographs (the winner used external Kaggle data; so did our base model) |
 | Stage 2: lesion AUPR, IDRiD test (MA / HE / SE / EX) | winners: 0.502 / 0.680 / 0.700 / 0.885 [4] | 0.424 / 0.586 / 0.509 / 0.720 | yes: same test photographs and measure |
-| Stage 2: optic disc / fovea centre, IDRiD test (mean distance) | winners: 21.1 px / 64.5 px [4] | 66.1 px / 283.8 px | yes: same 103 photographs (our fovea is estimated from the disc, not detected) |
+| Stage 2: optic disc / fovea centre, IDRiD test (mean distance) | winners: 21.1 px / 64.5 px [4] | 66.1 px / 283.8 px | yes: same 103 photographs (disc from the lesion network, fovea estimated from the disc) |
+| Stage 2: optic disc / fovea centre, IDRiD test, **trained localiser** (mean distance) | winners: 21.1 px / 64.5 px [4] | 14.9 px / 53.8 px | yes: same 103 photographs (fovea detected) |
 | Stage 2: vessels, DRIVE (accuracy / sensitivity) | 2nd human observer 0.946 / 0.780; B-COSFIRE (unsupervised) 0.944 / 0.766 [5] | 0.896 / 0.691 | indicative: published on DRIVE's test set, ours on its 20 annotated training photographs |
+| Stage 2: vessels, DRIVE, **trained U-Net** (accuracy / sensitivity / AUC) | 2nd human observer 0.946 / 0.780; B-COSFIRE 0.944 / 0.766 / 0.961 [5] | 0.950 / 0.798 / 0.971 | indicative: out-of-fold cross-validation on the 20 annotated training photographs |
 
 Sources:
 1. Abràmoff MD et al. Improved automated detection of diabetic retinopathy on a publicly available dataset through integration of deep learning. IOVS 2016;57:5200-6. https://iovs.arvojournals.org/arvo/content_public/journal/iovs/935768/i1552-5783-57-13-5200.pdf

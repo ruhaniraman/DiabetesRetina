@@ -35,7 +35,7 @@
   "stage": 2,
   "requirement": "Vessel segmentation",
   "target": "published: accuracy 0.944-0.946, AUC 0.961 (DRIVE)",
-  "result": "Vessel U-Net: accuracy 0.950, sensitivity 0.811, AUC 0.974 (DRIVE, out-of-fold); classical method 0.896",
+  "result": "Vessel U-Net: accuracy 0.950, sensitivity 0.798, AUC 0.971 (DRIVE, out-of-fold); classical method 0.896",
   "status": "met",
   "source": "validation/results/vessels_drive.md"
  },

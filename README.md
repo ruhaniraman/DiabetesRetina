@@ -11,10 +11,12 @@ A screening aid that grades diabetic retinopathy (DR) from fundus photographs of
 frontend/       React + Vite web app (port 5173)
 auth-server/    Node/Express: sign-up, email verification, login, sessions (port 4000, SQLite via node:sqlite)
 backend/        Python/FastAPI: image analysis API (port 5000)
-   ├─ Stage 1  image quality check           OpenCV
-   ├─ Stage 2  possible-lesion overlay (MATLAB lesion network; off until clinically reviewed, see below)
+   ├─ Stage 1  image quality check           OpenCV (MATLAB port: stage1_quality/assessFundusQuality.m); enhanced view: MATLAB enhanceForReview
+   ├─ Stage 2  anatomy: vessels (U-Net), optic disc + fovea (localiser)   MATLAB → stage2_structure/dl/anatomyOverlayToFile.m
+   │           possible-lesion overlay (MATLAB lesion network; off until clinically reviewed, see below)
    ├─ Stage 3  bilateral DR grading          MATLAB Engine → trained network (stage_3/)
-   └─ Stage 4  Grad-CAM of the referral score     MATLAB Engine → stage4_explainability/
+   ├─ Stage 4  Grad-CAM of the referral score     MATLAB Engine → stage4_explainability/
+   └─ Stage 5  district planning: /api/simulation (optimised plans), /api/simulation/run (a year in DistrictScreening.slx, Simulink)
 stage1_quality/ (original MATLAB Stage 1; the app runs backend/quality.py) stage2_structure/ stage_3/ stage4_explainability/ stage5_simulink/ utils/   MATLAB source
 ```
 
@@ -70,6 +72,25 @@ Override the API addresses with `frontend/.env.local` (see `frontend/.env.exampl
 3. Upload a fundus photo for each eye. Each is quality-checked; rejected images must be replaced.
 4. **Run AI Assessment**, then open **Detailed Report** (its **Download PDF Report** button makes a report for both eyes) for per-eye grades and a heatmap of the regions that raised the referral score (a rough guide, not a lesion detector: `validation/results/gradcam.md`).
    Each assessment is saved to **Exam History** on the dashboard.
+
+## Specialist review, district planning and low-bandwidth mode
+
+- **Detailed Report → view modes.** *Original*, *AI View* (Grad-CAM of the referral score), *Enhanced* (Stage 1 illumination
+  normalisation + CLAHE + denoising, `POST /api/stage1-enhance`; display only, because the grader works best on the unprocessed photo:
+  `validation/results/enhancement.md`) and *Anatomy* (`POST /api/stage2-anatomy`: vessels from the trained vessel U-Net, optic disc and fovea from the
+  trained localiser, and the macula zone of 1 disc diameter used for the "exudates near the fovea" evidence). *Possible lesions* appears when the lesion overlay is on.
+- **Specialist review** (dashboard header, after an assessment; `/review`). The 30-second review the problem statement asks for, on one screen: both eyes'
+  photo and Grad-CAM, AI grade with calibrated confidence, referral score against the threshold, calibrated probability of proliferative DR
+  (the new-vessel signal: `validation/results/nv.md`) and, with the overlay on, lesion evidence against ICDR criteria. A timer runs from opening the case;
+  each decision (agree/override, refer/routine, recapture) is logged in the browser with its time, and the page shows the median review time, the share
+  within 30 s and the agreement with the AI. English only (for ophthalmologists).
+- **District Planner** (dashboard header; `/district`). Stage 5 in the app: change patients per year, camera and calibration, review time, photo
+  format, upload window, retakes and prevalence, and see the cheapest mix of camera sites, uplink, GPU servers and reviewers (the optimiser's capacity formulas,
+  ported to `frontend/src/utils/districtPlan.js` and tested against the Simulink-confirmed plans). **Confirm in Simulink** runs a working year of
+  `DistrictScreening.slx` for that plan through MATLAB and charts each stage's backlog against its limit. Below it are the scenarios
+  `optimiseDistrictResources.m` confirmed. English only (for programme planners).
+- **Low-bandwidth mode** (checkbox above the eye photos). The browser shrinks each photo to a JPEG at most 1800 px on its longest side before upload
+  and shows the bytes sent and the time on a 2G-grade link (Stage 5's assumptions). The effect on grading is measured in `validation/results/compression.md`.
 
 ## Listen to the result
 
