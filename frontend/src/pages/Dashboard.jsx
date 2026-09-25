@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { FiEye, FiAlertTriangle, FiLogOut, FiRefreshCw, FiPlay, FiArrowRight, FiUser, FiX, FiEdit2, FiDroplet, FiHeart, FiActivity, FiClock, FiMap, FiCheckSquare, FiAward } from 'react-icons/fi';
+import { FiEye, FiAlertTriangle, FiLogOut, FiRefreshCw, FiPlay, FiArrowRight, FiUser, FiX, FiEdit2, FiDroplet, FiHeart, FiActivity, FiClock, FiMap, FiCheckSquare, FiAward, FiHelpCircle } from 'react-icons/fi';
 import Logo from '../components/Logo';
 import HeroBand, { cardClass } from '../components/HeroBand';
 import ListenToReport from '../components/ListenToReport';
@@ -48,7 +48,7 @@ const understated = (flagged, label) => Boolean(flagged) && /Stage [01]/.test(la
 
 const dash = (value, suffix = '') => (value === '' || value == null ? '—' : `${value}${suffix}`);
 
-export default function Dashboard({ user, patient, session, history, onEditPatient, onViewDetailedReport, onOpenDistrictPlanner, onOpenReview, onOpenEvidence, onLogout, onDeleteAccount }) {
+export default function Dashboard({ user, patient, session, history, onEditPatient, onViewDetailedReport, onOpenDistrictPlanner, onOpenReview, onOpenEvidence, onStartTour, onLogout, onDeleteAccount }) {
   const { t, i18n } = useTranslation();
   const { grade, tm } = useMessages();
   const lang = i18n.resolvedLanguage || 'en';
@@ -88,11 +88,13 @@ export default function Dashboard({ user, patient, session, history, onEditPatie
                 <span className="mt-1 block text-[10px] font-black uppercase tracking-[0.2em] text-amber-400">{t('common.portal')}</span>
               </div>
             </div>
-            <div className="flex items-center gap-2.5 self-start sm:self-auto">
+            <div className="flex flex-wrap items-center gap-2.5 self-start sm:self-auto">
+              <div className="flex items-center gap-2.5">
               {onOpenReview && session.assessment && (
                 <button
                   type="button"
                   onClick={onOpenReview}
+                  data-tour="review-button"
                   title="30-second specialist review"
                   className="flex items-center gap-2 rounded-xl border border-amber-300/40 bg-amber-500/20 px-3 py-2 text-xs font-bold text-amber-100 hover:bg-amber-500/30 transition cursor-pointer"
                 >
@@ -103,6 +105,7 @@ export default function Dashboard({ user, patient, session, history, onEditPatie
                 <button
                   type="button"
                   onClick={onOpenEvidence}
+                  data-tour="evidence-button"
                   title="Evidence: requirements vs measured results"
                   className="flex items-center gap-2 rounded-xl border border-white/20 bg-white/10 px-3 py-2 text-xs font-bold text-white hover:bg-white/20 transition cursor-pointer"
                 >
@@ -113,13 +116,29 @@ export default function Dashboard({ user, patient, session, history, onEditPatie
                 <button
                   type="button"
                   onClick={onOpenDistrictPlanner}
+                  data-tour="district-button"
                   title="District Planner (Stage 5)"
                   className="flex items-center gap-2 rounded-xl border border-white/20 bg-white/10 px-3 py-2 text-xs font-bold text-white hover:bg-white/20 transition cursor-pointer"
                 >
                   <FiMap aria-hidden="true" /> <span className="hidden md:inline">District Planner</span>
                 </button>
               )}
-              <LanguageSwitcher />
+              </div>
+              {onStartTour && (
+                <button
+                  type="button"
+                  onClick={onStartTour}
+                  title={t('tour.replayTitle')}
+                  data-tour="replay"
+                  className="flex items-center gap-2 rounded-xl border border-white/20 bg-white/10 px-3 py-2 text-xs font-bold text-white hover:bg-white/20 transition cursor-pointer"
+                >
+                  <FiHelpCircle aria-hidden="true" /> <span className="hidden md:inline">{t('tour.replay')}</span>
+                </button>
+              )}
+              <div data-tour="language">
+                <LanguageSwitcher />
+              </div>
+              <div className="flex items-center gap-2.5" data-tour="account">
               <DeleteAccount onDelete={onDeleteAccount} />
               <button
                 type="button"
@@ -130,12 +149,13 @@ export default function Dashboard({ user, patient, session, history, onEditPatie
               >
                 <FiLogOut className="text-base" />
               </button>
+              </div>
             </div>
           </header>
 
           <div className="pt-4 sm:pt-6">
             <span className="text-[10px] font-extrabold uppercase tracking-[0.2em] text-amber-400/90">{t('portalSub')}</span>
-            <h1 className="mt-2 font-welcome text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight leading-tight text-white">
+            <h1 data-tour="welcome" className="mt-2 font-welcome text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight leading-tight text-white">
               {t('welcomePatient', { name: displayName })}
             </h1>
             {identityLine && <p className="mt-2 text-sm font-medium text-slate-300">{identityLine}</p>}
@@ -145,7 +165,7 @@ export default function Dashboard({ user, patient, session, history, onEditPatie
 
       <main className="relative -mt-20 sm:-mt-24 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pb-12 flex flex-col gap-6">
         {/* Risk banner: reflects only a real backend result */}
-        <section className={`${cardClass} overflow-hidden border-l-[6px] p-5 md:p-7 space-y-5 shadow-[0_20px_50px_-24px_rgba(15,23,42,0.35)] ${activeBanner.accent}`}>
+        <section data-tour="banner" className={`${cardClass} overflow-hidden border-l-[6px] p-5 md:p-7 space-y-5 shadow-[0_20px_50px_-24px_rgba(15,23,42,0.35)] ${activeBanner.accent}`}>
           <div className="flex items-start gap-4 md:gap-5">
             <div className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl text-white shadow-lg ${activeBanner.iconBg}`}>
               <RiskIcon className="text-2xl" aria-hidden="true" />
@@ -211,7 +231,7 @@ export default function Dashboard({ user, patient, session, history, onEditPatie
                   <p className="text-xs text-slate-500 font-medium mt-0.5">{t('dash.cardSub')}</p>
                 </div>
               </div>
-              <div className="flex flex-col items-start sm:items-end gap-1.5">
+              <div className="flex flex-col items-start sm:items-end gap-1.5" data-tour="run">
                 <button
                   type="button"
                   onClick={runAssessment}
@@ -225,7 +245,7 @@ export default function Dashboard({ user, patient, session, history, onEditPatie
               </div>
             </div>
 
-            <div className="flex flex-wrap items-center gap-x-4 gap-y-1 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-2.5">
+            <div data-tour="low-bandwidth" className="flex flex-wrap items-center gap-x-4 gap-y-1 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-2.5">
               <label className="flex items-center gap-2 text-xs font-bold text-slate-800 cursor-pointer">
                 <input type="checkbox" checked={session.lowBandwidth} onChange={(e) => session.setLowBandwidth(e.target.checked)} className="h-4 w-4 accent-blue-600" />
                 {t('dash.lowBandwidth')}
@@ -245,7 +265,7 @@ export default function Dashboard({ user, patient, session, history, onEditPatie
               )}
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-5 flex-1">
+            <div data-tour="eyes" className="grid grid-cols-1 md:grid-cols-2 gap-5 flex-1">
               <EyePanel
                 title={t('leftEyeLabel')}
                 inputId="upload-left-eye"
@@ -291,7 +311,7 @@ export default function Dashboard({ user, patient, session, history, onEditPatie
 
           <aside className={`${cardClass} w-full lg:w-[26rem] p-5 sm:p-7 flex flex-col justify-between shrink-0 space-y-6`}>
             <div className="space-y-6">
-              <div>
+              <div data-tour="profile">
                 <div className="flex items-center justify-between mb-4 gap-2">
                   <h2 className="text-base font-extrabold text-slate-900 tracking-tight">{t('recordsTitle')}</h2>
                   {patient.bloodGroup && (
@@ -312,6 +332,7 @@ export default function Dashboard({ user, patient, session, history, onEditPatie
                   <button
                     type="button"
                     onClick={onEditPatient}
+                    data-tour="profile-edit"
                     aria-label={t('dash.editProfile')}
                     className="p-2.5 rounded-xl text-slate-500 hover:text-slate-900 hover:bg-white transition cursor-pointer"
                   >
@@ -332,12 +353,15 @@ export default function Dashboard({ user, patient, session, history, onEditPatie
                 <Vital icon={FiClock} tone="bg-violet-100 text-violet-700" label={t('dash.duration')} value={dash(patient.diabetesDuration)} unit={patient.diabetesDuration ? t('dash.yrs') : ''} />
               </div>
 
-              <ExamHistory history={history} />
+              <div data-tour="history">
+                <ExamHistory history={history} />
+              </div>
             </div>
 
             <button
               type="button"
               onClick={onViewDetailedReport}
+              data-tour="report-button"
               className="group w-full rounded-2xl bg-gradient-to-r from-[#0d1424] to-[#1e293b] py-4 text-xs font-bold uppercase tracking-wider text-white shadow-lg shadow-slate-900/20 transition hover:from-[#16223b] hover:to-[#26344f] flex items-center justify-center gap-2 cursor-pointer"
             >
               <span>{t('detailedReportBtn')}</span>

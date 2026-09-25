@@ -72,7 +72,7 @@ export default function PatientDetailsPage({ initialData, onSubmit, onErase, onC
 
   return (
     <div className="min-h-screen bg-[#f1f3f7] flex items-center justify-center p-4 font-sans">
-      <div className="bg-white border border-slate-100 rounded-[2.5rem] p-8 max-w-lg w-full shadow-sm">
+      <div className="bg-white border border-slate-100 rounded-[2.5rem] p-8 max-w-lg w-full shadow-sm" data-tour="patient">
         <div className="flex justify-end mb-4">
           <LanguageSwitcher />
         </div>

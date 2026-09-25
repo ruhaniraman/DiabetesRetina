@@ -19,6 +19,9 @@ export default function ListenToReport({ assessment, compact = false }) {
   const languageName = LANGUAGES.find((l) => l.code === lang)?.name || lang;
   const { status, problem, notice, reading, listen, stop, fail } = useSpeech({ allowNetwork: ALLOW_NETWORK_VOICES });
   const [showText, setShowText] = useState(!compact);
+  // The language the button was last tapped in. A problem or notice is about that language, so it is hidden once the language changes.
+  const [tappedIn, setTappedIn] = useState(null);
+  const current = tappedIn === lang;
   const script = useMemo(() => buildSpokenScript(assessment), [assessment]);
   const isEnglish = lang === 'en';
   const fixed = useMemo(() => (isEnglish ? null : buildTranslatedScript(lang, assessment)), [isEnglish, lang, assessment]);
@@ -32,6 +35,7 @@ export default function ListenToReport({ assessment, compact = false }) {
   const englishInstead = async () => ({ sentences: script, lang: 'en', fellBack: true });
 
   const start = () => {
+    setTappedIn(lang);
     if (isEnglish) return listen({ lang: 'en', prepare: english });
     if (!allowed) return fail('not-reviewed');                                            // the sentences are waiting for review
     if (!localScript) return listen({ lang: 'en', prepare: englishInstead });              // this particular result has no fixed sentence: say so, read English
@@ -73,7 +77,7 @@ export default function ListenToReport({ assessment, compact = false }) {
       <p role="status" className="text-[11px] text-slate-500 font-semibold min-h-4">
         {status === 'preparing' && t('listenPreparing')}
         {status === 'speaking' && t('listenSpeaking')}
-        {notice === 'translation-failed' && ` ${t('listenTranslationFailed')}`}
+        {current && notice === 'translation-failed' && ` ${t('listenTranslationFailed')}`}
       </p>
 
       <div className="rounded-xl bg-white/80 border border-slate-200/90 px-4 py-3">
@@ -100,13 +104,16 @@ export default function ListenToReport({ assessment, compact = false }) {
         )}
       </div>
 
-      {problem && (
+      {current && problem && (
         <div role="alert" className="rounded-xl bg-amber-50 border border-amber-200 text-amber-900 px-4 py-3 text-xs font-semibold space-y-2">
           <p>{t(PROBLEM_KEYS[problem], { language: languageName })}</p>
           {(problem === 'no-voice' || problem === 'online-only' || problem === 'not-reviewed') && lang !== 'en' && (
             <button
               type="button"
-              onClick={() => listen({ lang: 'en', prepare: english })}
+              onClick={() => {
+                setTappedIn(lang);
+                listen({ lang: 'en', prepare: english });
+              }}
               className="rounded-lg bg-slate-900 text-white px-3 py-1.5 font-bold cursor-pointer"
             >
               {t('listenEnglish')}

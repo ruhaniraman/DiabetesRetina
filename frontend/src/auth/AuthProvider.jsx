@@ -6,6 +6,8 @@ import { AuthContext } from './authContext';
 export default function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [status, setStatus] = useState('loading');
+  // Counts sign-ins in this tab (0 when the session was only restored on page load); the welcome tour starts on each new one.
+  const [loginCount, setLoginCount] = useState(0);
 
   // Restore the session on page load: the browser sends the HttpOnly cookie, the server says whether it is still valid.
   useEffect(() => {
@@ -28,6 +30,7 @@ export default function AuthProvider({ children }) {
   const signIn = useCallback((me) => {
     setUser(me); // the server has already set the session cookie
     setStatus('authenticated');
+    setLoginCount((n) => n + 1);
   }, []);
 
   const endSession = useCallback(() => {
@@ -60,6 +63,6 @@ export default function AuthProvider({ children }) {
     return () => setUnauthorizedHandler(null);
   }, [endSession]);
 
-  const value = useMemo(() => ({ user, status, signIn, signOut, deleteAccount }), [user, status, signIn, signOut, deleteAccount]);
+  const value = useMemo(() => ({ user, status, loginCount, signIn, signOut, deleteAccount }), [user, status, loginCount, signIn, signOut, deleteAccount]);
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

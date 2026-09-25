@@ -146,7 +146,7 @@ export default function SpecialistReviewPage({ session, onBack }) {
     <div className="min-h-screen bg-[#eef1f6] text-slate-800 font-sans antialiased">
       <HeroBand className="pb-24">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <header className="flex items-center justify-between gap-4 py-5">
+          <header data-tour="review" className="flex items-center justify-between gap-4 py-5">
             <div className="flex items-center gap-3">
               <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white shadow-lg shadow-black/20 shrink-0">
                 <Logo className="w-8 h-6" />

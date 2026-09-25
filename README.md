@@ -100,6 +100,16 @@ another service. If the phone has no voice for the chosen language the screen sa
 safety-critical sentences). Those sentences are drafts, so **Hindi and Kannada speech is off until they are reviewed** (`docs/SPOKEN_TRANSLATIONS_FOR_REVIEW.md`); English works now. The words being read are shown on the page,
 with the current sentence highlighted. Which sentences are spoken: `frontend/src/speech/reportScript.js`. Set `VITE_ALLOW_NETWORK_VOICES=true` only if you accept online voices, and `VITE_ALLOW_UNREVIEWED_SPEECH` (`hi`, `kn`, `hi,kn` or `true`) only for a demo that knowingly reads the unreviewed drafts of those languages (announced aloud first).
 
+## Welcome tour
+
+After every sign-in (not when a page reload only restores the session) a guided tour starts. It first spotlights the language buttons and asks "Choose your language" in all four
+scripts; tapping one switches the site and starts a hands-on walkthrough of a full screening. At most steps the person **does the task**: fill in their details, switch low-bandwidth
+mode, upload both photos (the tour waits until both pass the quality check), run the assessment, open the report, try a view, download the PDF, then visit Specialist review (only once there is
+a result), District Planner and Evidence and come back. Only the spotlighted element can be used; the tour moves on by itself when the task is done ("Done!"), and brings the person back if they
+leave the page. Steps without a task have Next; every task has "Skip this step"; Skip tour or Esc closes it, and the **Tour** button on the Dashboard replays it. Each popup is read aloud in the chosen language. The tour text holds no health information, so online voices may
+be used for it. Hindi, Kannada and Tamil narration are unreviewed drafts and follow the same `VITE_ALLOW_UNREVIEWED_SPEECH` switch as Listen (otherwise the popup says why it is text only).
+The speaker button mutes it (remembered in the browser). Steps and their tasks: `frontend/src/tour/steps.js`; words: `tour.*` in `frontend/src/locales/*.json`; elements are found by their `data-tour` attribute.
+
 ## The PDF report
 
 **Download PDF Report** (Detailed Report page) calls `POST /api/report-pdf` with both photographs and, optionally, the patient's name and date of birth. The server runs the

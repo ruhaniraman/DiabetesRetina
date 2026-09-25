@@ -411,5 +411,124 @@
     "blur_warn": "Image is slightly soft; results may be less reliable.",
     "dark_warn": "Image is dark; results may be less reliable.",
     "bright_warn": "Image is very bright; results may be less reliable."
+  },
+
+  "tour": {
+    "skip": "Skip tour",
+    "next": "Next",
+    "back": "Back",
+    "finish": "Finish",
+    "progress": "Step {{n}} of {{total}}",
+    "replay": "Tour",
+    "replayTitle": "Take the tour of the website",
+    "yourTurn": "Your turn",
+    "skipStep": "Skip this step",
+    "done": "Done! Moving on…",
+    "voiceOn": "Read the tour aloud",
+    "voiceOff": "Stop reading the tour aloud",
+    "noVoice": "This device has no {{language}} voice, so the tour is shown as text only.",
+    "notReviewed": "Spoken {{language}} is switched off until the translation has been checked, so the tour is shown as text only.",
+    "unsupported": "This browser cannot read text aloud, so the tour is shown as text only.",
+    "steps": {
+      "welcome": {
+        "title": "Welcome to Retina Rescue",
+        "text": "This tour walks you through a full eye screening. At most steps you do the task yourself: the tour waits for you, then moves on. Tap Next to begin, or Skip tour to close it."
+      },
+      "profile": {
+        "title": "Your health record",
+        "text": "Your details and readings such as HbA1c and blood pressure are shown here.",
+        "task": "Tap the pencil to fill in your details."
+      },
+      "patient": {
+        "title": "Patient details",
+        "text": "Your name, date of birth and diabetes readings are stored encrypted and appear on your report.",
+        "task": "Fill in the form and tap the save button at the bottom."
+      },
+      "lowBandwidth": {
+        "title": "Slow internet?",
+        "text": "Low-bandwidth mode makes photos smaller before they are sent, so they upload much faster on a slow mobile connection.",
+        "task": "Tap the box to switch it on or off."
+      },
+      "eyes": {
+        "title": "Upload a photo of each eye",
+        "text": "Each photo is checked for focus and lighting straight away. If a photo is blurry or dark, you are asked to take it again.",
+        "task": "Add a retina photo for the left eye and one for the right, and wait until both are accepted."
+      },
+      "run": {
+        "title": "Assess both eyes",
+        "text": "The AI grades each eye from Stage 0 to Stage 4 in a few seconds.",
+        "task": "Tap this button and wait for the result."
+      },
+      "banner": {
+        "title": "Your result",
+        "text": "The result for both eyes appears here: the stage of diabetic eye disease the AI sees, and whether it suggests seeing an eye specialist. The listen button reads it aloud."
+      },
+      "history": {
+        "title": "Past exams",
+        "text": "Each assessment is saved here, so you can see what changed in your eyes from one exam to the next."
+      },
+      "openReport": {
+        "title": "Open the detailed report",
+        "text": "The detailed report explains the result for each eye.",
+        "task": "Tap this button to open it."
+      },
+      "reportSummary": {
+        "title": "Result and referral",
+        "text": "Here you see the result for each eye, how confident the AI is, and whether a referral to an eye specialist is suggested."
+      },
+      "reportViews": {
+        "title": "See what the AI saw",
+        "text": "The AI heat map shows the areas that influenced the result. The enhanced photo and the anatomy view, with blood vessels, optic disc and fovea, help a doctor check the photo.",
+        "task": "Tap one of these views to see it."
+      },
+      "reportPdf": {
+        "title": "Download the report",
+        "text": "A PDF of the report can be shared with your doctor.",
+        "task": "Tap the button to download it."
+      },
+      "reportBack": {
+        "title": "Back to the dashboard",
+        "text": "You can open this report again at any time.",
+        "task": "Tap the back button to return to the dashboard."
+      },
+      "openReview": {
+        "title": "Specialist review",
+        "text": "An eye doctor can check this result in 30 seconds on the specialist review page.",
+        "task": "Tap Specialist review."
+      },
+      "review": {
+        "title": "The specialist's view",
+        "text": "The doctor sees both photos with the AI evidence and records their own grade. This page is in English.",
+        "task": "Tap Back when you are done."
+      },
+      "openDistrict": {
+        "title": "District Planner",
+        "text": "District Planner estimates the cameras, servers and staff a whole district needs.",
+        "task": "Tap District Planner."
+      },
+      "district": {
+        "title": "Planning a district",
+        "text": "This page models a district's screening programme for a year and finds the cheapest mix of cameras, servers and reviewers for it.",
+        "task": "Tap Back when you are done."
+      },
+      "openEvidence": {
+        "title": "Evidence",
+        "text": "Evidence shows how accurate the system was in testing.",
+        "task": "Tap Evidence."
+      },
+      "evidence": {
+        "title": "Tested results",
+        "text": "Each requirement of the screening problem is listed next to the result we measured on test photos the AI never trained on.",
+        "task": "Tap Back when you are done."
+      },
+      "account": {
+        "title": "Your account",
+        "text": "Delete your account and all its data here, or sign out when you are done."
+      },
+      "replay": {
+        "title": "That is the tour",
+        "text": "Tap this button any time to see the tour again."
+      }
+    }
   }
 }

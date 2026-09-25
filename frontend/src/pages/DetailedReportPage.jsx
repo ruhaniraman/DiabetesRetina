@@ -128,7 +128,7 @@ export default function DetailedReportPage({ patient, session, onBack }) {
   return (
     <div className="min-h-screen bg-[#eef1f6] text-slate-800 font-sans antialiased">
       <HeroBand className="pb-24 sm:pb-28">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col sm:flex-row sm:items-center justify-between gap-5">
+        <div data-tour="report-header" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col sm:flex-row sm:items-center justify-between gap-5">
           <div className="flex items-center gap-4">
             <button type="button" onClick={onBack} aria-label={t('report.back')} className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#1e293b] text-white ring-1 ring-slate-600 shadow-lg shadow-black/20 transition hover:bg-[#2a3a57] cursor-pointer">
               <FiArrowLeft className="text-lg" />
@@ -150,7 +150,7 @@ export default function DetailedReportPage({ patient, session, onBack }) {
       <main className="relative -mt-16 sm:-mt-20 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pb-12 space-y-6">
 
       {/* Patient + summary */}
-      <div className={`${cardClass} border-l-[6px] ${theme.accent} p-6 md:p-8 shadow-[0_20px_50px_-24px_rgba(15,23,42,0.35)] space-y-6 relative overflow-hidden`}>
+      <div data-tour="report-summary" className={`${cardClass} border-l-[6px] ${theme.accent} p-6 md:p-8 shadow-[0_20px_50px_-24px_rgba(15,23,42,0.35)] space-y-6 relative overflow-hidden`}>
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 relative z-10">
           <div className="space-y-2 flex-1">
             <div className="flex items-center gap-3 flex-wrap">
@@ -230,7 +230,7 @@ export default function DetailedReportPage({ patient, session, onBack }) {
             ))}
           </div>
 
-          <div className="flex bg-slate-100 p-1 rounded-2xl text-xs font-extrabold self-start md:self-auto" role="group" aria-label={t('report.viewGroup')}>
+          <div data-tour="report-views" className="flex bg-slate-100 p-1 rounded-2xl text-xs font-extrabold self-start md:self-auto" role="group" aria-label={t('report.viewGroup')}>
             <button type="button" aria-pressed={viewMode === 'original'} onClick={() => chooseView('original')} className={`px-3.5 py-2 rounded-xl transition cursor-pointer ${viewMode === 'original' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500'}`}>{t('report.originalPhoto')}</button>
             <button type="button" aria-pressed={viewMode === 'heatmap'} onClick={() => chooseView('heatmap')} className={`px-3.5 py-2 rounded-xl transition cursor-pointer ${viewMode === 'heatmap' ? 'bg-amber-500 text-white shadow-sm' : 'text-slate-500'}`}>{t('aiView')}</button>
             <button type="button" aria-pressed={viewMode === 'enhanced'} onClick={() => chooseView('enhanced')} className={`px-3.5 py-2 rounded-xl transition cursor-pointer ${viewMode === 'enhanced' ? 'bg-indigo-600 text-white shadow-sm' : 'text-slate-500'}`}>{t('report.enhancedBtn')}</button>
@@ -423,7 +423,7 @@ export default function DetailedReportPage({ patient, session, onBack }) {
             </div>
 
             {/* The report button takes the place the print button had. It is always shown; it is disabled, with the reason, until a report can be made. */}
-            <div className="space-y-1.5 print:hidden">
+            <div className="space-y-1.5 print:hidden" data-tour="report-pdf">
               <button
                 type="button"
                 disabled={!canDownload || pdf.status === 'working'}

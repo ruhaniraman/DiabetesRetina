@@ -17,6 +17,8 @@ import DetailedReportPage from './pages/DetailedReportPage';
 import DistrictPlannerPage from './pages/DistrictPlannerPage';
 import SpecialistReviewPage from './pages/SpecialistReviewPage';
 import EvidencePage from './pages/EvidencePage';
+import TourProvider from './tour/TourProvider';
+import { useTour } from './tour/tourContext';
 
 function FullScreenMessage({ children }) {
   return (
@@ -96,12 +98,17 @@ function AppShell() {
   const profile = usePatientProfile(user);
   const history = useExamHistory(session.assessment);
   if (profile.status === 'loading') return <FullScreenMessage>{t('common.loadingProfile')}</FullScreenMessage>;
-  return <Outlet context={{ user, session, profile, history }} />;
+  return (
+    <TourProvider session={session}>
+      <Outlet context={{ user, session, profile, history }} />
+    </TourProvider>
+  );
 }
 
 function DashboardRoute() {
   const { user, session, profile, history } = useOutletContext();
   const { signOut, deleteAccount } = useAuth();
+  const tour = useTour();
   const navigate = useNavigate();
   return (
     <Dashboard
@@ -114,6 +121,7 @@ function DashboardRoute() {
       onOpenDistrictPlanner={() => navigate('/district')}
       onOpenReview={() => navigate('/review')}
       onOpenEvidence={() => navigate('/evidence')}
+      onStartTour={tour?.start}
       onLogout={signOut}
       onDeleteAccount={deleteAccount}
     />

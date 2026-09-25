@@ -122,6 +122,23 @@ describe('ListenToReport in English', () => {
     await user.click(screen.getByRole('button', { name: 'हिंदी' }));
     expect(synth.cancelled).toBeGreaterThan(before);
   });
+
+  it('a problem belongs to the language it happened in: switching language hides it until the button is tapped again', async () => {
+    installFakeSpeech({ voices: [makeVoice('en-IN')] });
+    const user = await setup();
+    await user.click(screen.getByRole('button', { name: 'हिंदी' }));
+    await user.click(listenButton());
+    expect(await screen.findByRole('alert')).toHaveTextContent('हिंदी');
+
+    await user.click(screen.getByRole('button', { name: 'தமிழ்' }));
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'EN' }));
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'தமிழ்' }));
+    await user.click(listenButton());
+    expect(await screen.findByRole('alert')).toHaveTextContent('தமிழ்');
+  });
 });
 
 describe.each([
