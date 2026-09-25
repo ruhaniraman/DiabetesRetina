@@ -1,8 +1,10 @@
-function [f, maps] = nvFeatures(img, lesionModel)
+function [f, maps] = nvFeatures(img, lesionModel, vesselSource)
 % NVFEATURES  Image features that suggest new vessels (neovascularisation), for the NV suspicion model (Stage 2).
 %
 %   [f, maps] = nvFeatures(img)                 img: RGB fundus photograph or file path
 %   [f, maps] = nvFeatures(img, lesionModel)    reuse a loaded Stage2_LesionUNet_v2 model struct
+%   [f, maps] = nvFeatures(img, lesionModel, 'unet')   vessels from the trained vessel U-Net (segmentVesselsDL) instead of the classical
+%                                                     filter; fine vessels are then the thin parts of its mask (local width <= 3 px at 1024)
 %
 % New vessels are fine, tortuous, densely branching vessels on or near the optic disc (NVD) or elsewhere (NVE); proliferative DR can also
 % show large pre-retinal or vitreous haemorrhages. None of the problem-statement datasets has pixel masks for new vessels, so these
@@ -32,11 +34,21 @@ function [f, maps] = nvFeatures(img, lesionModel)
     heMask = imresize(crop(masks(:, :, strcmp(model.channels, 'HE'))), [size(work, 1) size(work, 2)], 'nearest');
     L = estimateFovea(odProb, fov);
 
-    % vessels: all scales vs the finest scales only
-    vAll = vesselSegmentation(work, struct('visualize', false, 'verbose', false));
-    vFine = vesselSegmentation(work, struct('visualize', false, 'verbose', false, 'vesselThicknesses', [2 3], 'threshPercentile', 90));
-    allV = vAll.vesselMask & fov;
-    fine = vFine.vesselMask & fov & ~imdilate(bwareaopen(allV, 400), strel('disk', 2));   % thin structure not part of the main vessel tree
+    if nargin < 3 || isempty(vesselSource), vesselSource = 'classical'; end
+    if strcmp(vesselSource, 'unet')
+        % vessels: the trained vessel U-Net; fine vessels: its thin parts (local width <= 3 px) that are not part of a large connected tree
+        [~, vmask] = segmentVesselsDL(work);
+        allV = vmask & fov;
+        width = 2 * bwdist(~allV);
+        thin = allV & ~imdilate(width > 3, strel('disk', 2));
+        fine = thin & ~imdilate(bwareaopen(allV & ~thin, 400), strel('disk', 2));
+    else
+        % vessels: all scales vs the finest scales only
+        vAll = vesselSegmentation(work, struct('visualize', false, 'verbose', false));
+        vFine = vesselSegmentation(work, struct('visualize', false, 'verbose', false, 'vesselThicknesses', [2 3], 'threshPercentile', 90));
+        allV = vAll.vesselMask & fov;
+        fine = vFine.vesselMask & fov & ~imdilate(bwareaopen(allV, 400), strel('disk', 2));   % thin structure not part of the main vessel tree
+    end
     skel = bwskel(allV, 'MinBranchLength', 5);
     bp = bwmorph(skel, 'branchpoints'); ep = bwmorph(skel, 'endpoints');
 

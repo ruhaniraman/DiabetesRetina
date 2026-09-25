@@ -154,11 +154,20 @@ def main():
     if loc:
         od = np.array([r["odErrPx"] for r in loc], float); fv = np.array([r["foveaErrPx"] for r in loc], float)
         md.append(f"| Stage 2: optic disc / fovea centre, IDRiD test (mean distance) | winners: 21.1 px / 64.5 px [4] | {np.nanmean(od):.1f} px / {np.nanmean(fv):.1f} px | "
-                  "yes: same 103 photographs (our fovea is estimated from the disc, not detected) |")
+                  "yes: same 103 photographs (disc from the lesion network, fovea estimated from the disc) |")
+        if loc and loc[0].get("foveaErrPxLocaliser") is not None:
+            od2 = np.array([r["odErrPxLocaliser"] for r in loc], float); fv2 = np.array([r["foveaErrPxLocaliser"] for r in loc], float)
+            md.append(f"| Stage 2: optic disc / fovea centre, IDRiD test, **trained localiser** (mean distance) | winners: 21.1 px / 64.5 px [4] | "
+                      f"{np.nanmean(od2):.1f} px / {np.nanmean(fv2):.1f} px | yes: same 103 photographs (fovea detected) |")
     if vessels:
         mv = lambda k: np.mean([float(r[k]) for r in vessels])
         md.append(f"| Stage 2: vessels, DRIVE (accuracy / sensitivity) | 2nd human observer 0.946 / 0.780; B-COSFIRE (unsupervised) 0.944 / 0.766 [5] | "
                   f"{mv('accuracy'):.3f} / {mv('sensitivity'):.3f} | indicative: published on DRIVE's test set, ours on its 20 annotated training photographs |")
+    if (RES / "vessels_drive_unet_cv.csv").exists():
+        cv = rows("vessels_drive_unet_cv")
+        mc = lambda k: np.mean([float(r[k]) for r in cv])
+        md.append(f"| Stage 2: vessels, DRIVE, **trained U-Net** (accuracy / sensitivity / AUC) | 2nd human observer 0.946 / 0.780; B-COSFIRE 0.944 / 0.766 / 0.961 [5] | "
+                  f"{mc('accuracy'):.3f} / {mc('sensitivity'):.3f} / {mc('auc'):.3f} | indicative: out-of-fold cross-validation on the 20 annotated training photographs |")
     md += ["", "Sources:",
            "1. Abràmoff MD et al. Improved automated detection of diabetic retinopathy on a publicly available dataset through integration of deep learning. "
            "IOVS 2016;57:5200-6. https://iovs.arvojournals.org/arvo/content_public/journal/iovs/935768/i1552-5783-57-13-5200.pdf",

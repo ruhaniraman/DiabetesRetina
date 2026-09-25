@@ -1,9 +1,11 @@
-function buildNvDataset()
+function buildNvDataset(vesselSource)
 % BUILDNVDATASET  NV features (nvFeatures) for the photographs the NV suspicion model is trained and tested on.
 %
 % Train: from the Stage 3 TRAIN split (stage_3/finetune/manifest.csv), every Proliferative and Severe photograph of APTOS and IDRiD (the
 % contrast that matters) plus a fixed random sample of the other grades. Test: all of the held-out APTOS test (548) and IDRiD test (103)
 % photographs. Writes validation/results/nv_features.csv (one row per photograph; split says train or test). About 90 minutes on a GPU.
+% buildNvDataset('unet') uses the trained vessel U-Net for the vessel features and writes nv_features_unet.csv instead.
+    if nargin < 1 || isempty(vesselSource), vesselSource = 'classical'; end
     root = fileparts(fileparts(fileparts(mfilename('fullpath'))));
     addpath(fullfile(root, 'utils'), fullfile(root, 'stage1_quality'), fullfile(root, 'stage2_structure'), ...
         fullfile(root, 'stage2_structure', 'dl'), fullfile(root, 'stage2_structure', 'nv'));
@@ -31,7 +33,7 @@ function buildNvDataset()
     t0 = tic;
     for i = 1:height(M)
         try
-            f = nvFeatures(M.path{i}, S.model);
+            f = nvFeatures(M.path{i}, S.model, vesselSource);
             f.id = M.id{i}; f.dataset = M.dataset{i}; f.split = M.split{i}; f.label = M.label{i};
             rowsOut{i} = f;
         catch err
@@ -42,6 +44,8 @@ function buildNvDataset()
     rowsOut = rowsOut(~cellfun(@isempty, rowsOut));
     T = struct2table([rowsOut{:}]);
     T = movevars(T, {'id', 'dataset', 'split', 'label'}, 'Before', 1);
-    writetable(T, fullfile(root, 'validation', 'results', 'nv_features.csv'));
+    out = 'nv_features.csv';
+    if strcmp(vesselSource, 'unet'), out = 'nv_features_unet.csv'; end
+    writetable(T, fullfile(root, 'validation', 'results', out));
     fprintf('Wrote %d rows\n', height(T));
 end
