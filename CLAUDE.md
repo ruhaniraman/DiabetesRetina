@@ -56,35 +56,30 @@ The full problem statement is in `context.txt` at the repo root. That file is lo
 
 ## Gaps against the problem statement (open)
 1. Stage 1 runs in Python by default; `STAGE1_ENGINE=matlab` runs the MATLAB port (`assessFundusQualityFile.m`), falling back to Python when MATLAB is down.
-2. **Neovascularization**: none of the PS datasets has NV masks. The app shows the calibrated CNN P(PDR) in the specialist review. `buildNvDataset('unet')` + `nv_eval.py unet` (NV features from the vessel U-Net) are written but not yet run (~90 min). `stage2_structure/nv/` builds an image-level NV suspicion model from vessel and haemorrhage features, validated against the proliferative grade (`validation/results/nv.md`). Its AUC for PDR vs other grades is 0.77 on APTOS and 0.86 on IDRiD, weaker than the CNN's P(PDR) (0.91), and combining the two doesn't help. It is not shown in the app.
-3. **Vessels**: closed by the vessel U-Net (see headline). The NV features still use the classical `vesselSegmentation.m`. DRIVE is in `data/drive/DRIVE/` (Kaggle mirror, manual masks for the 20 training photos only).
+2. **Neovascularization**: none of the PS datasets has NV masks. The app shows the calibrated CNN P(PDR) in the specialist review (AUC 0.91 for PDR on both test sets). `stage2_structure/nv/` builds an image-level NV suspicion model from vessel and haemorrhage features (`validation/results/nv.md`): AUC 0.77 (APTOS) / 0.86 (IDRiD) with the classical vessels, weaker than P(PDR), and combining doesn't help; not shown in the app. **The rebuild with the vessel U-Net is NOT done**: `buildNvDataset('unet')` then `python validation/nv_eval.py unet` (writes `nv_features_unet.csv`, `nv_unet.md/json`). It takes ~42 min (1.8 s/photo, 1,398 photos); a run on 2026-09-25 was stopped at the user's request at ~150 photos. Stop the backend first.
+3. **Vessels**: closed by the vessel U-Net with enhanced input (see headline). DRIVE is in `data/drive/DRIVE/` (Kaggle mirror, manual masks for the 20 training photos only).
 4. **Benchmarks** (`validation/results/benchmark.md`): integrated (CNN + lesion network) vs CNN alone gives AUC +0.001 on APTOS and -0.005 on IDRiD, both within noise. The integrated pipeline beats the classical rule-based detector by a wide margin but does **not** beat the CNN alone for the referral decision. Against published results: the localiser beats the IDRiD winners (disc 14.9 vs 21.1 px, fovea 53.8 vs 64.5 px) and the vessel U-Net beats published DRIVE figures (indicative); IDRiD grade accuracy (0.553 vs 0.631) and lesion AUPR (0.08-0.19 lower) still trail.
 5. **Messidor-2** images are awaited from ADCIS (`data/messidor2/IMAGES/` is empty); `evaluateFinetuned` includes them automatically.
 6. The retired OpenCV overlay is kept in `validation/legacy_overlay.py` (copied from commit 73057ad) only so `LESIONS.md` can be reproduced; `evaluate_lesions.py` uses it.
 7. Wording needs clinician review (`CLINICAL_REVIEW.md`, incl. section 3e).
-8. **Translation review (team to do):** the hi/kn/ta strings Claude drafted on 2026-09-24 still need a native-speaker check. They are the `report.evidence*` keys (lesion evidence against ICDR) and the updated `clinical.stageNote` numbers in `frontend/src/locales/{hi,kn,ta}.json`. The earlier "Possible lesions" overlay strings were already verified by the team.
+8. **Translation review (team to do):** the hi/kn/ta strings Claude drafted on 2026-09-24 still need a native-speaker check. They are the `report.evidence*` keys (lesion evidence against ICDR) and the updated `clinical.stageNote` numbers in `frontend/src/locales/{hi,kn,ta}.json`. The earlier "Possible lesions" overlay strings were already verified by the team. Added 2026-09-25, also to check: `report.anatomy*`, `report.enhanced*`, `dash.lowBandwidth*`, `dash.transfer`, `history.higher/lower/same`.
 
-## Overnight 2026-09-24/25 (uncommitted at the end of the session unless noted)
-- New: vessel U-Net, disc/fovea localiser, Anatomy + Enhanced views, specialist review, District Planner + `/api/simulation/run`, low-bandwidth mode, Evidence page, exam change chips, `STAGE1_ENGINE`, P(PDR) from Stage 3 (`assessBilateralFromFiles` now has 10 outputs). Demo guide: `docs/DEMO_WALKTHROUGH.md`; demo photos in `data/demo/` (local).
-- New hi/kn/ta strings to review: `report.anatomy*`, `report.enhanced*`, `dash.lowBandwidth*`, `dash.transfer`, `history.higher/lower/same`.
-- `measureAiSeconds` with the anatomy step: 31.1 s per patient (was 4.5 s without it). The Anatomy view is on demand, so `districtParameters.aiSecondsPerPatient` was left at 4.5; revisit if anatomy becomes part of every exam.
-- The vessel U-Net was retrained with enhancement (the raw-input network found only the main arcades on IDRiD); the raw one is kept locally in `data/Stage2_VesselUNet_raw_backup.mat`. The Enhanced view shrinks photos to 2048 px first (was ~35 s on 12 MP).
-- Local demo config: `backend/.env` has MATLAB on, `ENABLE_LESION_OVERLAY=true`, `STAGE1_ENGINE=matlab` (original in `data/backend.env.before-demo`); `frontend/.env.local` turns the overlay on. Test account: `e2e.1790303566@example.com`.
-
-## Where we left off (2026-09-24 evening)
-- Everything is committed on branch `stage2-unet-stage3-finetune`: 11 commits on top of `73057ad`, **not pushed and not merged into `main`**. The working tree was clean. All tests passed at the last run: backend 323, validation + calibration 61, frontend 278, lint clean.
-- **Waiting on the user or team:**
-  1. Messidor-2 images. ADCIS requires the user to accept its licence; Claude does not download from unofficial mirrors. Then run `stage_3/finetune/evaluateFinetuned.m` and add a Messidor-2 row to `validation/results/benchmark.md`.
-  2. Clinician review of `docs/CLINICAL_REVIEW.md`, then turn on the lesion overlay (`ENABLE_LESION_OVERLAY` / `VITE_ENABLE_LESION_OVERLAY`).
-  3. Native-speaker check of the hi/kn/ta strings (gap 8).
-  4. Decide whether to push the branch and merge it into `main`.
-- **Possible next technical steps:**
-  - a trained vessel model on DRIVE, to close the ~0.05 accuracy gap;
-  - a direct fovea detector, since the estimate from the disc is about 4x the challenge winner's error;
-  - improving IDRiD specificity with more IDRiD-like training data or per-site calibration;
-  - pixel-level new-vessel data (FGADR, on request) for real NV segmentation;
-  - optionally, switching the backend's Stage 1 to the MATLAB port.
-- **Local-only files** (not in git): `stage_3/Stage3_previous_224px_Model.mat` (backup of the old deployed model), `Stage3_Finetuned_run1.mat`, `Stage3_Finetuned_Model.mat` (a copy of run 2), and `trainedNet.mat`. `backend/.env` still has `DISABLE_MATLAB=true`; remove it to run Stages 2-4 locally.
+## Where we left off (2026-09-25 morning)
+- Branch `stage2-unet-stage3-finetune`: 15 commits on top of `73057ad`, **not pushed, not merged into `main`**. All commits are subject-line only (history rewritten on 2026-09-25; see Repo notes). The working tree was clean after `fd51d4a`, apart from this file.
+- Tests at the last run: backend 331, validation + calibration 64, frontend 302 and lint clean. **The frontend suite needs `VITE_ENABLE_LESION_OVERLAY` off** (one test checks the default); `frontend/.env.local` currently turns it on for the demo, so run `VITE_ENABLE_LESION_OVERLAY=false npx vitest run`.
+- Added overnight (all committed): vessel U-Net (enhanced input), disc/fovea localiser, Anatomy + Enhanced report views, specialist review (`/review`), District Planner with Confirm in Simulink (`/district`, `/api/simulation/run`), low-bandwidth mode, Evidence page (`/evidence`), exam change chips, `STAGE1_ENGINE`, P(PDR) from Stage 3 (`assessBilateralFromFiles` has 10 outputs). Demo guide: `docs/DEMO_WALKTHROUGH.md`.
+- Verified end to end through the real API with MATLAB on 2026-09-25: Stage 1 in MATLAB (accept/reject), grading, Grad-CAM, Enhanced (5-7 s), Anatomy (~16 s), lesions, PDF, `/api/simulation`, `/api/simulation/run`. Not yet clicked through in a browser by the user.
+- **State of the machine:** backend stopped (it was stopped for the NV rebuild); frontend (5173) and auth-server (4000) were running from this session and will not survive a restart. Start all three as in *Running*.
+- **Local demo config (not in git):** `backend/.env` has `DISABLE_MATLAB` commented out, `ENABLE_LESION_OVERLAY=true`, `STAGE1_ENGINE=matlab` (the original file is `data/backend.env.before-demo`); `frontend/.env.local` has `VITE_ENABLE_LESION_OVERLAY=true`. Test account: `e2e.1790303566@example.com` / `Demo-pass-2026!`. Email is not configured (codes go to the auth-server console); the user chose not to set up Gmail OTP for now. Demo photos: `data/demo/` (held-out test photos).
+- `measureAiSeconds` with the anatomy step: 31.1 s per patient (4.5 s without it). Anatomy is on demand, so `districtParameters.aiSecondsPerPatient` stays 4.5.
+- **Next up / waiting:**
+  1. The user will make the PPT and demo video (their task; follow `docs/DEMO_WALKTHROUGH.md`).
+  2. NV rebuild with the vessel U-Net (gap 2), if wanted.
+  3. Messidor-2 images from ADCIS (the user must accept the licence; Claude does not use unofficial mirrors), then `stage_3/finetune/evaluateFinetuned.m` and a Messidor-2 row in `benchmark.md`.
+  4. Clinician review of `docs/CLINICAL_REVIEW.md`; native-speaker check of the hi/kn/ta strings (gap 8).
+  5. Decide whether to push the branch and merge into `main`.
+  6. Possible technical steps: IDRiD specificity (more IDRiD-like data or per-site calibration), pixel-level NV data (FGADR, on request).
+- **Local-only files** (not in git): `stage_3/Stage3_previous_224px_Model.mat`, `Stage3_Finetuned_run1.mat`, `Stage3_Finetuned_Model.mat`, `trainedNet.mat`, `data/Stage2_VesselUNet_raw_backup.mat` (the raw-input vessel network).
 
 ## Environment notes
 - Training runs on Manosh's machine: RTX 3050 6 GB, 24 GB RAM, **MATLAB R2026a at `D:\MATLAB`** (`D:/MATLAB/bin/matlab.exe -batch ...` works headless). C: has about 5 GB free.
@@ -93,6 +88,7 @@ The full problem statement is in `context.txt` at the repo root. That file is lo
 - `data/` (gitignored) has DRIVE (`drive/DRIVE/`), APTOS (224 px copies in `aptos2019/`, full resolution in `aptos2019_full/`), IDRiD grading/segmentation/localization, the Messidor-2 grades CSV, and caches in `stage2_cache/` and `stage3_cache/`. `stage_3/finetune/manifest.csv` is machine-specific (ignored); `splits.csv` is the record.
 
 ## Repo notes
-- `*.mat`, `*.png` and `results/` are gitignored except `validation/results/`. The tracked ones were force-added (the deployed Stage 3 model, `Stage2_LesionUNet_v2.mat`, `stage5_simulink/results/`). The model `.mat` files are large binaries in git with no LFS.
-- Work since 2026-09-24 is on branch `stage2-unet-stage3-finetune` (not pushed; see "Where we left off"). `stage_3/trainedNet.mat` was removed from the repo (restore with `git checkout 73057ad -- stage_3/trainedNet.mat`).
+- `*.mat`, `*.png` and `results/` are gitignored except `validation/results/`. The tracked ones were force-added (the deployed Stage 3 model, `Stage2_LesionUNet_v2.mat`, `Stage2_VesselUNet.mat`, `Stage2_Localiser.mat`, `stage5_simulink/results/`). `.gitignore`'s `data/` would also hide `frontend/src/data/`, so that folder is explicitly un-ignored. The model `.mat` files are large binaries in git with no LFS.
+- Work since 2026-09-24 is on branch `stage2-unet-stage3-finetune` (not pushed; see "Where we left off").
+- **Commit style (user's rule):** one brief subject line, no body, no Claude co-author or session trailer. `stage_3/trainedNet.mat` was removed from the repo (restore with `git checkout 73057ad -- stage_3/trainedNet.mat`).
 - On 2026-09-23 upstream `main` was force-pushed (history rewritten, new hashes). A clone from before that date must be reset to `origin/main`, not merged.
