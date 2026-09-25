@@ -5,7 +5,10 @@
     "foveaErrPx": 509.77798227897125,
     "foveaBaselineErrPx": 203.33838791531716,
     "discDiamPx": 509.44126256124957,
-    "discFound": true
+    "discFound": true,
+    "odErrPxLocaliser": 19.355268372785211,
+    "foveaErrPxLocaliser": 55.428105821502577,
+    "foveaConfidence": 0.84634193887872455
   },
   {
     "id": "IDRiD_002",
@@ -13,7 +16,10 @@
     "foveaErrPx": 206.44615930367229,
     "foveaBaselineErrPx": 129.99423064120961,
     "discDiamPx": 500.08639253632964,
-    "discFound": true
+    "discFound": true,
+    "odErrPxLocaliser": 4.0260215683723546,
+    "foveaErrPxLocaliser": 35.126414160952521,
+    "foveaConfidence": 0.93682105300465424
   },
   {
     "id": "IDRiD_003",
@@ -21,7 +27,10 @@
     "foveaErrPx": 331.792820786529,
     "foveaBaselineErrPx": 627.9749198813596,
     "discDiamPx": 592.39365290320256,
-    "discFound": true
+    "discFound": true,
+    "odErrPxLocaliser": 179.7589347079147,
+    "foveaErrPxLocaliser": 54.2637188975345,
+    "foveaConfidence": 0.89572909052271155
   },
   {
     "id": "IDRiD_004",
@@ -29,7 +38,10 @@
     "foveaErrPx": 197.35026999039241,
     "foveaBaselineErrPx": 446.98014497290592,
     "discDiamPx": 529.7789727801586,
-    "discFound": true
+    "discFound": true,
+    "odErrPxLocaliser": 2.9540513009254821,
+    "foveaErrPxLocaliser": 15.896054191399246,
+    "foveaConfidence": 0.98080774263568538
   },
   {
     "id": "IDRiD_005",
@@ -37,7 +49,10 @@
     "foveaErrPx": 366.28271936114561,
     "foveaBaselineErrPx": 258.26827137687667,
     "discDiamPx": 436.55267723380183,
-    "discFound": true
+    "discFound": true,
+    "odErrPxLocaliser": 3.7361126550677994,
+    "foveaErrPxLocaliser": 42.80610896772572,
+    "foveaConfidence": 0.50556090341186222
   },
   {
     "id": "IDRiD_006",
@@ -45,7 +60,10 @@
     "foveaErrPx": 109.8635283545829,
     "foveaBaselineErrPx": 294.41509811828604,
     "discDiamPx": 488.22371921077331,
-    "discFound": true
+    "discFound": true,
+    "odErrPxLocaliser": 10.682419040495267,
+    "foveaErrPxLocaliser": 125.12389782838119,
+    "foveaConfidence": 0.94665609083449
   },
   {
     "id": "IDRiD_007",
@@ -53,7 +71,10 @@
     "foveaErrPx": 170.16173865779723,
     "foveaBaselineErrPx": 359.62549965206858,
     "discDiamPx": 591.525485503372,
-    "discFound": true
+    "discFound": true,
+    "odErrPxLocaliser": 10.446181427271503,
+    "foveaErrPxLocaliser": 329.22352727138713,
+    "foveaConfidence": 0.65798520325097032
   },
   {
     "id": "IDRiD_008",
@@ -61,7 +82,10 @@
     "foveaErrPx": 234.91672436372551,
     "foveaBaselineErrPx": 241.20167909863315,
     "discDiamPx": 528.35139821902624,
-    "discFound": true
+    "discFound": true,
+    "odErrPxLocaliser": 11.975711571220563,
+    "foveaErrPxLocaliser": 26.064117448372333,
+    "foveaConfidence": 0.97036173286071115
   },
   {
     "id": "IDRiD_009",
@@ -69,7 +93,10 @@
     "foveaErrPx": 141.05308668509278,
     "foveaBaselineErrPx": 246.19606008220359,
     "discDiamPx": 493.01375234368459,
-    "discFound": true
+    "discFound": true,
+    "odErrPxLocaliser": 23.183794480520216,
+    "foveaErrPxLocaliser": 9.042152925173335,
+    "foveaConfidence": 0.81496060333597309
   },
   {
     "id": "IDRiD_010",
@@ -77,7 +104,10 @@
     "foveaErrPx": 207.21099014431238,
     "foveaBaselineErrPx": 426.39711537485806,
     "discDiamPx": 474.27519437558612,
-    "discFound": true
+    "discFound": true,
+    "odErrPxLocaliser": 12.080981278884918,
+    "foveaErrPxLocaliser": 8.7618716964376251,
+    "foveaConfidence": 0.93852421512483342
   },
   {
     "id": "IDRiD_011",
@@ -85,7 +115,10 @@
     "foveaErrPx": 275.75797584809993,
     "foveaBaselineErrPx": 210.28849231472464,
     "discDiamPx": 469.066306613468,
-    "discFound": true
+    "discFound": true,
+    "odErrPxLocaliser": 16.031727034099749,
+    "foveaErrPxLocaliser": 5.4538466176750564,
+    "foveaConfidence": 0.95524398515552644
   },
   {
     "id": "IDRiD_012",
@@ -93,7 +126,10 @@
     "foveaErrPx": 339.68344422467482,
     "foveaBaselineErrPx": 102.47194738073441,
     "discDiamPx": 501.76073979537296,
-    "discFound": true
+    "discFound": true,
+    "odErrPxLocaliser": 8.5680297030541226,
+    "foveaErrPxLocaliser": 29.56574207704379,
+    "foveaConfidence": 0.94890171550244706
   },
   {
     "id": "IDRiD_013",
@@ -101,7 +137,10 @@
     "foveaErrPx": 265.0383747272939,
     "foveaBaselineErrPx": 155.11689140773805,
     "discDiamPx": 524.1717275855309,
-    "discFound": true
+    "discFound": true,
+    "odErrPxLocaliser": 4.7672131535952174,
+    "foveaErrPxLocaliser": 14.459993909436143,
+    "foveaConfidence": 0.9638851110362977
   },
   {
     "id": "IDRiD_014",
@@ -109,7 +148,10 @@
     "foveaErrPx": 970.96067788689743,
     "foveaBaselineErrPx": 508.86171992005842,
     "discDiamPx": 520.28622891635337,
-    "discFound": true
+    "discFound": true,
+    "odErrPxLocaliser": 40.593869013398781,
+    "foveaErrPxLocaliser": 20.419484141533772,
+    "foveaConfidence": 0.80017069326872359
   },
   {
     "id": "IDRiD_015",
@@ -117,7 +159,10 @@
     "foveaErrPx": 170.29649350730537,
     "foveaBaselineErrPx": 170.17197184025341,
     "discDiamPx": 449.94044050296259,
-    "discFound": true
+    "discFound": true,
+    "odErrPxLocaliser": 18.493444053869815,
+    "foveaErrPxLocaliser": 79.960297065619542,
+    "foveaConfidence": 0.54439819351825813
   },
   {
     "id": "IDRiD_016",
@@ -125,7 +170,10 @@
     "foveaErrPx": 149.86356370876203,
     "foveaBaselineErrPx": 152.27770683852577,
     "discDiamPx": 521.80992708073313,
-    "discFound": true
+    "discFound": true,
+    "odErrPxLocaliser": 5.8782819102885675,
+    "foveaErrPxLocaliser": 39.990048239035424,
+    "foveaConfidence": 0.93637519356937882
   },
   {
     "id": "IDRiD_017",
@@ -133,7 +181,10 @@
     "foveaErrPx": 396.0771265355408,
     "foveaBaselineErrPx": 220.19650315116269,
     "discDiamPx": 520.29668459447248,
-    "discFound": true
+    "discFound": true,
+    "odErrPxLocaliser": 10.959898582058919,
+    "foveaErrPxLocaliser": 502.35430211112589,
+    "foveaConfidence": 0.35739886443827357
   },
   {
     "id": "IDRiD_018",
@@ -141,7 +192,10 @@
     "foveaErrPx": 272.46717509106259,
     "foveaBaselineErrPx": 272.51513719424833,
     "discDiamPx": 482.68333304559,
-    "discFound": true
+    "discFound": true,
+    "odErrPxLocaliser": 7.3906891398632606,
+    "foveaErrPxLocaliser": 6.3907154051986712,
+    "foveaConfidence": 0.96166828791649828
   },
   {
     "id": "IDRiD_019",
@@ -149,7 +203,10 @@
     "foveaErrPx": 354.50129197014979,
     "foveaBaselineErrPx": 304.79706363414988,
     "discDiamPx": 496.18141843483016,
-    "discFound": true
+    "discFound": true,
+    "odErrPxLocaliser": 4.0398698572189717,
+    "foveaErrPxLocaliser": 37.741236934788546,
+    "foveaConfidence": 0.9246236037091321
   },
   {
     "id": "IDRiD_020",
@@ -157,7 +214,10 @@
     "foveaErrPx": 338.14386256103643,
     "foveaBaselineErrPx": 520.00600958065854,
     "discDiamPx": 484.51806983847365,
-    "discFound": true
+    "discFound": true,
+    "odErrPxLocaliser": 15.05560250414991,
+    "foveaErrPxLocaliser": 12.880941172390028,
+    "foveaConfidence": 0.93255783561483374
   },
   {
     "id": "IDRiD_021",
@@ -165,7 +225,10 @@
     "foveaErrPx": 271.67988637482023,
     "foveaBaselineErrPx": 259.63532117183132,
     "discDiamPx": 410.08760039776871,
-    "discFound": true
+    "discFound": true,
+    "odErrPxLocaliser": 20.885294580989356,
+    "foveaErrPxLocaliser": 144.94867750627435,
+    "foveaConfidence": 0.81050336357933983
   },
   {
     "id": "IDRiD_022",
@@ -173,7 +236,10 @@
     "foveaErrPx": 248.21508868325341,
     "foveaBaselineErrPx": 62.163091943692763,
     "discDiamPx": 455.03336141430339,
-    "discFound": true
+    "discFound": true,
+    "odErrPxLocaliser": 9.6377690937385765,
+    "foveaErrPxLocaliser": 82.511511540474316,
+    "foveaConfidence": 0.76599679375437457
   },
   {
     "id": "IDRiD_023",
@@ -181,7 +247,10 @@
     "foveaErrPx": 607.40325298358437,
     "foveaBaselineErrPx": 157.28715777201901,
     "discDiamPx": 517.699681282498,
-    "discFound": true
+    "discFound": true,
+    "odErrPxLocaliser": 10.627743360281213,
+    "foveaErrPxLocaliser": 27.148572104865185,
+    "foveaConfidence": 0.8587785207977725
   },
   {
     "id": "IDRiD_024",
@@ -189,7 +258,10 @@
     "foveaErrPx": 358.57438190065631,
     "foveaBaselineErrPx": 306.13804075939339,
     "discDiamPx": 550.12318620469,
-    "discFound": true
+    "discFound": true,
+    "odErrPxLocaliser": 13.55346989271704,
+    "foveaErrPxLocaliser": 28.599721523067366,
+    "foveaConfidence": 0.84901742013974546
   },
   {
     "id": "IDRiD_025",
@@ -197,7 +269,10 @@
     "foveaErrPx": 433.4567907902,
     "foveaBaselineErrPx": 526.86098735814551,
     "discDiamPx": 552.8800231514972,
-    "discFound": true
+    "discFound": true,
+    "odErrPxLocaliser": 7.31275027692919,
+    "foveaErrPxLocaliser": 19.548628393539754,
+    "foveaConfidence": 0.92706788775822957
   },
   {
     "id": "IDRiD_026",
@@ -205,7 +280,10 @@
     "foveaErrPx": 289.72220896221171,
     "foveaBaselineErrPx": 444.5812636627864,
     "discDiamPx": 562.00697504568393,
-    "discFound": true
+    "discFound": true,
+    "odErrPxLocaliser": 14.670091206368745,
+    "foveaErrPxLocaliser": 16.818401268671618,
+    "foveaConfidence": 0.90891087617981869
   },
   {
     "id": "IDRiD_027",
@@ -213,7 +291,10 @@
     "foveaErrPx": 52.951908038340953,
     "foveaBaselineErrPx": 277.55449915286908,
     "discDiamPx": 527.96393816244677,
-    "discFound": true
+    "discFound": true,
+    "odErrPxLocaliser": 4.7851422690049734,
+    "foveaErrPxLocaliser": 16.291466840740924,
+    "foveaConfidence": 0.86880522726991116
   },
   {
     "id": "IDRiD_028",
@@ -221,7 +302,10 @@
     "foveaErrPx": 46.086568596643161,
     "foveaBaselineErrPx": 331.99774095616976,
     "discDiamPx": 498.18566820011995,
-    "discFound": true
+    "discFound": true,
+    "odErrPxLocaliser": 8.25124386487542,
+    "foveaErrPxLocaliser": 13.686498541793966,
+    "foveaConfidence": 0.79377116932714287
   },
   {
     "id": "IDRiD_029",
@@ -229,7 +313,10 @@
     "foveaErrPx": 661.02444528886906,
     "foveaBaselineErrPx": 454.49367432341671,
     "discDiamPx": 550.76877180900522,
-    "discFound": true
+    "discFound": true,
+    "odErrPxLocaliser": 4.5324713708110949,
+    "foveaErrPxLocaliser": 9.5321774459005653,
+    "foveaConfidence": 0.9088813092839616
   },
   {
     "id": "IDRiD_030",
@@ -237,7 +324,10 @@
     "foveaErrPx": 223.44745335212593,
     "foveaBaselineErrPx": 399.03414640854987,
     "discDiamPx": 508.94982070927188,
-    "discFound": true
+    "discFound": true,
+    "odErrPxLocaliser": 11.177320938467723,
+    "foveaErrPxLocaliser": 31.037687604647488,
+    "foveaConfidence": 0.96065862358107434
   },
   {
     "id": "IDRiD_031",
@@ -245,7 +335,10 @@
     "foveaErrPx": 149.8655076800066,
     "foveaBaselineErrPx": 434.03484883128914,
     "discDiamPx": 531.27288656584,
-    "discFound": true
+    "discFound": true,
+    "odErrPxLocaliser": 20.494078557072207,
+    "foveaErrPxLocaliser": 77.684129727518524,
+    "foveaConfidence": 0.897139443486624
   },
   {
     "id": "IDRiD_032",
@@ -253,7 +346,10 @@
     "foveaErrPx": 69.123347596258171,
     "foveaBaselineErrPx": 567.02072272536918,
     "discDiamPx": 575.65017154518421,
-    "discFound": true
+    "discFound": true,
+    "odErrPxLocaliser": 4.3843955081905026,
+    "foveaErrPxLocaliser": 45.972131693089764,
+    "foveaConfidence": 0.61643307936800529
   },
   {
     "id": "IDRiD_033",
@@ -261,7 +357,10 @@
     "foveaErrPx": 711.09667092678455,
     "foveaBaselineErrPx": 99.8060619401447,
     "discDiamPx": 527.53873791409865,
-    "discFound": true
+    "discFound": true,
+    "odErrPxLocaliser": 6.3543943695472436,
+    "foveaErrPxLocaliser": 148.08969233617557,
+    "foveaConfidence": 0.50231795737091689
   },
   {
     "id": "IDRiD_034",
@@ -269,7 +368,10 @@
     "foveaErrPx": 146.92173754632023,
     "foveaBaselineErrPx": 403.50278809445666,
     "discDiamPx": 523.41906728738877,
-    "discFound": true
+    "discFound": true,
+    "odErrPxLocaliser": 16.515553634583512,
+    "foveaErrPxLocaliser": 14.712075218772863,
+    "foveaConfidence": 0.96644544516479935
   },
   {
     "id": "IDRiD_035",
@@ -277,7 +379,10 @@
     "foveaErrPx": 61.6813716114671,
     "foveaBaselineErrPx": 588.70918117522172,
     "discDiamPx": 526.1108628416639,
-    "discFound": true
+    "discFound": true,
+    "odErrPxLocaliser": 3.6699711208540204,
+    "foveaErrPxLocaliser": 7.1458169506501168,
+    "foveaConfidence": 0.90904649630034362
   },
   {
     "id": "IDRiD_036",
@@ -285,7 +390,10 @@
     "foveaErrPx": 191.7343156453023,
     "foveaBaselineErrPx": 405.11788407820262,
     "discDiamPx": 547.93649267045544,
-    "discFound": true
+    "discFound": true,
+    "odErrPxLocaliser": 10.361157878853083,
+    "foveaErrPxLocaliser": 12.768750633998716,
+    "foveaConfidence": 0.81871297359759532
   },
   {
     "id": "IDRiD_037",
@@ -293,7 +401,10 @@
     "foveaErrPx": 672.43930613656494,
     "foveaBaselineErrPx": 364.09785772509014,
     "discDiamPx": 487.2903036178742,
-    "discFound": true
+    "discFound": true,
+    "odErrPxLocaliser": 11.497080386600343,
+    "foveaErrPxLocaliser": 10.164448570380351,
+    "foveaConfidence": 0.95534150338958956
   },
   {
     "id": "IDRiD_038",
@@ -301,7 +412,10 @@
     "foveaErrPx": 194.70011677921656,
     "foveaBaselineErrPx": 331.46115911219522,
     "discDiamPx": 533.93063219860312,
-    "discFound": true
+    "discFound": true,
+    "odErrPxLocaliser": 8.2416109903183639,
+    "foveaErrPxLocaliser": 9.5078446182458212,
+    "foveaConfidence": 0.98118788155070469
   },
   {
     "id": "IDRiD_039",
@@ -309,7 +423,10 @@
     "foveaErrPx": 324.67175091556345,
     "foveaBaselineErrPx": 712.08180709803275,
     "discDiamPx": 547.8499064524882,
-    "discFound": true
+    "discFound": true,
+    "odErrPxLocaliser": 14.029421709080379,
+    "foveaErrPxLocaliser": 33.856845796161949,
+    "foveaConfidence": 0.88112961595561334
   },
   {
     "id": "IDRiD_040",
@@ -317,7 +434,10 @@
     "foveaErrPx": 712.0083507560081,
     "foveaBaselineErrPx": 508.03789228757336,
     "discDiamPx": 546.996745876975,
-    "discFound": true
+    "discFound": true,
+    "odErrPxLocaliser": 24.425568235916327,
+    "foveaErrPxLocaliser": 36.7945224001447,
+    "foveaConfidence": 0.81852343342856149
   },
   {
     "id": "IDRiD_041",
@@ -325,7 +445,10 @@
     "foveaErrPx": 179.08740011101372,
     "foveaBaselineErrPx": 416.204877434179,
     "discDiamPx": 489.71828636472208,
-    "discFound": true
+    "discFound": true,
+    "odErrPxLocaliser": 13.178587277720478,
+    "foveaErrPxLocaliser": 15.982264567816562,
+    "foveaConfidence": 0.96918353954441927
   },
   {
     "id": "IDRiD_042",
@@ -333,7 +456,10 @@
     "foveaErrPx": 537.5240640976308,
     "foveaBaselineErrPx": 375.55325853998391,
     "discDiamPx": 485.99539092464659,
-    "discFound": true
+    "discFound": true,
+    "odErrPxLocaliser": 17.867966222096257,
+    "foveaErrPxLocaliser": 120.7533156711156,
+    "foveaConfidence": 0.69342689463219742
   },
   {
     "id": "IDRiD_043",
@@ -341,7 +467,10 @@
     "foveaErrPx": 77.306952485859966,
     "foveaBaselineErrPx": 784.41267837790588,
     "discDiamPx": 538.30103102260546,
-    "discFound": true
+    "discFound": true,
+    "odErrPxLocaliser": 10.641754713379274,
+    "foveaErrPxLocaliser": 26.617258565729468,
+    "foveaConfidence": 0.90100496788099171
   },
   {
     "id": "IDRiD_044",
@@ -349,7 +478,10 @@
     "foveaErrPx": 241.7251700982836,
     "foveaBaselineErrPx": 262.28467358959426,
     "discDiamPx": 498.51812404365,
-    "discFound": true
+    "discFound": true,
+    "odErrPxLocaliser": 7.7813170262267288,
+    "foveaErrPxLocaliser": 10.294454840631662,
+    "foveaConfidence": 0.97869955940147846
   },
   {
     "id": "IDRiD_045",
@@ -357,7 +489,10 @@
     "foveaErrPx": 484.75940554277048,
     "foveaBaselineErrPx": 222.61233119483745,
     "discDiamPx": 525.54581151408672,
-    "discFound": true
+    "discFound": true,
+    "odErrPxLocaliser": 17.662889101647714,
+    "foveaErrPxLocaliser": 33.826540133616447,
+    "foveaConfidence": 0.74268382661562937
   },
   {
     "id": "IDRiD_046",
@@ -365,7 +500,10 @@
     "foveaErrPx": 386.26092014172337,
     "foveaBaselineErrPx": 255.59391620302702,
     "discDiamPx": 574.43690689230618,
-    "discFound": true
+    "discFound": true,
+    "odErrPxLocaliser": 9.11010401694967,
+    "foveaErrPxLocaliser": 60.728961223578565,
+    "foveaConfidence": 0.79320835093116238
   },
   {
     "id": "IDRiD_047",
@@ -373,7 +511,10 @@
     "foveaErrPx": 249.03092984737785,
     "foveaBaselineErrPx": 232.89160568813983,
     "discDiamPx": 482.29617456496578,
-    "discFound": true
+    "discFound": true,
+    "odErrPxLocaliser": 16.606188445275322,
+    "foveaErrPxLocaliser": 11.876245360061587,
+    "foveaConfidence": 0.94067017911707262
   },
   {
     "id": "IDRiD_048",
@@ -381,7 +522,10 @@
     "foveaErrPx": 236.43901487790367,
     "foveaBaselineErrPx": 219.76919711369925,
     "discDiamPx": 502.42101866860628,
-    "discFound": true
+    "discFound": true,
+    "odErrPxLocaliser": 15.903145007083861,
+    "foveaErrPxLocaliser": 7.92511499108718,
+    "foveaConfidence": 0.93259045876363289
   },
   {
     "id": "IDRiD_049",
@@ -389,7 +533,10 @@
     "foveaErrPx": 240.25034553848454,
     "foveaBaselineErrPx": 223.46923725649577,
     "discDiamPx": 494.51794709595725,
-    "discFound": true
+    "discFound": true,
+    "odErrPxLocaliser": 12.096356388443505,
+    "foveaErrPxLocaliser": 14.689991052631388,
+    "foveaConfidence": 0.896311574581789
   },
   {
     "id": "IDRiD_050",
@@ -397,7 +544,10 @@
     "foveaErrPx": 387.03451352011672,
     "foveaBaselineErrPx": 135.25623830345128,
     "discDiamPx": 505.76532107292604,
-    "discFound": true
+    "discFound": true,
+    "odErrPxLocaliser": 9.2089321938131619,
+    "foveaErrPxLocaliser": 31.182512421837888,
+    "foveaConfidence": 0.87648015679255109
   },
   {
     "id": "IDRiD_051",
@@ -405,7 +555,10 @@
     "foveaErrPx": 270.99998453429686,
     "foveaBaselineErrPx": 543.3474947029755,
     "discDiamPx": 533.72547250435787,
-    "discFound": true
+    "discFound": true,
+    "odErrPxLocaliser": 11.509329044289958,
+    "foveaErrPxLocaliser": 14.256315526614754,
+    "foveaConfidence": 0.80125466654994537
   },
   {
     "id": "IDRiD_052",
@@ -413,7 +566,10 @@
     "foveaErrPx": 597.09831934971373,
     "foveaBaselineErrPx": 159.44434765773292,
     "discDiamPx": 494.48559129665244,
-    "discFound": true
+    "discFound": true,
+    "odErrPxLocaliser": 4.7184744311836013,
+    "foveaErrPxLocaliser": 98.980323118796917,
+    "foveaConfidence": 0.57212750179231564
   },
   {
     "id": "IDRiD_053",
@@ -421,7 +577,10 @@
     "foveaErrPx": 191.6127277390114,
     "foveaBaselineErrPx": 460.41421567975073,
     "discDiamPx": 536.43027505911709,
-    "discFound": true
+    "discFound": true,
+    "odErrPxLocaliser": 15.136921020969565,
+    "foveaErrPxLocaliser": 699.14188201766387,
+    "foveaConfidence": 0.15407454190246228
   },
   {
     "id": "IDRiD_054",
@@ -429,7 +588,10 @@
     "foveaErrPx": 202.67283241207255,
     "foveaBaselineErrPx": 528.9447041043137,
     "discDiamPx": 534.7335785229875,
-    "discFound": true
+    "discFound": true,
+    "odErrPxLocaliser": 8.454717905136885,
+    "foveaErrPxLocaliser": 32.18582184579887,
+    "foveaConfidence": 0.889350006383016
   },
   {
     "id": "IDRiD_055",
@@ -437,7 +599,10 @@
     "foveaErrPx": 374.57188800770234,
     "foveaBaselineErrPx": 444.97247105860379,
     "discDiamPx": 524.97222783686379,
-    "discFound": true
+    "discFound": true,
+    "odErrPxLocaliser": 18.69815580270479,
+    "foveaErrPxLocaliser": 21.148537882709071,
+    "foveaConfidence": 0.85196810044891458
   },
   {
     "id": "IDRiD_056",
@@ -445,7 +610,10 @@
     "foveaErrPx": 249.46522893141969,
     "foveaBaselineErrPx": 530.89405722799347,
     "discDiamPx": 550.44709100875446,
-    "discFound": true
+    "discFound": true,
+    "odErrPxLocaliser": 3.2331665016455351,
+    "foveaErrPxLocaliser": 21.800347982316215,
+    "foveaConfidence": 0.8737542487408857
   },
   {
     "id": "IDRiD_057",
@@ -453,7 +621,10 @@
     "foveaErrPx": 120.35568533739446,
     "foveaBaselineErrPx": 149.15176834352317,
     "discDiamPx": 516.8749171704892,
-    "discFound": true
+    "discFound": true,
+    "odErrPxLocaliser": 22.085893792424294,
+    "foveaErrPxLocaliser": 70.432457542821112,
+    "foveaConfidence": 0.58450959485981657
   },
   {
     "id": "IDRiD_058",
@@ -461,7 +632,10 @@
     "foveaErrPx": 236.88469579034515,
     "foveaBaselineErrPx": 377.360901525317,
     "discDiamPx": 467.26386549785764,
-    "discFound": true
+    "discFound": true,
+    "odErrPxLocaliser": 23.813692051020219,
+    "foveaErrPxLocaliser": 10.096343602002543,
+    "foveaConfidence": 0.87061243865589455
   },
   {
     "id": "IDRiD_059",
@@ -469,7 +643,10 @@
     "foveaErrPx": 169.11615374964003,
     "foveaBaselineErrPx": 158.56386725859079,
     "discDiamPx": 484.90246441939223,
-    "discFound": true
+    "discFound": true,
+    "odErrPxLocaliser": 9.718465396333368,
+    "foveaErrPxLocaliser": 23.258999875774922,
+    "foveaConfidence": 0.82408632770440671
   },
   {
     "id": "IDRiD_060",
@@ -477,7 +654,10 @@
     "foveaErrPx": 233.25696047607468,
     "foveaBaselineErrPx": 548.94284766266878,
     "discDiamPx": 539.20534121983621,
-    "discFound": true
+    "discFound": true,
+    "odErrPxLocaliser": 5.3814465628007939,
+    "foveaErrPxLocaliser": 15.740137505563595,
+    "foveaConfidence": 0.96535667135111369
   },
   {
     "id": "IDRiD_061",
@@ -485,7 +665,10 @@
     "foveaErrPx": 380.7204481343062,
     "foveaBaselineErrPx": 413.39115858953733,
     "discDiamPx": 471.54571358458981,
-    "discFound": true
+    "discFound": true,
+    "odErrPxLocaliser": 59.038790394015578,
+    "foveaErrPxLocaliser": 27.414832004763895,
+    "foveaConfidence": 0.90610997408452465
   },
   {
     "id": "IDRiD_062",
@@ -493,7 +676,10 @@
     "foveaErrPx": 113.38082807994088,
     "foveaBaselineErrPx": 240.46725348787098,
     "discDiamPx": 506.96840138217686,
-    "discFound": true
+    "discFound": true,
+    "odErrPxLocaliser": 7.8675833343836254,
+    "foveaErrPxLocaliser": 38.443089327639676,
+    "foveaConfidence": 0.898572294522529
   },
   {
     "id": "IDRiD_063",
@@ -501,7 +687,10 @@
     "foveaErrPx": 477.12075589990178,
     "foveaBaselineErrPx": 557.74232401710378,
     "discDiamPx": 528.45223057529051,
-    "discFound": true
+    "discFound": true,
+    "odErrPxLocaliser": 15.109691685924417,
+    "foveaErrPxLocaliser": 13.012713928793952,
+    "foveaConfidence": 0.89268593981130862
   },
   {
     "id": "IDRiD_064",
@@ -509,7 +698,10 @@
     "foveaErrPx": 301.65603688201173,
     "foveaBaselineErrPx": 599.943747363034,
     "discDiamPx": 520.3637189505049,
-    "discFound": true
+    "discFound": true,
+    "odErrPxLocaliser": 2.2585929844534247,
+    "foveaErrPxLocaliser": 4.2597167939768177,
+    "foveaConfidence": 0.83116678779844122
   },
   {
     "id": "IDRiD_065",
@@ -517,7 +709,10 @@
     "foveaErrPx": 306.10521454540026,
     "foveaBaselineErrPx": 705.77652270389387,
     "discDiamPx": 561.74371380550406,
-    "discFound": true
+    "discFound": true,
+    "odErrPxLocaliser": 2.6884947603374365,
+    "foveaErrPxLocaliser": 174.37325027987731,
+    "foveaConfidence": 0.424025466679014
   },
   {
     "id": "IDRiD_066",
@@ -525,7 +720,10 @@
     "foveaErrPx": 169.3371762203619,
     "foveaBaselineErrPx": 111.66579601650632,
     "discDiamPx": 502.1121787011345,
-    "discFound": true
+    "discFound": true,
+    "odErrPxLocaliser": 2.4172475903967272,
+    "foveaErrPxLocaliser": 133.3124299085614,
+    "foveaConfidence": 0.87410606122428092
   },
   {
     "id": "IDRiD_067",
@@ -533,7 +731,10 @@
     "foveaErrPx": 361.8714905007086,
     "foveaBaselineErrPx": 443.95298174468883,
     "discDiamPx": 565.40958605244748,
-    "discFound": true
+    "discFound": true,
+    "odErrPxLocaliser": 13.373464545927618,
+    "foveaErrPxLocaliser": 36.291863344264961,
+    "foveaConfidence": 0.62760316635173441
   },
   {
     "id": "IDRiD_068",
@@ -541,7 +742,10 @@
     "foveaErrPx": 329.21701070706382,
     "foveaBaselineErrPx": 296.63192680492097,
     "discDiamPx": 487.14449601735214,
-    "discFound": true
+    "discFound": true,
+    "odErrPxLocaliser": 21.654057149250406,
+    "foveaErrPxLocaliser": 60.798807493129608,
+    "foveaConfidence": 0.81341779566509453
   },
   {
     "id": "IDRiD_069",
@@ -549,7 +753,10 @@
     "foveaErrPx": 249.37015406779201,
     "foveaBaselineErrPx": 576.98050227022406,
     "discDiamPx": 515.63537504713543,
-    "discFound": true
+    "discFound": true,
+    "odErrPxLocaliser": 9.3119545290170542,
+    "foveaErrPxLocaliser": 19.574142367965372,
+    "foveaConfidence": 0.95262517828557469
   },
   {
     "id": "IDRiD_070",
@@ -557,7 +764,10 @@
     "foveaErrPx": 168.55209329487209,
     "foveaBaselineErrPx": 522.83123472110958,
     "discDiamPx": 494.31617412340455,
-    "discFound": true
+    "discFound": true,
+    "odErrPxLocaliser": 3.5264909305062209,
+    "foveaErrPxLocaliser": 13.453170819685969,
+    "foveaConfidence": 0.87277322445327654
   },
   {
     "id": "IDRiD_071",
@@ -565,7 +775,10 @@
     "foveaErrPx": 304.43260623592107,
     "foveaBaselineErrPx": 664.97687929731808,
     "discDiamPx": 513.7141617670278,
-    "discFound": true
+    "discFound": true,
+    "odErrPxLocaliser": 14.378214134759629,
+    "foveaErrPxLocaliser": 41.236408513175931,
+    "foveaConfidence": 0.88869443627495981
   },
   {
     "id": "IDRiD_072",
@@ -573,7 +786,10 @@
     "foveaErrPx": 188.46126637679504,
     "foveaBaselineErrPx": 503.32146785131272,
     "discDiamPx": 513.47443948068144,
-    "discFound": true
+    "discFound": true,
+    "odErrPxLocaliser": 31.596842112870494,
+    "foveaErrPxLocaliser": 512.51002619410383,
+    "foveaConfidence": 0.26720439915468652
   },
   {
     "id": "IDRiD_073",
@@ -581,7 +797,10 @@
     "foveaErrPx": 94.472235898784646,
     "foveaBaselineErrPx": 160.5381574579701,
     "discDiamPx": 496.43593745819817,
-    "discFound": true
+    "discFound": true,
+    "odErrPxLocaliser": 15.186572619265629,
+    "foveaErrPxLocaliser": 7.0303655407696279,
+    "foveaConfidence": 0.94073459268109882
   },
   {
     "id": "IDRiD_074",
@@ -589,7 +808,10 @@
     "foveaErrPx": 209.1200289205199,
     "foveaBaselineErrPx": 420.42032538877089,
     "discDiamPx": 513.95252699057721,
-    "discFound": true
+    "discFound": true,
+    "odErrPxLocaliser": 10.128625282841123,
+    "foveaErrPxLocaliser": 18.500116212185276,
+    "foveaConfidence": 0.960782438221753
   },
   {
     "id": "IDRiD_075",
@@ -597,7 +819,10 @@
     "foveaErrPx": 124.33732271913458,
     "foveaBaselineErrPx": 442.3858609856332,
     "discDiamPx": 515.86122164783819,
-    "discFound": true
+    "discFound": true,
+    "odErrPxLocaliser": 7.7379862058620823,
+    "foveaErrPxLocaliser": 13.224254892113699,
+    "foveaConfidence": 0.9080784781764133
   },
   {
     "id": "IDRiD_076",
@@ -605,7 +830,10 @@
     "foveaErrPx": 237.26220952863463,
     "foveaBaselineErrPx": 172.34413247917666,
     "discDiamPx": 521.54738998484117,
-    "discFound": true
+    "discFound": true,
+    "odErrPxLocaliser": 5.5955063621359669,
+    "foveaErrPxLocaliser": 20.478446133912222,
+    "foveaConfidence": 0.90831633556738134
   },
   {
     "id": "IDRiD_077",
@@ -613,7 +841,10 @@
     "foveaErrPx": 129.06658043823512,
     "foveaBaselineErrPx": 378.41676759890015,
     "discDiamPx": 514.17662335038142,
-    "discFound": true
+    "discFound": true,
+    "odErrPxLocaliser": 17.242567087856536,
+    "foveaErrPxLocaliser": 11.792989314103389,
+    "foveaConfidence": 0.85396379405079026
   },
   {
     "id": "IDRiD_078",
@@ -621,7 +852,10 @@
     "foveaErrPx": 190.1925980398608,
     "foveaBaselineErrPx": 393.36052165920262,
     "discDiamPx": 531.32438302792013,
-    "discFound": true
+    "discFound": true,
+    "odErrPxLocaliser": 9.0709718073017882,
+    "foveaErrPxLocaliser": 19.894908524611004,
+    "foveaConfidence": 0.9320637899730051
   },
   {
     "id": "IDRiD_079",
@@ -629,7 +863,10 @@
     "foveaErrPx": 234.678257099719,
     "foveaBaselineErrPx": 474.78547787395519,
     "discDiamPx": 579.27540945564056,
-    "discFound": true
+    "discFound": true,
+    "odErrPxLocaliser": 14.492952106280653,
+    "foveaErrPxLocaliser": 5.6289116143247337,
+    "foveaConfidence": 0.97087642817585518
   },
   {
     "id": "IDRiD_080",
@@ -637,7 +874,10 @@
     "foveaErrPx": 436.45804274461995,
     "foveaBaselineErrPx": 448.83460205291658,
     "discDiamPx": 563.69126301549147,
-    "discFound": true
+    "discFound": true,
+    "odErrPxLocaliser": 19.809405380126339,
+    "foveaErrPxLocaliser": 13.895326269978254,
+    "foveaConfidence": 0.97687515284558046
   },
   {
     "id": "IDRiD_081",
@@ -645,7 +885,10 @@
     "foveaErrPx": 200.31547227092253,
     "foveaBaselineErrPx": 69.097756837686134,
     "discDiamPx": 491.77376912560112,
-    "discFound": true
+    "discFound": true,
+    "odErrPxLocaliser": 29.331843659619924,
+    "foveaErrPxLocaliser": 54.298325715242086,
+    "foveaConfidence": 0.67425811732000773
   },
   {
     "id": "IDRiD_082",
@@ -653,7 +896,10 @@
     "foveaErrPx": 166.72018584288102,
     "foveaBaselineErrPx": 257.096285465193,
     "discDiamPx": 477.61809010966073,
-    "discFound": true
+    "discFound": true,
+    "odErrPxLocaliser": 8.227031261116128,
+    "foveaErrPxLocaliser": 22.186335304548752,
+    "foveaConfidence": 0.9245680735182924
   },
   {
     "id": "IDRiD_083",
@@ -661,7 +907,10 @@
     "foveaErrPx": 240.83718933624112,
     "foveaBaselineErrPx": 541.41712200483653,
     "discDiamPx": 499.20144230560874,
-    "discFound": true
+    "discFound": true,
+    "odErrPxLocaliser": 32.715449833070728,
+    "foveaErrPxLocaliser": 17.768668298172873,
+    "foveaConfidence": 0.68182336817565481
   },
   {
     "id": "IDRiD_084",
@@ -669,7 +918,10 @@
     "foveaErrPx": 297.13860199957708,
     "foveaBaselineErrPx": 377.19027028808682,
     "discDiamPx": 493.54181180524108,
-    "discFound": true
+    "discFound": true,
+    "odErrPxLocaliser": 17.647525280708223,
+    "foveaErrPxLocaliser": 35.674928947560616,
+    "foveaConfidence": 0.94981357544479672
   },
   {
     "id": "IDRiD_085",
@@ -677,7 +929,10 @@
     "foveaErrPx": 410.28043888903107,
     "foveaBaselineErrPx": 242.28598803892891,
     "discDiamPx": 478.002677816767,
-    "discFound": true
+    "discFound": true,
+    "odErrPxLocaliser": 14.68904384617141,
+    "foveaErrPxLocaliser": 8.4993622385898142,
+    "foveaConfidence": 0.87674281722128833
   },
   {
     "id": "IDRiD_086",
@@ -685,7 +940,10 @@
     "foveaErrPx": 307.87473616855,
     "foveaBaselineErrPx": 13.729530217745982,
     "discDiamPx": 504.211542906348,
-    "discFound": true
+    "discFound": true,
+    "odErrPxLocaliser": 17.6259360796626,
+    "foveaErrPxLocaliser": 27.913211480436086,
+    "foveaConfidence": 0.96744980572342276
   },
   {
     "id": "IDRiD_087",
@@ -693,7 +951,10 @@
     "foveaErrPx": 108.05125100654422,
     "foveaBaselineErrPx": 192.67913742800491,
     "discDiamPx": 447.53279209461289,
-    "discFound": true
+    "discFound": true,
+    "odErrPxLocaliser": 23.532020660086488,
+    "foveaErrPxLocaliser": 20.52595801646563,
+    "foveaConfidence": 0.89714639194579637
   },
   {
     "id": "IDRiD_088",
@@ -701,7 +962,10 @@
     "foveaErrPx": 129.96333734632211,
     "foveaBaselineErrPx": 446.35467959908294,
     "discDiamPx": 536.66302276195631,
-    "discFound": true
+    "discFound": true,
+    "odErrPxLocaliser": 23.513465758953902,
+    "foveaErrPxLocaliser": 24.01668474319429,
+    "foveaConfidence": 0.94696440090298251
   },
   {
     "id": "IDRiD_089",
@@ -709,7 +973,10 @@
     "foveaErrPx": 299.38875670795761,
     "foveaBaselineErrPx": 457.25293875490837,
     "discDiamPx": 531.67343360374889,
-    "discFound": true
+    "discFound": true,
+    "odErrPxLocaliser": 13.043583619417337,
+    "foveaErrPxLocaliser": 27.550591907983026,
+    "foveaConfidence": 0.94236423097300948
   },
   {
     "id": "IDRiD_090",
@@ -717,7 +984,10 @@
     "foveaErrPx": 293.95500578721425,
     "foveaBaselineErrPx": 469.02718471321043,
     "discDiamPx": 537.87522716704484,
-    "discFound": true
+    "discFound": true,
+    "odErrPxLocaliser": 11.803763723880079,
+    "foveaErrPxLocaliser": 15.38228647792339,
+    "foveaConfidence": 0.99636343286038787
   },
   {
     "id": "IDRiD_091",
@@ -725,7 +995,10 @@
     "foveaErrPx": 194.3681231475411,
     "foveaBaselineErrPx": 281.87674611432567,
     "discDiamPx": 586.70742282674416,
-    "discFound": true
+    "discFound": true,
+    "odErrPxLocaliser": 7.0284508800405368,
+    "foveaErrPxLocaliser": 74.996336137168754,
+    "foveaConfidence": 0.86705008738458389
   },
   {
     "id": "IDRiD_092",
@@ -733,7 +1006,10 @@
     "foveaErrPx": 223.94697206486819,
     "foveaBaselineErrPx": 227.84314780128895,
     "discDiamPx": 523.55477268381378,
-    "discFound": true
+    "discFound": true,
+    "odErrPxLocaliser": 5.3753067712575033,
+    "foveaErrPxLocaliser": 41.51832289709639,
+    "foveaConfidence": 0.787845533056396
   },
   {
     "id": "IDRiD_093",
@@ -741,7 +1017,10 @@
     "foveaErrPx": 278.83071613881913,
     "foveaBaselineErrPx": 215.58872883339703,
     "discDiamPx": 483.87237986890716,
-    "discFound": true
+    "discFound": true,
+    "odErrPxLocaliser": 14.960419528939841,
+    "foveaErrPxLocaliser": 34.825721243328026,
+    "foveaConfidence": 0.88554609428951148
   },
   {
     "id": "IDRiD_094",
@@ -749,7 +1028,10 @@
     "foveaErrPx": 357.10042009444396,
     "foveaBaselineErrPx": 302.36153855938755,
     "discDiamPx": 516.69658408005751,
-    "discFound": true
+    "discFound": true,
+    "odErrPxLocaliser": 17.1677072178013,
+    "foveaErrPxLocaliser": 44.335284721520111,
+    "foveaConfidence": 0.82222625558366358
   },
   {
     "id": "IDRiD_095",
@@ -757,7 +1039,10 @@
     "foveaErrPx": 82.42317774972004,
     "foveaBaselineErrPx": 520.238887435378,
     "discDiamPx": 473.65472656778167,
-    "discFound": true
+    "discFound": true,
+    "odErrPxLocaliser": 13.090850799749363,
+    "foveaErrPxLocaliser": 21.303229710876021,
+    "foveaConfidence": 0.85396974989759611
   },
   {
     "id": "IDRiD_096",
@@ -765,7 +1050,10 @@
     "foveaErrPx": 298.26259062317621,
     "foveaBaselineErrPx": 253.13336405934322,
     "discDiamPx": 551.47859432619873,
-    "discFound": true
+    "discFound": true,
+    "odErrPxLocaliser": 8.7179521568067919,
+    "foveaErrPxLocaliser": 19.541285782276692,
+    "foveaConfidence": 0.86889749800449645
   },
   {
     "id": "IDRiD_097",
@@ -773,7 +1061,10 @@
     "foveaErrPx": 168.27670866704818,
     "foveaBaselineErrPx": 186.68824280066488,
     "discDiamPx": 508.22735070045172,
-    "discFound": true
+    "discFound": true,
+    "odErrPxLocaliser": 6.8939268305091606,
+    "foveaErrPxLocaliser": 48.986878603273013,
+    "foveaConfidence": 0.8282519278247864
   },
   {
     "id": "IDRiD_098",
@@ -781,7 +1072,10 @@
     "foveaErrPx": 312.100353129334,
     "foveaBaselineErrPx": 235.51061547199947,
     "discDiamPx": 496.19689640303068,
-    "discFound": true
+    "discFound": true,
+    "odErrPxLocaliser": 9.74077873049221,
+    "foveaErrPxLocaliser": 30.109349710852758,
+    "foveaConfidence": 0.73843755499400565
   },
   {
     "id": "IDRiD_099",
@@ -789,7 +1083,10 @@
     "foveaErrPx": 171.12064532753445,
     "foveaBaselineErrPx": 520.00240384059759,
     "discDiamPx": 554.55784188847247,
-    "discFound": true
+    "discFound": true,
+    "odErrPxLocaliser": 2.0635129736388724,
+    "foveaErrPxLocaliser": 8.0221281190860765,
+    "foveaConfidence": 0.95644904353938343
   },
   {
     "id": "IDRiD_100",
@@ -797,7 +1094,10 @@
     "foveaErrPx": 287.08225548713006,
     "foveaBaselineErrPx": 251.19414802100783,
     "discDiamPx": 516.96251314771359,
-    "discFound": true
+    "discFound": true,
+    "odErrPxLocaliser": 14.626628513003434,
+    "foveaErrPxLocaliser": 15.928685288250357,
+    "foveaConfidence": 0.93483294777643966
   },
   {
     "id": "IDRiD_101",
@@ -805,7 +1105,10 @@
     "foveaErrPx": 182.17324179877809,
     "foveaBaselineErrPx": 548.1902042174778,
     "discDiamPx": 494.0568388353712,
-    "discFound": true
+    "discFound": true,
+    "odErrPxLocaliser": 2.1080370868143086,
+    "foveaErrPxLocaliser": 37.611650768576034,
+    "foveaConfidence": 0.83548851901554766
   },
   {
     "id": "IDRiD_102",
@@ -813,7 +1116,10 @@
     "foveaErrPx": 979.88849990504184,
     "foveaBaselineErrPx": 505.95701398438979,
     "discDiamPx": 552.97320007392761,
-    "discFound": true
+    "discFound": true,
+    "odErrPxLocaliser": 47.075027603245978,
+    "foveaErrPxLocaliser": 129.10317585669816,
+    "foveaConfidence": 0.48117071664781341
   },
   {
     "id": "IDRiD_103",
@@ -821,6 +1127,9 @@
     "foveaErrPx": 133.49708567900552,
     "foveaBaselineErrPx": 587.36743185164767,
     "discDiamPx": 498.50352054925349,
-    "discFound": true
+    "discFound": true,
+    "odErrPxLocaliser": 22.031521972519187,
+    "foveaErrPxLocaliser": 18.306874850749736,
+    "foveaConfidence": 0.93533955131877067
   }
 ]

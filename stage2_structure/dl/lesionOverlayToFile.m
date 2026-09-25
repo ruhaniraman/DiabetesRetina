@@ -26,7 +26,7 @@ function [counts, areaPct, evidence] = lesionOverlayToFile(src, dst, compositeDs
     img = imread(src);
     if size(img, 3) == 1, img = repmat(img, 1, 1, 3); elseif size(img, 3) == 4, img = img(:, :, 1:3); end
     [prob, masks, info] = segmentLesionsDL(img, model);
-    evidence = lesionEvidence(masks, prob, info, model.channels);
+    evidence = lesionEvidence(masks, prob, info, model.channels, img);   % fovea detected when the localiser is available
 
     % Colours match the web app's legend (frontend Dashboard): MA amber, HE rose, EX emerald, SE violet
     colours = uint8([251 191 36; 244 63 94; 52 211 153; 167 139 250]);

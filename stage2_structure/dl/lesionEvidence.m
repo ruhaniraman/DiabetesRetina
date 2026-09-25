@@ -1,19 +1,25 @@
-function E = lesionEvidence(masks, prob, info, channels)
+function E = lesionEvidence(masks, prob, info, channels, img)
 % LESIONEVIDENCE  Lesion findings summarised against the ICDR criteria a grader checks, for the report.
 %
 %   E = lesionEvidence(masks, prob, info, channels)      (outputs of segmentLesionsDL)
+%   E = lesionEvidence(masks, prob, info, channels, img) with the photograph: the fovea is DETECTED (anatomyLandmarks) when the
+%                                                         trained localiser is available, instead of estimated from the disc
 %
 %   E.heQuadrants        number of retinal quadrants (around the estimated fovea) with at least one possible haemorrhage
 %   E.heQuadrantsWith20  quadrants with 20 or more possible haemorrhages (ICDR severe NPDR: >= 20 in each of 4 quadrants, the "4" of 4-2-1)
 %   E.heByQuadrant       1x4 counts: superotemporal, inferotemporal, superonasal, inferonasal (temporal = away from the disc)
 %   E.onlyMA             possible microaneurysms and nothing else marked (ICDR mild NPDR: microaneurysms only)
 %   E.exNearFovea        possible hard exudates within 1 disc diameter of the estimated fovea (macular oedema is not graded here)
-%   E.foveaFrom          'disc' (estimated from the optic disc) or 'retina centre'
+%   E.foveaFrom          'detected' (trained localiser), 'disc' (estimated from the optic disc) or 'retina centre'
 %
 % Counts are connected regions of the calibrated masks, so a large blot haemorrhage counts once and touching ones merge: this is
 % evidence for a reviewer, not a grade. Venous beading, IRMA and new vessels are not detected.
     ch = @(name) find(strcmp(channels, name), 1);
-    L = estimateFovea(prob(:, :, ch('OD')), info.fov);
+    if nargin >= 5 && ~isempty(img)
+        L = anatomyLandmarks(img, prob(:, :, ch('OD')), info.fov);
+    else
+        L = estimateFovea(prob(:, :, ch('OD')), info.fov);
+    end
     [H, W] = size(info.fov);
     [X, Y] = meshgrid(1:W, 1:H);
     upper = Y < L.fovea(2);
