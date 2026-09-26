@@ -1,4 +1,4 @@
-import { AUTH_API_URL as API_URL } from '../config';
+import { AUTH_API_URL as API_URL, BEHIND_NGROK } from '../config';
 
 export class ApiError extends Error {
   constructor(message, status, data = {}) {
@@ -11,7 +11,11 @@ export class ApiError extends Error {
 /* ---- Session ----
    The session is an HttpOnly cookie set by the server: page scripts cannot read it, so there is no token to store here.
    Every request sends cookies, and carries a header that a page on another site cannot add (CSRF defence). */
-export const REQUEST_HEADERS = { 'X-Requested-With': 'retina-rescue' };
+export const REQUEST_HEADERS = {
+  'X-Requested-With': 'retina-rescue',
+  // ngrok's free plan answers browser requests with a warning page unless this header is present (demo deploy only).
+  ...(BEHIND_NGROK ? { 'ngrok-skip-browser-warning': '1' } : {}),
+};
 const LEGACY_TOKEN_KEY = 'retina_rescue_token';
 /** Older versions kept the token in localStorage; remove it so it does not linger. */
 export const forgetLegacyToken = () => {

@@ -3,6 +3,9 @@
 export const AUTH_API_URL = import.meta.env.VITE_AUTH_API_URL || import.meta.env.VITE_API_URL || 'http://localhost:4000/api';
 export const ML_API_URL = import.meta.env.VITE_ML_API_URL || 'http://localhost:5000/api';
 
+// Demo deploy: the web app on Vercel forwards /auth-api and /ml-api through an ngrok tunnel to a laptop (deploy/DEMO_VERCEL_NGROK.md).
+export const BEHIND_NGROK = import.meta.env.VITE_BEHIND_NGROK === 'true';
+
 // Must match MAX_UPLOAD_MB on the ML backend.
 export const MAX_UPLOAD_MB = 15;
 

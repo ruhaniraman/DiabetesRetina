@@ -75,3 +75,7 @@ CLAUDE.md
 # Review packets, kept local until the clinician and native-speaker reviews (regenerate with docs/tools/)
 docs/CLINICAL_REVIEW.md
 docs/SPOKEN_TRANSLATIONS_FOR_REVIEW.md
+
+# Presentation charts and their script (local only)
+validation/results/charts/
+validation/make_charts.py
