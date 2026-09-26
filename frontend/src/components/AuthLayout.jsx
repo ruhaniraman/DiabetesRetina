@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import LanguageSwitcher from './LanguageSwitcher';
-import { heroGradient, HeroGlow } from './HeroBand';
 
 /**
  * Shared shell for Login, Signup and VerifyPhone so the hero panel,
@@ -11,11 +10,34 @@ export default function AuthLayout({ heroTitle, heroText, title, subtitle, child
   const { t } = useTranslation();
   return (
     <div className="min-h-screen bg-[#eceff4] flex items-center justify-center p-4 sm:p-6 font-sans">
+      {/* Moving blue and amber gradient behind the hero text */}
+      <style>{`
+        @keyframes moveProminentGradient {
+          0% { background-position: 0% 50%; }
+          50% { background-position: 100% 50%; }
+          100% { background-position: 0% 50%; }
+        }
+        @keyframes floatGlowLarge {
+          0%, 100% { transform: translate(0px, 0px) scale(1); opacity: 0.7; }
+          50% { transform: translate(35px, -35px) scale(1.3); opacity: 1; }
+        }
+        .vibrant-hero-bg {
+          background: linear-gradient(-45deg, #0d1424, #1e293b, #b45309, #2563eb, #0f172a);
+          background-size: 350% 350%;
+          animation: moveProminentGradient 6s ease infinite;
+        }
+        .prominent-glow-1 { animation: floatGlowLarge 5s ease-in-out infinite; }
+        .prominent-glow-2 { animation: floatGlowLarge 7s ease-in-out infinite reverse; }
+        @media (prefers-reduced-motion: reduce) {
+          .vibrant-hero-bg, .prominent-glow-1, .prominent-glow-2 { animation: none; }
+        }
+      `}</style>
 
       <div className="bg-white rounded-xl p-3 sm:p-4 shadow-sm max-w-4xl w-full flex flex-col md:flex-row gap-6 border border-gray-200/60">
         {/* Left Side: Hero Panel */}
-        <div className={`${heroGradient} w-full md:w-1/2 text-white rounded-xl p-8 sm:p-10 flex flex-col justify-start relative isolate overflow-hidden min-h-[380px] md:min-h-[460px]`}>
-          <HeroGlow />
+        <div className="vibrant-hero-bg w-full md:w-1/2 text-white rounded-xl p-8 sm:p-10 flex flex-col justify-start relative isolate overflow-hidden min-h-[380px] md:min-h-[460px]">
+          <div className="prominent-glow-1 absolute -bottom-10 -left-10 w-72 h-72 bg-amber-500/45 rounded-full blur-3xl pointer-events-none" />
+          <div className="prominent-glow-2 absolute top-0 -right-10 w-64 h-64 bg-blue-500/35 rounded-full blur-3xl pointer-events-none" />
 
           <div className="relative z-10 pt-2">
             <h1 className="text-3xl sm:text-4xl font-semibold tracking-tight leading-tight text-white mb-4">
