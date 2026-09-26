@@ -184,6 +184,9 @@
     "clickUpload": "Click to Upload Fundus Image"
   },
 
+  "profile": {
+    "menu": "Account menu"
+  },
   "history": {
     "storedNotice": "Each saved exam keeps its PDF report, including the eye photos, in your account. You can delete it at any time.",
     "download": "Download the detailed report (PDF)",
@@ -506,7 +509,7 @@
       },
       "account": {
         "title": "Your account",
-        "text": "Delete your account and all its data here, or sign out when you are done."
+        "text": "Tap your initials for your patient details, the tour, signing out, or, at the end of the menu, deleting your account and all its data."
       },
       "replay": {
         "title": "That is the tour",

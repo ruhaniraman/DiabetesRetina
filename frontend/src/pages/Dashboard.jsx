@@ -8,7 +8,7 @@ import LanguageSwitcher from '../components/LanguageSwitcher';
 import EyePanel from '../components/EyePanel';
 import Disclaimer from '../components/Disclaimer';
 import ExamHistory from '../components/ExamHistory';
-import DeleteAccount from '../components/DeleteAccount';
+import ProfileMenu from '../components/ProfileMenu';
 import { useResultSummary } from '../hooks/useResultSummary';
 import { useMessages } from '../messages';
 import { bannerConfig, getTagColors } from '../utils/drStyles';
@@ -101,7 +101,7 @@ export default function Dashboard({ user, patient, session, history, onEditPatie
                 <LanguageSwitcher />
               </div>
               <div data-tour="account">
-                <DeleteAccount onDelete={onDeleteAccount} />
+                <ProfileMenu name={user?.fullName || displayName} phone={user?.phone} onEditPatient={onEditPatient} onStartTour={onStartTour} onLogout={onLogout} onDeleteAccount={onDeleteAccount} />
               </div>
             </div>
           </header>

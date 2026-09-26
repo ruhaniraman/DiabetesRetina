@@ -4,7 +4,7 @@ import { FiArrowLeft, FiLayers, FiEye, FiInfo } from 'react-icons/fi';
 import Disclaimer from '../components/Disclaimer';
 import LanguageSwitcher from '../components/LanguageSwitcher';
 import SideNav from '../components/SideNav';
-import DeleteAccount from '../components/DeleteAccount';
+import ProfileMenu from '../components/ProfileMenu';
 import HeroBand, { cardClass } from '../components/HeroBand';
 import ListenToReport from '../components/ListenToReport';
 import { downloadReportPdf, fetchAnatomy, fetchEnhanced, fetchHeatmap } from '../api/ml';
@@ -18,7 +18,7 @@ const LESION_ROWS = ['microaneurysms', 'hemorrhages', 'exudates', 'softExudates'
 
 const percent = (p) => (typeof p === 'number' ? `${Math.round(p * 100)}%` : null);
 
-export default function DetailedReportPage({ patient, session, onBack, onOpenReview, onOpenDistrictPlanner, onStartTour, onLogout, onDeleteAccount }) {
+export default function DetailedReportPage({ user, patient, session, onBack, onEditPatient, onOpenReview, onOpenDistrictPlanner, onStartTour, onLogout, onDeleteAccount }) {
   const { t, i18n } = useTranslation();
   const { grade, tm } = useMessages();
   const lang = i18n.resolvedLanguage || 'en';
@@ -149,7 +149,9 @@ export default function DetailedReportPage({ patient, session, onBack, onOpenRev
           </div>
           <div className="flex items-center gap-3 self-start sm:self-auto">
             <LanguageSwitcher />
-            {onDeleteAccount && <DeleteAccount onDelete={onDeleteAccount} />}
+            {onDeleteAccount && (
+              <ProfileMenu name={user?.fullName || patient?.fullName} phone={user?.phone} onEditPatient={onEditPatient} onStartTour={onStartTour} onLogout={onLogout} onDeleteAccount={onDeleteAccount} />
+            )}
           </div>
         </div>
       </HeroBand>

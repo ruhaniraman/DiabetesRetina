@@ -147,15 +147,17 @@ function PatientRoute() {
 }
 
 function ReportRoute() {
-  const { profile, session } = useOutletContext();
+  const { user, profile, session } = useOutletContext();
   const { signOut, deleteAccount } = useAuth();
   const tour = useTour();
   const navigate = useNavigate();
   return (
     <DetailedReportPage
+      user={user}
       patient={profile.patient}
       session={session}
       onBack={() => navigate('/')}
+      onEditPatient={() => navigate('/patient-details')}
       onOpenReview={() => navigate('/review')}
       onOpenDistrictPlanner={() => navigate('/district')}
       onStartTour={tour?.start}
