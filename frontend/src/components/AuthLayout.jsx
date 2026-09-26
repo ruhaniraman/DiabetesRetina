@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import LanguageSwitcher from './LanguageSwitcher';
+import Logo from './Logo';
 
 /**
  * Shared shell for Login, Signup and VerifyPhone so the hero panel,
@@ -54,23 +55,9 @@ export default function AuthLayout({ heroTitle, heroText, title, subtitle, child
           <div className="flex justify-end mb-3">
             <LanguageSwitcher />
           </div>
-          {/* Brand Header with Custom Eye Icon */}
+          {/* Brand Header with the app logo (same as the side navigation) */}
           <div className="flex items-center gap-3.5 mb-6">
-            <div className="w-11 h-11 bg-sky-50 rounded-lg flex items-center justify-center flex-shrink-0 border border-sky-200">
-              <svg
-                className="w-6 h-6 text-sky-700"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2.6"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                aria-hidden="true"
-              >
-                <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7z" />
-                <circle cx="12" cy="12" r="3" strokeWidth="2.6" />
-              </svg>
-            </div>
+            <Logo className="w-14 h-9" />
             <div>
               <span className="text-2xl font-semibold text-[#0d1424] tracking-tight block leading-none">
                 {t('common.brand')}
