@@ -57,7 +57,7 @@ export default function AuthLayout({ heroTitle, heroText, title, subtitle, child
           </div>
           {/* Brand Header with the app logo (same as the side navigation) */}
           <div className="flex items-center gap-3.5 mb-6">
-            <Logo className="w-14 h-9" />
+            <Logo className="w-16 h-12" />
             <div>
               <span className="text-2xl font-semibold text-[#0d1424] tracking-tight block leading-none">
                 {t('common.brand')}

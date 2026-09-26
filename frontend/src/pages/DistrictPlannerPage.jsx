@@ -202,7 +202,7 @@ export default function DistrictPlannerPage({ onBack }) {
           <header data-tour="district" className="flex items-center justify-between gap-4 py-5">
             <div className="flex items-center gap-3">
               <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-white shadow-sm shrink-0">
-                <Logo className="w-8 h-6" />
+                <Logo className="w-9 h-7" />
               </div>
               <span className="text-lg font-semibold tracking-tight text-white">District Planner</span>
             </div>

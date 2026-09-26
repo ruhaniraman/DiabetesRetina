@@ -12,7 +12,7 @@ const itemClass =
  */
 export default function SideNav({ onHome, onOpenReview, onOpenDistrictPlanner, onStartTour, onLogout }) {
   const { t } = useTranslation();
-  const logo = <Logo className="w-9 h-6" />;
+  const logo = <Logo className="w-12 h-9" />;
   return (
     <nav
       aria-label={t('dash.navLabel')}
