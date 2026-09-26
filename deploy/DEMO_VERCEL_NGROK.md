@@ -26,7 +26,13 @@ The browser only ever talks to the Vercel address, so the session cookie works w
 
 ## Each time you demo
 
-Four terminals from the repo root:
+One command starts everything that is not running (hidden, logs in `data\logs\`) and checks the whole chain up to the Vercel site:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File deploy\run-system.ps1          # add -Stop to stop it all, -NoFrontend to skip :5173
+```
+
+It ends with `SYSTEM READY: https://retina-rescue.vercel.app`, or lists what failed. By hand, it is four terminals from the repo root:
 
 ```bash
 cd auth-server && npm run dev            # :4000   (FIXED_OTP=123456 in .env for demo sign-ups)
