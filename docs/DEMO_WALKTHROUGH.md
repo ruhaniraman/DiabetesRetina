@@ -8,7 +8,8 @@ redistribution). No step uses a photo the models were trained on.
 
 1. `backend/.env`: remove `DISABLE_MATLAB=true`; set `ENABLE_LESION_OVERLAY=true` and `STAGE1_ENGINE=matlab` (every stage then runs in MATLAB).
 2. `frontend/.env.local`: `VITE_ENABLE_LESION_OVERLAY=true`.
-3. Start the auth-server, the backend (wait for "MATLAB Engine ready" in its log) and the frontend (see README). Sign in.
+3. `auth-server/.env`: set `FIXED_OTP=123456` so signing up needs no SMS (demo only; the server refuses it in production).
+4. Start the auth-server, the backend (wait for "MATLAB Engine ready" in its log) and the frontend (see README). Sign in with the demo mobile number.
 4. Warm up once: run one assessment and open each report view, so the first MATLAB calls (model loading) are not on camera.
 
 ## The path

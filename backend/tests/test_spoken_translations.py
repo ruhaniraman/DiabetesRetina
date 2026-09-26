@@ -109,6 +109,7 @@ def test_no_reassuring_or_prescriptive_english_in_the_source_sentences():
 
 
 # ----------------------------------------------------------------------------------------------------- the review sheet is up to date
+@pytest.mark.skipif(not (ROOT / "docs" / "SPOKEN_TRANSLATIONS_FOR_REVIEW.md").exists(), reason="the review sheet is kept local (gitignored) until the review")
 def test_the_review_sheet_is_up_to_date():
     import subprocess
     import sys

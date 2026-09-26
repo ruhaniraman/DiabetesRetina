@@ -185,6 +185,7 @@
   },
 
   "history": {
+    "storedNotice": "Each saved exam keeps its PDF report, including the eye photos, in your account. You can delete it at any time.",
     "download": "Download the detailed report (PDF)",
     "downloadFailed": "The report could not be downloaded. Please try again.",
     "preparing": "Preparing the PDF report…",

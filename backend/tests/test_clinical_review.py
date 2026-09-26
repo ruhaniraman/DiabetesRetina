@@ -56,6 +56,7 @@ def test_pdf_disclaimer_says_the_tool_can_miss_disease_and_is_not_clinically_val
 
 
 @pytest.mark.skipif(shutil.which("node") is None, reason="node is needed to read the web app's wording")
+@pytest.mark.skipif(not (ROOT / "docs" / "CLINICAL_REVIEW.md").exists(), reason="the review packet is kept local (gitignored) until the review")
 def test_the_review_packet_is_up_to_date():
     """Fails when any wording, or the validation numbers, changed without regenerating docs/CLINICAL_REVIEW.md."""
     r = subprocess.run([sys.executable, str(ROOT / "docs" / "tools" / "build_clinical_review.py"), "--check"], capture_output=True, text=True, timeout=180)

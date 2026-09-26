@@ -71,3 +71,7 @@ validation/results/gradcam_*.mat
 stage_3/finetune/manifest.csv
 
 CLAUDE.md
+
+# Review packets, kept local until the clinician and native-speaker reviews (regenerate with docs/tools/)
+docs/CLINICAL_REVIEW.md
+docs/SPOKEN_TRANSLATIONS_FOR_REVIEW.md

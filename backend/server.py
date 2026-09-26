@@ -255,6 +255,46 @@ class MatlabService:
 matlab_service = MatlabService()
 
 
+class RenderCache:
+    """Recent MATLAB renders keyed by the photograph's pixels. The report page's heatmap and lesion views and the PDF stored with the exam
+    ask for the same photo; this runs MATLAB once for both. A request for a photo already being rendered waits for that run."""
+
+    def __init__(self, size: int) -> None:
+        self._size = size
+        self._items: "OrderedDict[tuple, tuple]" = OrderedDict()
+        self._pending: dict[tuple, threading.Lock] = {}
+        self._lock = threading.Lock()
+
+    def get(self, kind: str, img: np.ndarray, compute) -> tuple:
+        key = (kind, img.shape, hashlib.sha256(np.ascontiguousarray(img).data).hexdigest())
+        with self._lock:
+            if key in self._items:
+                self._items.move_to_end(key)
+                return self._items[key]
+            key_lock = self._pending.setdefault(key, threading.Lock())
+        with key_lock:
+            with self._lock:
+                if key in self._items:
+                    return self._items[key]
+            try:
+                value = compute()
+                with self._lock:
+                    self._items[key] = value
+                    while len(self._items) > self._size:
+                        self._items.popitem(last=False)
+            finally:
+                with self._lock:
+                    self._pending.pop(key, None)
+        return value
+
+    def clear(self) -> None:
+        with self._lock:
+            self._items.clear()
+
+
+render_cache = RenderCache(size=8)  # two photos per patient; full-resolution renders are large, so only the last few patients
+
+
 # --------------------------------------------------------------------------- #
 # Offline translation
 # --------------------------------------------------------------------------- #
@@ -483,19 +523,23 @@ def render_lesions(img: np.ndarray, with_composite: bool = False) -> tuple:
     Returns (overlay BGRA same size as the photo, counts, area percentages, ICDR evidence), plus the photo with the overlay drawn on it
     (square, cropped to the retina) when `with_composite` is set. The overlay shows POSSIBLE lesions for review: on held-out test photographs it
     marked something in 34% of eyes without retinopathy (validation/results/lesions_dl_Stage2_LesionUNet_v2_calibrated.md)."""
+    out = render_cache.get("lesions", img, lambda: _render_lesions_matlab(img))
+    return out if with_composite else out[:4]
+
+
+def _render_lesions_matlab(img: np.ndarray) -> tuple:
+    """One lesionOverlayToFile run, always with the composite, so a cached result serves both the report page and the PDF."""
     with tempfile.TemporaryDirectory(prefix="retina_") as tmp:
         src, dst, comp_path = Path(tmp) / "in.png", Path(tmp) / "lesions.png", Path(tmp) / "composite.png"
         cv2.imwrite(str(src), img)
-        args = (str(src), str(dst), str(comp_path)) if with_composite else (str(src), str(dst))
-        counts, areas, evidence = matlab_service.call("lesionOverlayToFile", *args, nargout=3)
+        counts, areas, evidence = matlab_service.call("lesionOverlayToFile", str(src), str(dst), str(comp_path), nargout=3)
         overlay = cv2.imread(str(dst), cv2.IMREAD_UNCHANGED)
-        composite = cv2.imread(str(comp_path), cv2.IMREAD_COLOR) if with_composite else None
-    if overlay is None or overlay.ndim != 3 or overlay.shape[2] != 4 or (with_composite and composite is None):
+        composite = cv2.imread(str(comp_path), cv2.IMREAD_COLOR)
+    if overlay is None or overlay.ndim != 3 or overlay.shape[2] != 4 or composite is None:
         raise RuntimeError("MATLAB did not produce a lesion overlay.")
     counts = dict(zip(LESION_KEYS, (int(round(c)) for c in _numbers(counts))))
     areas = dict(zip(LESION_KEYS, (round(a, 3) for a in _numbers(areas))))
-    evidence = _evidence(evidence)
-    return (overlay, counts, areas, evidence, composite) if with_composite else (overlay, counts, areas, evidence)
+    return overlay, counts, areas, _evidence(evidence), composite
 
 
 @app.post("/api/stage2-segmentation", dependencies=[Depends(require_user)])
@@ -747,18 +791,21 @@ async def assess_pair(left_img: np.ndarray, right_img: np.ndarray) -> dict:
 def render_gradcam(img: np.ndarray, with_analysed: bool = False) -> tuple:
     """Grad-CAM of the REFERRAL score for one photograph (MATLAB). Returns (overlay image, referral probability, map is empty), plus the
     prepared image the network analysed when `with_analysed` is set."""
+    out = render_cache.get("gradcam", img, lambda: _render_gradcam_matlab(img))
+    return out if with_analysed else out[:3]
+
+
+def _render_gradcam_matlab(img: np.ndarray) -> tuple:
+    """One gradCamToFile run, always with the analysed image, so a cached result serves both the report page and the PDF."""
     with tempfile.TemporaryDirectory(prefix="retina_") as tmp:
         src, dst, analysed_path = Path(tmp) / "in.png", Path(tmp) / "gradcam.png", Path(tmp) / "analysed.png"
         cv2.imwrite(str(src), img)
-        args = (str(src), str(dst), str(analysed_path)) if with_analysed else (str(src), str(dst))
-        referral, empty = matlab_service.call("gradCamToFile", *args, nargout=2)
+        referral, empty = matlab_service.call("gradCamToFile", str(src), str(dst), str(analysed_path), nargout=2)
         out = cv2.imread(str(dst), cv2.IMREAD_COLOR)
-        analysed = cv2.imread(str(analysed_path), cv2.IMREAD_COLOR) if with_analysed else None
-    if out is None or (with_analysed and analysed is None):
+        analysed = cv2.imread(str(analysed_path), cv2.IMREAD_COLOR)
+    if out is None or analysed is None:
         raise RuntimeError("MATLAB did not produce a Grad-CAM image.")
-    if with_analysed:
-        return out, float(referral), bool(empty), analysed
-    return out, float(referral), bool(empty)
+    return out, float(referral), bool(empty), analysed
 
 
 @app.post("/api/stage4-heatmap", dependencies=[Depends(require_user)])

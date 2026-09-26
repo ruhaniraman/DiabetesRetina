@@ -134,6 +134,43 @@ def test_the_overlay_keeps_its_transparency(monkeypatch):
     assert composite.shape == (448, 448, 3) and sum(counts.values()) == 9
 
 
+def test_a_photo_is_rendered_once_for_the_report_page_and_the_stored_pdf(monkeypatch):
+    call, calls = fake_lesion_matlab()
+    monkeypatch.setattr(server.matlab_service, "call", call)
+    img = realistic_fundus(seed=1)
+    view = server.render_lesions(img)                  # the report page's lesion view
+    overlay, counts, _areas, _ev, composite = server.render_lesions(img, True)   # the PDF kept with the exam
+    assert calls == ["lesionOverlayToFile"] and len(view) == 4 and composite is not None and counts == view[1]
+    server.render_lesions(realistic_fundus(seed=2))
+    assert len(calls) == 2
+
+
+def test_concurrent_requests_for_one_photo_share_a_single_render():
+    import threading, time
+
+    runs = []
+
+    def slow():
+        runs.append(1)
+        time.sleep(0.2)
+        return ("done",)
+
+    img = realistic_fundus(seed=3)
+    threads = [threading.Thread(target=server.render_cache.get, args=("gradcam", img, slow)) for _ in range(3)]
+    for t in threads:
+        t.start()
+    for t in threads:
+        t.join()
+    assert len(runs) == 1
+
+
+def test_a_failed_render_is_not_cached():
+    img = realistic_fundus(seed=4)
+    with pytest.raises(RuntimeError):
+        server.render_cache.get("gradcam", img, lambda: (_ for _ in ()).throw(RuntimeError("MATLAB failed")))
+    assert server.render_cache.get("gradcam", img, lambda: ("ok",)) == ("ok",)
+
+
 def test_segmentation_applies_the_stage_1_gate_before_matlab(client, monkeypatch):
     call, calls = fake_lesion_matlab()
     monkeypatch.setattr(server.matlab_service, "call", call)
@@ -520,7 +557,8 @@ def test_the_overlay_default_is_off_when_the_variable_is_unset():
     import subprocess, sys
 
     env = {k: v for k, v in os.environ.items() if k != "ENABLE_LESION_OVERLAY"} | {"DISABLE_MATLAB": "true"}
-    code = "import server; print(server.LESION_OVERLAY_ENABLED)"
+    # A developer's backend/.env may turn the overlay on; the default is what CI and a fresh checkout get, so .env is not loaded here.
+    code = "import dotenv; dotenv.load_dotenv = lambda *a, **k: False; import server; print(server.LESION_OVERLAY_ENABLED)"
     r = subprocess.run([sys.executable, "-c", code], cwd=os.path.dirname(server.__file__), env=env, capture_output=True, text=True, timeout=120)
     assert r.stdout.strip().endswith("False"), r.stderr[-300:]
 

@@ -14,3 +14,13 @@ def _no_real_auth_server(monkeypatch):
         raise AssertionError("a test tried to reach the real auth-server")
 
     monkeypatch.setattr(server, "store_report", refuse)
+
+
+@pytest.fixture(autouse=True)
+def _empty_render_cache():
+    """Tests fake MATLAB with different outputs for the same synthetic photo, so no render may carry over from another test."""
+    import server
+
+    server.render_cache.clear()
+    yield
+    server.render_cache.clear()

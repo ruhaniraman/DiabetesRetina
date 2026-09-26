@@ -23,6 +23,11 @@ const history = (exams, extra = {}) => ({ status: 'ready', exams, remove: vi.fn(
 beforeEach(() => vi.clearAllMocks());
 
 describe('ExamHistory stored reports', () => {
+  it('tells the user that saved exams keep a PDF with the eye photos, which they can delete', () => {
+    render(<ExamHistory history={history([exam(12, { hasReport: true })])} />);
+    expect(screen.getByText(/keeps its PDF report, including the eye photos/)).toBeInTheDocument();
+  });
+
   it('downloads the PDF saved with an exam when its date is clicked', async () => {
     const blob = new Blob(['%PDF'], { type: 'application/pdf' });
     downloadExamReport.mockResolvedValue(blob);

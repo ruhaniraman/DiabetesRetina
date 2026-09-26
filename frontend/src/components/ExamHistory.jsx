@@ -47,6 +47,7 @@ export default function ExamHistory({ history }) {
   return (
     <div className="bg-slate-50 border border-slate-200 p-4 rounded-lg">
       <h4 className="text-[11px] font-semibold text-slate-900 uppercase tracking-wider mb-4">{t('history.title')}</h4>
+      <p className="text-[10px] text-slate-500 -mt-3 mb-4">{t('history.storedNotice')}</p>
 
       {status === 'loading' && <p className="text-[11px] text-slate-500 font-medium">{t('history.loading')}</p>}
       {status === 'error' && exams.length === 0 && (
