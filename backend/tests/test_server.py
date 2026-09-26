@@ -242,7 +242,7 @@ def test_enhancement_returns_the_matlab_image_and_needs_matlab(client, monkeypat
     monkeypatch.setattr(server.matlab_service, "call", call)
     r = client.post("/api/stage1-enhance", files=upload("f.png", realistic_fundus(seed=1)))
     assert r.status_code == 200 and calls == ["enhanceToFile"]
-    assert r.json()["imageUrl"].startswith("data:image/png;base64,") and r.json()["displayOnly"] is True
+    assert r.json()["imageUrl"].startswith("data:image/jpeg;base64,") and r.json()["displayOnly"] is True
 
 
 def test_simulation_run_passes_the_scenario_to_simulink(client, monkeypatch):

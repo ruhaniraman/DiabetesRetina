@@ -397,6 +397,14 @@ def png_data_url(img: np.ndarray) -> str:
     return "data:image/png;base64," + base64.b64encode(buf).decode("ascii")
 
 
+def jpeg_data_url(img: np.ndarray, quality: int = 90) -> str:
+    """For full-size photographs: a PNG of one is ~2 MB, which takes about a minute over the demo tunnel."""
+    ok, buf = cv2.imencode(".jpg", img, [cv2.IMWRITE_JPEG_QUALITY, quality])
+    if not ok:
+        raise RuntimeError("JPEG encoding failed")
+    return "data:image/jpeg;base64," + base64.b64encode(buf).decode("ascii")
+
+
 # --------------------------------------------------------------------------- #
 # Stage 1 - quality
 # --------------------------------------------------------------------------- #
@@ -486,7 +494,7 @@ async def enhance_for_review(file: UploadFile = File(...)):
     except Exception:
         log.exception("Stage 1 enhancement failed")
         raise HTTPException(status_code=500, detail="Enhancement failed.")
-    return {"status": "success", "imageUrl": png_data_url(out), "method": "illumination+clahe+bilateral", "displayOnly": True}
+    return {"status": "success", "imageUrl": jpeg_data_url(out), "method": "illumination+clahe+bilateral", "displayOnly": True}
 
 
 # --------------------------------------------------------------------------- #

@@ -56,15 +56,19 @@ def printable_name(name: str | None) -> str:
     return name.strip()
 
 
-def _png(img_bgr: np.ndarray) -> io.BytesIO:
-    ok, buf = cv2.imencode(".png", img_bgr)
+def _jpeg(img_bgr: np.ndarray, max_side: int = 800) -> io.BytesIO:
+    """JPEG, at most 800 px (about 240 dpi at the printed size): PNGs made the PDF ~1.6 MB, slow to send over the demo tunnel."""
+    scale = max_side / max(img_bgr.shape[:2])
+    if scale < 1:
+        img_bgr = cv2.resize(img_bgr, None, fx=scale, fy=scale, interpolation=cv2.INTER_AREA)
+    ok, buf = cv2.imencode(".jpg", img_bgr, [cv2.IMWRITE_JPEG_QUALITY, 90])
     if not ok:
         raise ValueError("Could not encode an image for the report.")
     return io.BytesIO(buf.tobytes())
 
 
 def _image(img_bgr: np.ndarray, width: float) -> Image:
-    return Image(_png(img_bgr), width=width, height=width)      # every picture is the model's square 224 x 224 view
+    return Image(_jpeg(img_bgr), width=width, height=width)      # every picture is the model's square 224 x 224 view
 
 
 def _labelled(label: str, value: str) -> list:
