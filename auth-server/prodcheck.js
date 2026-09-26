@@ -17,9 +17,7 @@ export function productionProblems(env) {
     problems.push('SERVICE_KEY must differ from JWT_SECRET and DATA_KEY.');
   }
 
-  if (!env.GMAIL_USER || !env.GMAIL_APP_PASSWORD) {
-    problems.push('GMAIL_USER and GMAIL_APP_PASSWORD must be set (codes are never printed in production).');
-  }
+  if (env.FIXED_OTP) problems.push('FIXED_OTP must not be set (it lets anyone verify any number or reset any password).');
 
   let origin;
   try {

@@ -147,7 +147,8 @@ def _lesion_block(eye: str, images: dict) -> list:
     return block
 
 
-def build_report_pdf(result: dict, eyes: dict, *, patient: dict | None = None, generated_at: _dt.datetime | None = None, compress: bool = True) -> bytes:
+def build_report_pdf(result: dict, eyes: dict, *, patient: dict | None = None, generated_at: _dt.datetime | None = None, compress: bool = True,
+                     stored: bool = False) -> bytes:
     """Return the report as PDF bytes.
 
     result   the assessment the API returns (leftGrade, rightGrade, ...ConfidenceBand, ...ReferableProbability, ...Referable, referable,
@@ -155,6 +156,7 @@ def build_report_pdf(result: dict, eyes: dict, *, patient: dict | None = None, g
     eyes     {"left": {"analysed": BGR array, "heatmap": BGR array, "heatmap_empty": bool}, "right": {...}}; with the lesion overlay on, each eye
              also has "lesions" (BGR photo with the overlay, square) and "lesion_counts" ({microaneurysms, hemorrhages, exudates, softExudates})
     patient  optional {"name": str, "dob": "YYYY-MM-DD"}; printed on the report only
+    stored   True when the copy is saved with the exam history (the last note then says so instead of "not kept")
     """
     generated_at = generated_at or _dt.datetime.now(_dt.timezone.utc)
     stamp = generated_at.strftime("%d %b %Y, %H:%M UTC")
@@ -194,7 +196,7 @@ def build_report_pdf(result: dict, eyes: dict, *, patient: dict | None = None, g
     if result.get("referralThresholdSource") == "site":
         notes.append(Paragraph(escape(PDF_TEXT["site_threshold_note"]), BODY))
     notes += [Paragraph(escape(PDF_TEXT["confidence_note"]), BODY), Spacer(1, 1.5 * mm), Paragraph(escape(PDF_TEXT["stage_note"]), BODY), Spacer(1, 1.5 * mm),
-              Paragraph(escape(PDF_TEXT["generated_note"]), SMALL)]
+              Paragraph(escape(PDF_TEXT["generated_note_stored" if stored else "generated_note"]), SMALL)]
     story.append(KeepTogether(notes))
 
     doc.build(story, onFirstPage=_footer(stamp), onLaterPages=_footer(stamp))

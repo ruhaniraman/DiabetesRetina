@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import AuthLayout, { Field, FormAlert } from '../components/AuthLayout';
 import { forgotPassword, resetPassword } from '../api/auth';
-import { validateEmail, validatePassword } from '../utils/validation';
+import { normalizePhone, validatePhone, validatePassword } from '../utils/validation';
 import { useMessages } from '../messages';
 
 const RESEND_SECONDS = 60;
@@ -11,15 +11,15 @@ const submitClass =
   'w-full py-3.5 px-4 bg-[#0d1424] hover:bg-[#1a2744] disabled:opacity-60 disabled:cursor-not-allowed text-white font-bold text-xs uppercase tracking-wider rounded-xl transition-all shadow-md active:scale-[0.99] mt-2 flex items-center justify-center gap-2 cursor-pointer';
 
 /**
- * Two steps on one page: (1) enter your email, (2) enter the emailed code and a new password.
+ * Two steps on one page: (1) enter your phone, (2) enter the code sent by SMS and a new password.
  * The server answers step 1 identically whether or not the account exists, so this page
- * never says whether an email is registered.
+ * never says whether a number is registered.
  */
 export default function ForgotPassword({ onDone, onBackToLogin }) {
   const { t } = useTranslation();
   const { tm } = useMessages();
-  const [step, setStep] = useState('email'); // 'email' | 'reset'
-  const [email, setEmail] = useState('');
+  const [step, setStep] = useState('phone'); // 'phone' | 'reset'
+  const [phone, setPhone] = useState('');
   const [code, setCode] = useState('');
   const [password, setPassword] = useState('');
   const [confirm, setConfirm] = useState('');
@@ -35,21 +35,21 @@ export default function ForgotPassword({ onDone, onBackToLogin }) {
     return () => clearTimeout(timer);
   }, [cooldown]);
 
-  const normalizedEmail = email.trim().toLowerCase();
+  const normalizedPhone = normalizePhone(phone);
 
   const requestCode = async (e) => {
     e?.preventDefault();
     if (loading) return;
-    const emailError = validateEmail(email);
-    setErrors({ email: emailError });
+    const phoneError = validatePhone(phone);
+    setErrors({ phone: phoneError });
     setFormError('');
-    if (emailError) return;
+    if (phoneError) return;
 
     setLoading(true);
     try {
-      await forgotPassword({ email: normalizedEmail });
+      await forgotPassword({ phone: normalizedPhone });
       setStep('reset');
-      setInfo(t('forgot.sent', { email: normalizedEmail }));
+      setInfo(t('forgot.sent', { phone: normalizedPhone }));
       setCooldown(RESEND_SECONDS);
     } catch (err) {
       setFormError(err.message);
@@ -63,7 +63,7 @@ export default function ForgotPassword({ onDone, onBackToLogin }) {
     setLoading(true);
     setFormError('');
     try {
-      await forgotPassword({ email: normalizedEmail });
+      await forgotPassword({ phone: normalizedPhone });
       setInfo(t('forgot.resent'));
       setCode('');
       setCooldown(RESEND_SECONDS);
@@ -78,7 +78,7 @@ export default function ForgotPassword({ onDone, onBackToLogin }) {
     e.preventDefault();
     if (loading) return;
     const next = {
-      code: /^\d{6}$/.test(code) ? '' : 'Enter the 6-digit code from your email.',
+      code: /^\d{6}$/.test(code) ? '' : 'Enter the 6-digit code sent to your phone.',
       password: validatePassword(password),
       confirm: !confirm ? 'Please confirm your password.' : confirm !== password ? 'Passwords do not match.' : '',
     };
@@ -89,7 +89,7 @@ export default function ForgotPassword({ onDone, onBackToLogin }) {
 
     setLoading(true);
     try {
-      await resetPassword({ email: normalizedEmail, code, password });
+      await resetPassword({ phone: normalizedPhone, code, password });
       onDone(t('forgot.done'));
     } catch (err) {
       setFormError(err.message);
@@ -104,30 +104,30 @@ export default function ForgotPassword({ onDone, onBackToLogin }) {
     <AuthLayout
       heroTitle={t('forgot.heroTitle')}
       heroText={t('forgot.heroText')}
-      title={step === 'email' ? t('forgot.titleEmail') : t('forgot.titleReset')}
+      title={step === 'phone' ? t('forgot.titlePhone') : t('forgot.titleReset')}
       subtitle={
-        step === 'email'
-          ? t('forgot.subtitleEmail')
+        step === 'phone'
+          ? t('forgot.subtitlePhone')
           : t('forgot.subtitleReset')
       }
     >
-      {step === 'email' ? (
+      {step === 'phone' ? (
         <form onSubmit={requestCode} noValidate className="space-y-4">
           <FormAlert message={tm(formError)} />
           <Field
-            id="forgot-email"
-            label={t('forgot.email')}
-            type="email"
-            autoComplete="email"
+            id="forgot-phone"
+            label={t('forgot.phone')}
+            type="tel"
+            autoComplete="tel"
             autoFocus
-            value={email}
+            value={phone}
             onChange={(e) => {
-              setEmail(e.target.value);
-              clear('email');
+              setPhone(e.target.value);
+              clear('phone');
               setFormError('');
             }}
-            placeholder="doctor@retinarescue.com"
-            error={tm(errors.email)}
+            placeholder="98765 43210"
+            error={tm(errors.phone)}
           />
           <button type="submit" disabled={loading} className={submitClass}>
             <span>{loading ? t('forgot.sending') : t('forgot.send')}</span>
@@ -201,14 +201,14 @@ export default function ForgotPassword({ onDone, onBackToLogin }) {
             <button
               type="button"
               onClick={() => {
-                setStep('email');
+                setStep('phone');
                 setErrors({});
                 setFormError('');
                 setInfo('');
               }}
               className="font-bold text-[#0d1424] hover:underline cursor-pointer"
             >
-              {t('forgot.differentEmail')}
+              {t('forgot.differentPhone')}
             </button>
           </div>
         </form>

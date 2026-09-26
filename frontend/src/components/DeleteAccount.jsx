@@ -6,7 +6,7 @@ import { FiTrash2 } from 'react-icons/fi';
  * Header button + confirmation dialog for permanently deleting the account.
  * `onDelete(password)` must reject with an Error carrying a readable message when the server refuses.
  */
-export default function DeleteAccount({ onDelete }) {
+export default function DeleteAccount({ onDelete, className, children }) {
   const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const [password, setPassword] = useState('');
@@ -48,9 +48,10 @@ export default function DeleteAccount({ onDelete }) {
         onClick={() => setOpen(true)}
         title={t('deleteAccount')}
         aria-label={t('deleteAccount')}
-        className="p-2.5 rounded-xl text-slate-500 hover:text-rose-600 hover:bg-rose-50 border border-slate-200/90 bg-white shadow-2xs transition cursor-pointer"
+        className={className ?? 'p-2.5 rounded-xl text-slate-500 hover:text-rose-600 hover:bg-rose-50 border border-slate-200/90 bg-white shadow-2xs transition cursor-pointer'}
       >
         <FiTrash2 className="text-base" />
+        {children}
       </button>
       {open && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 p-4" onClick={close}>
@@ -61,7 +62,7 @@ export default function DeleteAccount({ onDelete }) {
             onClick={(e) => e.stopPropagation()}
             onKeyDown={(e) => e.key === 'Escape' && close()}
             onSubmit={submit}
-            className="w-full max-w-md space-y-4 rounded-2xl bg-white p-6 shadow-xl"
+            className="w-full max-w-md space-y-4 rounded-lg bg-white p-6 shadow-xl"
           >
             <h2 id="delete-account-title" className="text-lg font-bold text-slate-900">{t('deleteAccountTitle')}</h2>
             <p className="text-sm text-slate-600">{t('deleteAccountWarning')}</p>

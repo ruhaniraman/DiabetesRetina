@@ -5,8 +5,7 @@
   "scripts": {
     "start": "node --disable-warning=ExperimentalWarning index.js",
     "dev": "node --disable-warning=ExperimentalWarning --watch index.js",
-    "test": "node --disable-warning=ExperimentalWarning --test test/*.test.js",
-    "check-email": "node scripts/check-email.js"
+    "test": "node --disable-warning=ExperimentalWarning --test test/*.test.js"
   },
   "dependencies": {
     "bcryptjs": "^3.0.3",
@@ -15,8 +14,7 @@
     "express": "^5.2.1",
     "express-rate-limit": "^8.7.0",
     "helmet": "^8.3.0",
-    "jsonwebtoken": "^9.0.3",
-    "nodemailer": "^10.0.10"
+    "jsonwebtoken": "^9.0.3"
   },
   "engines": {
     "node": ">=22.13"

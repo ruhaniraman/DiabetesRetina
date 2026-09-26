@@ -51,7 +51,7 @@ export default function ListenToReport({ assessment, compact = false }) {
         <button
           type="button"
           onClick={busy ? stop : start}
-          className="inline-flex items-center gap-3 rounded-2xl bg-slate-900 hover:bg-slate-800 text-white font-bold px-5 py-3.5 text-sm shadow-sm transition cursor-pointer"
+          className="inline-flex items-center gap-3 rounded-lg bg-slate-900 hover:bg-slate-800 text-white font-bold px-5 py-3.5 text-sm shadow-sm transition cursor-pointer"
         >
           {busy ? <FiSquare className="text-xl" aria-hidden="true" /> : <FiVolume2 className="text-xl" aria-hidden="true" />}
           {busy ? t('listenStop') : t('listen')}

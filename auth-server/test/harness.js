@@ -1,5 +1,5 @@
 // Shared helpers for the integration tests: start the real server on a throwaway database and call it over HTTP.
-// Verification/reset codes are read from the server's dev-console output, so no Gmail is needed.
+// Verification/reset codes are read from the server's dev-console output, so no SMS provider is needed.
 import { spawn } from 'node:child_process';
 import { mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -25,8 +25,7 @@ export async function startServer(extraEnv = {}) {
       JWT_SECRET: 'test-secret-test-secret-test-secret',
       DATA_KEY: 'test-data-key',
       SERVICE_KEY,
-      GMAIL_USER: '',
-      GMAIL_APP_PASSWORD: '',
+      FIXED_OTP: '',
       NODE_ENV: 'development',
       ...extraEnv,
     },
@@ -55,19 +54,19 @@ export async function startServer(extraEnv = {}) {
   const post = (route, body, token) => call('POST', route, { body: body ?? {}, token });
   const me = async (token) => (await call('GET', '/auth/me', { token })).status;
 
-  async function latestCode(label, email) {
-    const re = new RegExp(`${label} for ${email.replace(/[.+]/g, '\\$&')}: (\\d{6})`, 'g');
+  async function latestCode(label, phone) {
+    const re = new RegExp(`${label} for ${phone.replace(/[.+]/g, '\\$&')}: (\\d{6})`, 'g');
     for (let i = 0; i < 40; i += 1) {
       const found = [...output.matchAll(re)];
       if (found.length) return found.at(-1)[1];
       await new Promise((r) => setTimeout(r, 50));
     }
-    throw new Error(`No "${label}" line for ${email} in server output`);
+    throw new Error(`No "${label}" line for ${phone} in server output`);
   }
 
-  async function signUpVerified(email, password) {
-    await post('/auth/signup', { fullName: 'Test User', email, password });
-    const { body } = await post('/auth/verify-email', { email, code: await latestCode('Verification code', email) });
+  async function signUpVerified(phone, password) {
+    await post('/auth/signup', { fullName: 'Test User', phone, password });
+    const { body } = await post('/auth/verify-phone', { phone, code: await latestCode('Verification code', phone) });
     return body.token;
   }
 
@@ -77,8 +76,8 @@ export async function startServer(extraEnv = {}) {
     post,
     me,
     signUpVerified,
-    verificationCode: (email) => latestCode('Verification code', email),
-    resetCode: (email) => latestCode('Password reset code', email),
+    verificationCode: (phone) => latestCode('Verification code', phone),
+    resetCode: (phone) => latestCode('Password reset code', phone),
     dbPath: path.join(tmp, 'test.db'),
     stop() {
       server.kill();

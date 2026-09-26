@@ -324,3 +324,43 @@ def test_a_failure_while_drawing_is_a_500_with_no_detail_leak(client, fake_matla
     monkeypatch.setattr(server, "build_report_pdf", lambda *a, **k: (_ for _ in ()).throw(RuntimeError("secret internals")))
     r = client.post("/api/report-pdf", files=files())
     assert r.status_code == 500 and "secret" not in r.text
+
+
+# ----------------------------------------------------------------------------------------------------- stored copy with the exam history
+def test_the_stored_copy_says_it_is_kept_instead_of_not_kept():
+    t = squash(text_of(report_pdf.build_report_pdf(result(), eyes(), stored=True)))
+    assert squash(ct.PDF_TEXT["generated_note_stored"]) in t
+    assert "does not keep this report file" not in t
+
+
+def test_an_assessment_saves_its_pdf_with_the_exam_after_answering(client, fake_matlab, monkeypatch):
+    stored = {}
+
+    async def fake_store(exam_id, pdf):
+        stored["exam_id"], stored["pdf"] = exam_id, pdf
+        return True
+
+    monkeypatch.setattr(server, "SERVICE_KEY", "k" * 40)
+    monkeypatch.setattr(server, "store_report", fake_store)
+    r = client.post("/api/stage3-assessment", files=files(), data={"patientName": "Asha Rao", "patientDob": "1972-05-12"})
+    body = r.json()
+    assert r.status_code == 200 and body["saved"] is True and body["reportPending"] is True
+    assert stored["exam_id"] == 1 and stored["pdf"].startswith(b"%PDF")
+    t = squash(text_of(stored["pdf"]))
+    assert "Asha Rao" in t and squash(ct.PDF_TEXT["generated_note_stored"]) in t
+    assert fake_matlab["graded"] == 1   # the stored PDF is built from the same result, not a second grading
+
+
+def test_no_pdf_is_built_when_exams_are_not_being_saved(client, fake_matlab):
+    body = client.post("/api/stage3-assessment", files=files()).json()   # conftest blanks SERVICE_KEY
+    assert body["reportPending"] is False and fake_matlab["heatmaps"] == 0
+
+
+def test_a_failing_report_never_breaks_the_assessment(client, fake_matlab, monkeypatch):
+    def broken_heatmap(*_a, **_k):
+        raise RuntimeError("MATLAB fell over")
+
+    monkeypatch.setattr(server, "SERVICE_KEY", "k" * 40)
+    monkeypatch.setattr(server, "render_gradcam", broken_heatmap)
+    r = client.post("/api/stage3-assessment", files=files(), data={"patientName": "\x00bad"})
+    assert r.status_code == 200 and r.json()["saved"] is True

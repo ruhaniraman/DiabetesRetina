@@ -121,6 +121,7 @@ PDF_TEXT = {
         "It is only appropriate if the site's clinical lead has approved it."
     ),
     "generated_note": "Generated on request from the photographs supplied. The server does not keep this report file.",
+    "generated_note_stored": "Generated from the photographs of this exam. An encrypted copy is kept with the patient's exam history and is deleted with it.",
     "name_unprintable": "(name uses characters this report cannot print; see the application record)",
     "not_provided": "Not provided",
 }

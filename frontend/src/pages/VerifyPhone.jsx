@@ -1,12 +1,12 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import AuthLayout, { Field, FormAlert } from '../components/AuthLayout';
-import { verifyEmail, resendCode } from '../api/auth';
+import { verifyPhone, resendCode } from '../api/auth';
 import { useMessages } from '../messages';
 
 const RESEND_SECONDS = 60;
 
-export default function VerifyEmail({ email, onVerified, onBack }) {
+export default function VerifyPhone({ phone, onVerified, onBack }) {
   const { t } = useTranslation();
   const { tm } = useMessages();
   const [code, setCode] = useState('');
@@ -14,7 +14,7 @@ export default function VerifyEmail({ email, onVerified, onBack }) {
   const [info, setInfo] = useState('');
   const [loading, setLoading] = useState(false);
   const [resending, setResending] = useState(false);
-  // A code was just emailed, so the resend button starts on cooldown.
+  // A code was just sent, so the resend button starts on cooldown.
   const [cooldown, setCooldown] = useState(RESEND_SECONDS);
 
   useEffect(() => {
@@ -36,7 +36,7 @@ export default function VerifyEmail({ email, onVerified, onBack }) {
     setError('');
     setInfo('');
     try {
-      const { user } = await verifyEmail({ email, code });
+      const { user } = await verifyPhone({ phone, code });
       onVerified(user);
     } catch (err) {
       setError(err.message);
@@ -51,7 +51,7 @@ export default function VerifyEmail({ email, onVerified, onBack }) {
     setError('');
     setInfo('');
     try {
-      await resendCode({ email });
+      await resendCode({ phone });
       setInfo(t('verify.newCode'));
       setCode('');
       setCooldown(RESEND_SECONDS);
@@ -68,7 +68,7 @@ export default function VerifyEmail({ email, onVerified, onBack }) {
       heroTitle={t('verify.heroTitle')}
       heroText={t('verify.heroText')}
       title={t('verify.title')}
-      subtitle={t('verify.subtitle', { email })}
+      subtitle={t('verify.subtitle', { phone })}
     >
       <form onSubmit={handleSubmit} noValidate className="space-y-4">
         <FormAlert message={tm(error)} />
@@ -114,7 +114,7 @@ export default function VerifyEmail({ email, onVerified, onBack }) {
           onClick={onBack}
           className="font-bold text-[#0d1424] hover:underline cursor-pointer"
         >
-          {t('verify.differentEmail')}
+          {t('verify.differentPhone')}
         </button>
       </div>
     </AuthLayout>

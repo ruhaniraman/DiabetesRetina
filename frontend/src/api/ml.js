@@ -80,10 +80,13 @@ export async function downloadReportPdf(leftFile, rightFile, patient) {
   return res.blob();
 }
 
-export function assessEyes(leftFile, rightFile) {
+/** Grade both eyes. The result is saved to the exam history with its detailed PDF, which prints `patient` ({ fullName, dob }) when given. */
+export function assessEyes(leftFile, rightFile, patient) {
   const fd = new FormData();
   fd.append('leftEye', leftFile);
   fd.append('rightEye', rightFile);
+  if (patient?.fullName) fd.append('patientName', patient.fullName);
+  if (patient?.dob) fd.append('patientDob', patient.dob);
   return mlRequest('/stage3-assessment', { formData: fd });
 }
 

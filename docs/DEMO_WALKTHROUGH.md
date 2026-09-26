@@ -26,11 +26,10 @@ redistribution). No step uses a photo the models were trained on.
 | 9 | Dashboard → **Specialist review** | Read the screen, click **Agree: refer**; repeat with `B_proliferative_*` | **Stage 4**: the one-screen review; the timer shows it done in under 30 s. P(proliferative DR) is the **new-vessel** signal |
 | 10 | Dashboard → **District Planner** | Move *Patients per year* to 200,000; switch camera to *not calibrated*; set review to 120 s | **Stage 5**: resources re-planned live (camera sites, uplink, GPU, reviewers, ₹/patient); specificity and the 30-second report drive the specialist load |
 | 11 | District Planner | **Confirm in Simulink** | **Stage 5**: a year of `DistrictScreening.slx` runs in MATLAB; the backlog charts show every stage within its limit |
-| 12 | Dashboard → **Evidence** | Scroll | **Validation**: every requirement with the measured result and its report (sensitivity 96.9%, specificity 88.3% on 548 held-out photos, ...) |
 
 ## Talking points
 
-- Every number on the Evidence page is generated from the committed validation reports (`validation/export_evidence.py`); a test fails if the page is stale.
+- The validation numbers (sensitivity 96.9%, specificity 88.3% on 548 held-out photos, ...) are in `validation/REPORT.md`.
 - The system says where it falls short: IDRiD specificity without site calibration, pixel-level new vessels (no dataset in the problem statement has them),
   and integrated vs CNN-alone referral accuracy (equal, not better).
 - Healthy example: `A_healthy_*` (APTOS, No DR) gives no referral and a clear anatomy view.

@@ -120,12 +120,10 @@ Basis line: "Basis: referral score compared with a 20% threshold".
 
 - **Before an assessment is run:** "Upload fundus images for both eyes and run the AI assessment to see the screening result."
 - **On-screen disclaimer:** "Screening aid only. Results are produced by automated image analysis and are not a medical diagnosis, and the tool can miss disease. It has not been clinically validated. Always have a qualified eye-care professional review the findings before making any treatment decision."
-- **Note about stage reliability:** "The referral decision is the more reliable output. On held-out test images it found about 97% of referable cases, while the exact stage matched the reference grade about 79% of the time. Results depend on the camera and population: on a second public dataset it flagged many more eyes that had no disease (see validation/REPORT.md)."
 - **Note when a heatmap is shown:** "Shows the regions that raised this eye's referral score, on a coarse grid. A rough guide, not a lesion detection: warm colours do not by themselves mean disease, and disease can be present outside them."
-- **Note under the heatmap of an eye that was not flagged:** "This eye's referral score is below the threshold, so it was not flagged. The map shows where the score was relatively highest, not a finding."
+- **Heatmap with nothing highlighted:** "No region raised this eye's referral score, so nothing is highlighted. That does not rule out disease."
 - **Shown when text is machine-translated:** "Machine-translated and not clinically reviewed. If anything is unclear, the English text is authoritative."
 - **Chip on an eye flagged despite a milder stage:** "Referral flagged" (hover: "The most likely stage is lower, but the screening model's referral threshold was reached")
-- **Confidence note (report):** "Lower confidence means the grade is less likely to be right. In testing, the referral decision was wrong in about 1% of high-confidence results and about 15% of the rest."
 - **Sign-in page:** "AI-assisted retinal screening to help catch diabetic eye disease early."
 
 ### 3b-1. Listen (the result read aloud)
@@ -163,7 +161,7 @@ Source: `backend/quality.py`. A photo is **rejected** (the user is asked to reta
 
 ### 3d. Downloadable PDF report (what a patient or clinician can save and print)
 
-Source: `backend/report_pdf.py`, wording in `backend/clinical_text.py` (`PDF_TEXT`) plus the summary sentence shown in 3a. Created when the user presses "Download PDF Report": the server grades both photographs again, draws the heatmaps and returns the PDF. **It prints the patient's name and date of birth (if given) and both eyes' results.** The server keeps neither the photographs nor the report file and adds nothing to the exam history. Names in scripts the report font cannot print (for example Devanagari or Kannada) are replaced by a note. The report never shows raw class probabilities. Lesions appear only when the Stage 2 lesion overlay is turned on (section 3e), and then only as possible lesions with a caveat.
+Source: `backend/report_pdf.py`, wording in `backend/clinical_text.py` (`PDF_TEXT`) plus the summary sentence shown in 3a. Created when the user presses "Download PDF Report": the server grades both photographs again, draws the heatmaps and returns the PDF. **It prints the patient's name and date of birth (if given) and both eyes' results.** That download is not kept and adds nothing to the exam history. Separately, each assessment saved to the exam history also gets its own copy of this PDF, built from the same result and stored encrypted with the exam; it ends with the "kept with the exam history" note below and is deleted with the exam, the health data or the account. Names in scripts the report font cannot print (for example Devanagari or Kannada) are replaced by a note. The report never shows raw class probabilities. Lesions appear only when the Stage 2 lesion overlay is turned on (section 3e), and then only as possible lesions with a caveat.
 
 | Where | Text |
 |---|---|
@@ -181,6 +179,7 @@ Source: `backend/report_pdf.py`, wording in `backend/clinical_text.py` (`PDF_TEX
 | Note on stage reliability | The referral decision is the more reliable output. On held-out test images it found about 97% of referable cases, while the exact stage matched the reference grade about 79% of the time. Results depend on the camera and population: on a second public dataset it flagged many more eyes that had no disease (see validation/REPORT.md). |
 | Note when the site set its own threshold | The referral threshold used here was set by this site from its own calibration, not the model's default. It is only appropriate if the site's clinical lead has approved it. |
 | Last line of the notes | Generated on request from the photographs supplied. The server does not keep this report file. |
+| Last line of the notes, on the copy kept with the exam history | Generated from the photographs of this exam. An encrypted copy is kept with the patient's exam history and is deleted with it. |
 | Instead of a name the font cannot print | (name uses characters this report cannot print; see the application record) |
 | When name or date of birth is missing | Not provided |
 
@@ -291,7 +290,7 @@ The PDF header reads "AI SCREENING AID", the badge reads "REFERRAL RECOMMENDED" 
 ### 3g. Not covered by this packet
 
 - **Hindi and Kannada.** The dashboard summary is machine-translated (Argos Translate, which has **no Kannada model**, so Kannada stays English) on demand; it has not been reviewed by a clinician or a medical translator. The fixed interface labels in `frontend/src/locales/` are also unreviewed. Machine translation of medical advice can be wrong; consider disabling it, or having translations professionally reviewed, before use with patients.
-- **Anything typed by staff or patients**, and email text (sign-in codes only).
+- **Anything typed by staff or patients**, and SMS text (sign-in codes only).
 
 ## 4. Wording principles applied, and what changed
 

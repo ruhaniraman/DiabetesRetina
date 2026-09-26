@@ -18,7 +18,7 @@ function strings(value, path = []) {
 }
 const ALL = Object.entries(text).flatMap(([name, value]) => strings(value, [name]));
 // basisText is a function; include its output.
-ALL.push(['PDF_NEEDS_ASSESSMENT', text.PDF_NEEDS_ASSESSMENT], ['PDF_NEEDS_PHOTOS', text.PDF_NEEDS_PHOTOS], ['HEATMAP_BELOW_NOTE', text.HEATMAP_BELOW_NOTE], ['PDF_PRIVACY_NOTE', text.PDF_PRIVACY_NOTE], ['HEATMAP_EMPTY_NOTE', text.HEATMAP_EMPTY_NOTE], ['basisText(20%)', text.basisText('20%')], ['basisText(null)', text.basisText(null)], ['basisText(site)', text.basisText('36%', 'site')]);
+ALL.push(['PDF_NEEDS_ASSESSMENT', text.PDF_NEEDS_ASSESSMENT], ['PDF_NEEDS_PHOTOS', text.PDF_NEEDS_PHOTOS], ['HEATMAP_EMPTY_NOTE', text.HEATMAP_EMPTY_NOTE], ['basisText(20%)', text.basisText('20%')], ['basisText(null)', text.basisText(null)], ['basisText(site)', text.basisText('36%', 'site')]);
 
 describe('clinical wording guard rails', () => {
   it('finds a meaningful number of strings to check', () => {

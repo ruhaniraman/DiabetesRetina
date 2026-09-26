@@ -56,16 +56,16 @@ function EyeColumn({ label, scan, grade, band, probability, flagged, threshold, 
   return (
     <section className={`${cardClass} p-4 space-y-3`} aria-label={label}>
       <div className="flex items-center justify-between">
-        <h2 className="text-sm font-extrabold uppercase tracking-wider text-slate-900">{label}</h2>
-        <span className={`rounded-full px-2.5 py-0.5 text-[10px] font-extrabold uppercase ${flagged ? 'bg-amber-100 text-amber-900 border border-amber-300' : 'bg-emerald-50 text-emerald-800 border border-emerald-200'}`}>
+        <h2 className="text-sm font-semibold uppercase tracking-wider text-slate-900">{label}</h2>
+        <span className={`rounded-full px-2.5 py-0.5 text-[10px] font-semibold uppercase ${flagged ? 'bg-amber-100 text-amber-900 border border-amber-300' : 'bg-emerald-50 text-emerald-800 border border-emerald-200'}`}>
           {flagged ? 'AI: refer' : 'AI: routine'}
         </span>
       </div>
       <div className="grid grid-cols-2 gap-2">
-        <figure className="aspect-square rounded-2xl bg-slate-900 overflow-hidden">
+        <figure className="aspect-square rounded-lg bg-slate-900 overflow-hidden">
           {scan.imageUrl && <img src={scan.imageUrl} alt={`${label} photograph`} className="w-full h-full object-contain" />}
         </figure>
-        <figure className="aspect-square rounded-2xl bg-slate-900 overflow-hidden flex items-center justify-center">
+        <figure className="aspect-square rounded-lg bg-slate-900 overflow-hidden flex items-center justify-center">
           {heat.status === 'success' ? (
             <img src={heat.url} alt={`${label} Grad-CAM of the referral score`} className="w-full h-full object-contain" />
           ) : (
@@ -76,12 +76,12 @@ function EyeColumn({ label, scan, grade, band, probability, flagged, threshold, 
       <dl className="grid grid-cols-2 gap-2 text-xs">
         <div className="rounded-xl bg-slate-50 border border-slate-200 p-2.5">
           <dt className="text-[10px] font-bold uppercase text-slate-500">AI grade</dt>
-          <dd className="font-extrabold text-slate-900">{STAGE_NAMES[grade] || grade || '—'}</dd>
+          <dd className="font-semibold text-slate-900">{STAGE_NAMES[grade] || grade || '—'}</dd>
           <dd className="text-slate-500">{band ? `${band} confidence (calibrated)` : ''}</dd>
         </div>
         <div className="rounded-xl bg-slate-50 border border-slate-200 p-2.5">
           <dt className="text-[10px] font-bold uppercase text-slate-500">Referral score</dt>
-          <dd className="font-extrabold text-slate-900">
+          <dd className="font-semibold text-slate-900">
             {percent(probability)} <span className="font-semibold text-slate-500">vs {percent(threshold)}</span>
           </dd>
           {typeof probability === 'number' && (
@@ -148,16 +148,16 @@ export default function SpecialistReviewPage({ session, onBack }) {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <header data-tour="review" className="flex items-center justify-between gap-4 py-5">
             <div className="flex items-center gap-3">
-              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white shadow-lg shadow-black/20 shrink-0">
+              <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-white shadow-sm shrink-0">
                 <Logo className="w-8 h-6" />
               </div>
               <div>
-                <span className="block text-lg font-extrabold tracking-tight text-white">30-second specialist review</span>
-                <span className="block text-[10px] font-black uppercase tracking-[0.2em] text-amber-400">Tele-ophthalmology</span>
+                <span className="block text-lg font-semibold tracking-tight text-white">30-second specialist review</span>
+                <span className="block text-[10px] font-bold uppercase tracking-wider text-sky-300">Tele-ophthalmology</span>
               </div>
             </div>
             <div className="flex items-center gap-3">
-              <div className={`flex items-center gap-2 rounded-2xl bg-black/30 px-4 py-2 font-mono text-2xl font-black tabular-nums ${timerTone}`} role="timer" aria-label="Review time">
+              <div className={`flex items-center gap-2 rounded-lg bg-black/30 px-4 py-2 font-mono text-2xl font-bold tabular-nums ${timerTone}`} role="timer" aria-label="Review time">
                 <FiClock aria-hidden="true" className="text-lg" /> {assessment && !ready ? 'loading' : `${shown.toFixed(1)} s`}
               </div>
               <button type="button" onClick={onBack} className="flex items-center gap-2 rounded-xl bg-white/10 px-3 py-2 text-sm font-semibold text-white hover:bg-white/20 cursor-pointer">
@@ -176,7 +176,7 @@ export default function SpecialistReviewPage({ session, onBack }) {
         ) : (
           <>
             <section className={`${cardClass} p-4 flex flex-wrap items-center gap-x-6 gap-y-2 text-sm`}>
-              <span className={`rounded-full px-3 py-1 text-xs font-black uppercase text-white ${assessment.referable ? 'bg-amber-600' : 'bg-emerald-600'}`}>
+              <span className={`rounded-full px-3 py-1 text-xs font-bold uppercase text-white ${assessment.referable ? 'bg-amber-600' : 'bg-emerald-600'}`}>
                 {assessment.referable ? 'AI recommends referral' : 'AI: routine rescreen'}
               </span>
               <span className="font-semibold text-slate-700">Patient-level grade: {STAGE_NAMES[assessment.overallRisk] || assessment.overallRisk}</span>
@@ -208,7 +208,7 @@ export default function SpecialistReviewPage({ session, onBack }) {
                       type="button"
                       onClick={() => decide(key)}
                       disabled={!ready}
-                      className={`disabled:opacity-40 disabled:cursor-wait rounded-xl px-4 py-3 text-xs font-extrabold uppercase tracking-wide shadow-sm cursor-pointer transition ${
+                      className={`disabled:opacity-40 disabled:cursor-wait rounded-xl px-4 py-3 text-xs font-semibold uppercase tracking-wide shadow-sm cursor-pointer transition ${
                         d.agrees ? 'bg-slate-900 text-white hover:bg-slate-700' : 'bg-white border border-slate-300 text-slate-800 hover:bg-slate-50'
                       }`}
                     >

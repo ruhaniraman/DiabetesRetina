@@ -27,21 +27,21 @@ beforeEach(() => {
 });
 
 describe('ForgotPassword', () => {
-  it('validates the email before calling the server', async () => {
+  it('validates the mobile number before calling the server', async () => {
     const { user } = setup();
-    await user.type(screen.getByLabelText('Email address'), 'not-an-email');
+    await user.type(screen.getByLabelText('Mobile number'), '12345');
     await user.click(screen.getByRole('button', { name: /send code/i }));
-    expect(await screen.findByText('Enter a valid email address.')).toBeInTheDocument();
+    expect(await screen.findByText('Enter a valid mobile number.')).toBeInTheDocument();
     expect(forgotPassword).not.toHaveBeenCalled();
   });
 
   it('never claims the account exists, then resets with code + new password', async () => {
     const { user, onDone } = setup();
-    await user.type(screen.getByLabelText('Email address'), 'Someone@Example.com');
+    await user.type(screen.getByLabelText('Mobile number'), '98765 43210');
     await user.click(screen.getByRole('button', { name: /send code/i }));
 
-    expect(forgotPassword).toHaveBeenCalledWith({ email: 'someone@example.com' });
-    expect(await screen.findByText(/If an account exists for someone@example.com/)).toBeInTheDocument();
+    expect(forgotPassword).toHaveBeenCalledWith({ phone: '+919876543210' });
+    expect(await screen.findByText(/If an account exists for \+919876543210/)).toBeInTheDocument();
 
     await user.type(screen.getByLabelText('Reset code'), '123456');
     await user.type(screen.getByLabelText('New password'), 'BrandNew123');
@@ -49,12 +49,12 @@ describe('ForgotPassword', () => {
     await user.click(screen.getByRole('button', { name: /update password/i }));
 
     await waitFor(() => expect(onDone).toHaveBeenCalled());
-    expect(resetPassword).toHaveBeenCalledWith({ email: 'someone@example.com', code: '123456', password: 'BrandNew123' });
+    expect(resetPassword).toHaveBeenCalledWith({ phone: '+919876543210', code: '123456', password: 'BrandNew123' });
   });
 
   it('blocks weak or mismatched passwords locally', async () => {
     const { user } = setup();
-    await user.type(screen.getByLabelText('Email address'), 'a@example.com');
+    await user.type(screen.getByLabelText('Mobile number'), '9876500001');
     await user.click(screen.getByRole('button', { name: /send code/i }));
     await screen.findByLabelText('Reset code');
 
@@ -70,7 +70,7 @@ describe('ForgotPassword', () => {
   it('shows the server error for a wrong code and stays on the form', async () => {
     resetPassword.mockRejectedValue(new ApiError('Incorrect code. 4 attempts left.', 400));
     const { user, onDone } = setup();
-    await user.type(screen.getByLabelText('Email address'), 'a@example.com');
+    await user.type(screen.getByLabelText('Mobile number'), '9876500001');
     await user.click(screen.getByRole('button', { name: /send code/i }));
     await screen.findByLabelText('Reset code');
 

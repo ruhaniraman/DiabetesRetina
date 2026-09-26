@@ -9,14 +9,13 @@ import { useExamHistory } from './hooks/useExamHistory';
 
 import Login from './pages/Login';
 import Signup from './pages/Signup';
-import VerifyEmail from './pages/VerifyEmail';
+import VerifyPhone from './pages/VerifyPhone';
 import ForgotPassword from './pages/ForgotPassword';
 import Dashboard from './pages/Dashboard';
 import PatientDetailsPage from './pages/PatientDetailsPage';
 import DetailedReportPage from './pages/DetailedReportPage';
 import DistrictPlannerPage from './pages/DistrictPlannerPage';
 import SpecialistReviewPage from './pages/SpecialistReviewPage';
-import EvidencePage from './pages/EvidencePage';
 import TourProvider from './tour/TourProvider';
 import { useTour } from './tour/tourContext';
 
@@ -50,14 +49,14 @@ function LoginRoute() {
       notice={state?.notice}
       onForgotPassword={() => navigate('/forgot-password')}
       onGoToSignup={() => navigate('/signup')}
-      onNeedsVerification={(email) => navigate('/verify', { state: { email } })}
+      onNeedsVerification={(phone) => navigate('/verify', { state: { phone } })}
     />
   );
 }
 
 function SignupRoute() {
   const navigate = useNavigate();
-  return <Signup onSignup={(email) => navigate('/verify', { state: { email } })} onGoToLogin={() => navigate('/login')} />;
+  return <Signup onSignup={(phone) => navigate('/verify', { state: { phone } })} onGoToLogin={() => navigate('/login')} />;
 }
 
 function ForgotPasswordRoute() {
@@ -74,8 +73,8 @@ function VerifyRoute() {
   const { signIn } = useAuth();
   const navigate = useNavigate();
   const { state } = useLocation();
-  if (!state?.email) return <Navigate to="/signup" replace />;
-  return <VerifyEmail email={state.email} onVerified={signIn} onBack={() => navigate('/signup')} />;
+  if (!state?.phone) return <Navigate to="/signup" replace />;
+  return <VerifyPhone phone={state.phone} onVerified={signIn} onBack={() => navigate('/signup')} />;
 }
 
 /* --------------------------- Protected application --------------------------- */
@@ -120,7 +119,6 @@ function DashboardRoute() {
       onViewDetailedReport={() => navigate('/report')}
       onOpenDistrictPlanner={() => navigate('/district')}
       onOpenReview={() => navigate('/review')}
-      onOpenEvidence={() => navigate('/evidence')}
       onStartTour={tour?.start}
       onLogout={signOut}
       onDeleteAccount={deleteAccount}
@@ -150,8 +148,21 @@ function PatientRoute() {
 
 function ReportRoute() {
   const { profile, session } = useOutletContext();
+  const { signOut, deleteAccount } = useAuth();
+  const tour = useTour();
   const navigate = useNavigate();
-  return <DetailedReportPage patient={profile.patient} session={session} onBack={() => navigate('/')} />;
+  return (
+    <DetailedReportPage
+      patient={profile.patient}
+      session={session}
+      onBack={() => navigate('/')}
+      onOpenReview={() => navigate('/review')}
+      onOpenDistrictPlanner={() => navigate('/district')}
+      onStartTour={tour?.start}
+      onLogout={signOut}
+      onDeleteAccount={deleteAccount}
+    />
+  );
 }
 
 function DistrictRoute() {
@@ -163,11 +174,6 @@ function ReviewRoute() {
   const { session } = useOutletContext();
   const navigate = useNavigate();
   return <SpecialistReviewPage session={session} onBack={() => navigate('/')} />;
-}
-
-function EvidenceRoute() {
-  const navigate = useNavigate();
-  return <EvidencePage onBack={() => navigate('/')} />;
 }
 
 export default function App() {
@@ -185,7 +191,6 @@ export default function App() {
           <Route path="/report" element={<ReportRoute />} />
           <Route path="/district" element={<DistrictRoute />} />
           <Route path="/review" element={<ReviewRoute />} />
-          <Route path="/evidence" element={<EvidenceRoute />} />
         </Route>
 
         <Route path="*" element={<Navigate to="/" replace />} />

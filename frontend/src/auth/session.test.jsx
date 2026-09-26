@@ -9,7 +9,7 @@ const json = (status, body) => Promise.resolve({ ok: status < 400, status, json:
 
 function Probe() {
   const { status, user } = useAuth();
-  return <p>{status}:{user?.email ?? 'nobody'}</p>;
+  return <p>{status}:{user?.phone ?? 'nobody'}</p>;
 }
 
 beforeEach(() => localStorage.clear());
@@ -37,10 +37,10 @@ describe('cookie session', () => {
   });
 
   it('restores the session when the server accepts the cookie', async () => {
-    vi.stubGlobal('fetch', vi.fn(() => json(200, { user: { id: 1, email: 'me@example.com' } })));
+    vi.stubGlobal('fetch', vi.fn(() => json(200, { user: { id: 1, phone: '+919876543210' } })));
     render(<AuthProvider><Probe /></AuthProvider>);
     expect(screen.getByText('loading:nobody')).toBeInTheDocument();
-    await waitFor(() => expect(screen.getByText('authenticated:me@example.com')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText('authenticated:+919876543210')).toBeInTheDocument());
   });
 
   it('is signed out when the server rejects the cookie or is unreachable', async () => {

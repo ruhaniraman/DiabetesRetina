@@ -30,8 +30,6 @@ export const TOUR_STEPS = [
   { key: 'review', route: '/review', target: 'review', task: 'leave', when: assessed },
   { key: 'openDistrict', route: '/', target: 'district-button', task: 'click' },
   { key: 'district', route: '/district', target: 'district', task: 'leave' },
-  { key: 'openEvidence', route: '/', target: 'evidence-button', task: 'click' },
-  { key: 'evidence', route: '/evidence', target: 'evidence', task: 'leave' },
   { key: 'account', route: '/', target: 'account' },
   { key: 'replay', route: '/', target: 'replay' },
 ];

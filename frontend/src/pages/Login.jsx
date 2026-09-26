@@ -2,13 +2,13 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import AuthLayout, { Field, FormAlert } from '../components/AuthLayout';
 import { login } from '../api/auth';
-import { validateEmail } from '../utils/validation';
+import { normalizePhone, validatePhone } from '../utils/validation';
 import { useMessages } from '../messages';
 
 export default function Login({ onLogin, onGoToSignup, onNeedsVerification, onForgotPassword, notice }) {
   const { t } = useTranslation();
   const { tm } = useMessages();
-  const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
   const [errors, setErrors] = useState({});
   const [formError, setFormError] = useState('');
@@ -19,22 +19,22 @@ export default function Login({ onLogin, onGoToSignup, onNeedsVerification, onFo
     if (loading) return;
 
     const nextErrors = {
-      email: validateEmail(email),
+      phone: validatePhone(phone),
       password: password ? '' : 'Password is required.',
     };
     setErrors(nextErrors);
     setFormError('');
-    if (nextErrors.email || nextErrors.password) return;
+    if (nextErrors.phone || nextErrors.password) return;
 
-    const normalizedEmail = email.trim().toLowerCase();
+    const normalizedPhone = normalizePhone(phone);
     setLoading(true);
     try {
-      const { user } = await login({ email: normalizedEmail, password });
+      const { user } = await login({ phone: normalizedPhone, password });
       onLogin(user);
     } catch (err) {
-      // Account exists but the email was never verified: send them to the code screen.
-      if (err.data?.code === 'EMAIL_NOT_VERIFIED') {
-        onNeedsVerification(err.data.email || normalizedEmail);
+      // Account exists but the phone was never verified: send them to the code screen.
+      if (err.data?.code === 'PHONE_NOT_VERIFIED') {
+        onNeedsVerification(err.data.phone || normalizedPhone);
         return;
       }
       setFormError(err.message);
@@ -55,18 +55,18 @@ export default function Login({ onLogin, onGoToSignup, onNeedsVerification, onFo
         <FormAlert message={tm(formError)} />
 
         <Field
-          id="login-email"
-          label={t('login.email')}
-          type="email"
-          autoComplete="email"
-          value={email}
+          id="login-phone"
+          label={t('login.phone')}
+          type="tel"
+          autoComplete="tel"
+          value={phone}
           onChange={(e) => {
-            setEmail(e.target.value);
-            setErrors((prev) => ({ ...prev, email: '' }));
+            setPhone(e.target.value);
+            setErrors((prev) => ({ ...prev, phone: '' }));
             setFormError('');
           }}
-          placeholder="doctor@retinarescue.com"
-          error={tm(errors.email)}
+          placeholder="98765 43210"
+          error={tm(errors.phone)}
         />
 
         <Field

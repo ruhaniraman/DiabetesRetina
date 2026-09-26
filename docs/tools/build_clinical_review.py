@@ -178,10 +178,9 @@ def build():
     add(f"\nBasis line: \"{web['basisText']['withThreshold']}\".\n")
     add("**Other wording:**\n")
     for label, key in [("Before an assessment is run", "IDLE_NOTE"), ("On-screen disclaimer", "DISCLAIMER"),
-                       ("Note about stage reliability", "STAGE_NOTE"), ("Note when a heatmap is shown", "HEATMAP_NOTE"), ("Note under the heatmap of an eye that was not flagged", "HEATMAP_BELOW_NOTE"),
+                       ("Note when a heatmap is shown", "HEATMAP_NOTE"), ("Heatmap with nothing highlighted", "HEATMAP_EMPTY_NOTE"),
                        ("Shown when text is machine-translated", "TRANSLATION_NOTICE"), ("Chip on an eye flagged despite a milder stage", None)]:
         add(f"- **{label}:** " + (f"\"{web[key]}\"" if key else f"\"{web['REFERRAL_CHIP']['label']}\" (hover: \"{web['REFERRAL_CHIP']['hint']}\")"))
-    add(f"- **Confidence note (report):** \"{web['CONFIDENCE']['note']}\"")
     add(f"- **Sign-in page:** \"{web['LOGIN_HERO']['text']}\"\n")
 
     add("### 3b-1. Listen (the result read aloud)\n")
@@ -222,7 +221,7 @@ def build():
     add("### 3d. Downloadable PDF report (what a patient or clinician can save and print)\n")
     add("Source: `backend/report_pdf.py`, wording in `backend/clinical_text.py` (`PDF_TEXT`) plus the summary sentence shown in 3a. Created when the user presses "
         "\"Download PDF Report\": the server grades both photographs again, draws the heatmaps and returns the PDF. **It prints the patient's name and date of birth "
-        "(if given) and both eyes' results.** The server keeps neither the photographs nor the report file and adds nothing to the exam history. Names in scripts the report font "
+        "(if given) and both eyes' results.** That download is not kept and adds nothing to the exam history. Separately, each assessment saved to the exam history also gets its own copy of this PDF, built from the same result and stored encrypted with the exam; it ends with the \"kept with the exam history\" note below and is deleted with the exam, the health data or the account. Names in scripts the report font "
         "cannot print (for example Devanagari or Kannada) are replaced by a note. The report never shows raw class probabilities. Lesions appear only when the Stage 2 "
         "lesion overlay is turned on (section 3e), and then only as possible lesions with a caveat.\n")
     add("| Where | Text |\n|---|---|")
@@ -230,7 +229,7 @@ def build():
                        ("photo_caption", "Caption under the analysed photograph"), ("heatmap_caption", "Caption under the heatmap"), ("heatmap_note", "Note under each eye"),
                        ("heatmap_empty_note", "Note when no region is highlighted"), ("heatmap_below_threshold_note", "Note under an eye that was not flagged"), ("escalated_chip", "Eye flagged although its most likely stage is milder"),
                        ("confidence_note", "Note on confidence"), ("stage_note", "Note on stage reliability"), ("site_threshold_note", "Note when the site set its own threshold"),
-                       ("generated_note", "Last line of the notes"), ("name_unprintable", "Instead of a name the font cannot print"), ("not_provided", "When name or date of birth is missing")]:
+                       ("generated_note", "Last line of the notes"), ("generated_note_stored", "Last line of the notes, on the copy kept with the exam history"), ("name_unprintable", "Instead of a name the font cannot print"), ("not_provided", "When name or date of birth is missing")]:
         add(f"| {label} | {ct.PDF_TEXT[key]} |")
     add("\nPer eye the report lists: estimated stage (labelled an estimate), confidence band, referral score with the threshold, and the result for that eye. "
         "Any photograph-quality warnings are listed under \"Notes on this report\". The footer on every page reads \"Automated screening aid, not a diagnosis\".\n")
@@ -299,7 +298,7 @@ def build():
     add("- **Hindi and Kannada.** The dashboard summary is machine-translated (Argos Translate, which has **no Kannada model**, so Kannada stays English) on demand; it has not been reviewed by a "
         "clinician or a medical translator. The fixed interface labels in `frontend/src/locales/` are also unreviewed. Machine translation of medical advice can be "
         "wrong; consider disabling it, or having translations professionally reviewed, before use with patients.")
-    add("- **Anything typed by staff or patients**, and email text (sign-in codes only).\n")
+    add("- **Anything typed by staff or patients**, and SMS text (sign-in codes only).\n")
 
     add("## 4. Wording principles applied, and what changed\n")
     add("These are engineering safeguards, not clinical judgements; please confirm or overrule each one.\n")

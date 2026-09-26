@@ -8,8 +8,6 @@ const good = {
   JWT_SECRET: 'a'.repeat(40),
   DATA_KEY: 'b'.repeat(40),
   SERVICE_KEY: 'c'.repeat(40),
-  GMAIL_USER: 'sender@gmail.com',
-  GMAIL_APP_PASSWORD: 'abcdabcdabcdabcd',
   CLIENT_ORIGIN: 'https://retina.example.org',
 };
 
@@ -31,9 +29,8 @@ describe('productionProblems', () => {
     assert.ok(productionProblems({ ...good, SERVICE_KEY: good.DATA_KEY }).some((p) => /differ/.test(p)));
   });
 
-  it('requires real email settings', () => {
-    assert.ok(productionProblems({ ...good, GMAIL_USER: '' }).some((p) => /GMAIL/.test(p)));
-    assert.ok(productionProblems({ ...good, GMAIL_APP_PASSWORD: undefined }).some((p) => /GMAIL/.test(p)));
+  it('refuses a fixed demo code', () => {
+    assert.ok(productionProblems({ ...good, FIXED_OTP: '123456' }).some((p) => /FIXED_OTP/.test(p)));
   });
 
   it('requires a public https origin', () => {
@@ -43,7 +40,7 @@ describe('productionProblems', () => {
   });
 
   it('reports every problem at once', () => {
-    assert.ok(productionProblems({ NODE_ENV: 'production' }).length >= 5);
+    assert.ok(productionProblems({ NODE_ENV: 'production' }).length >= 4);
   });
 });
 
@@ -66,7 +63,7 @@ describe('behind a reverse proxy', () => {
   after(() => s?.stop());
 
   const forgot = (ip) =>
-    s.call('POST', '/auth/forgot-password', { body: { email: 'someone@example.com' }, headers: { 'x-forwarded-for': ip } });
+    s.call('POST', '/auth/forgot-password', { body: { phone: '+919876500036' }, headers: { 'x-forwarded-for': ip } });
 
   it('rate-limits each real client separately, not the proxy as a whole', async () => {
     for (let i = 0; i < 10; i += 1) assert.equal((await forgot('203.0.113.1')).status, 200);

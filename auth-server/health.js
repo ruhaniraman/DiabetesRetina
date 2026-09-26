@@ -20,6 +20,11 @@ const NUMERIC_RANGES = {
   fastingSugar: [30, 700],
 };
 const MAX_EXAMS = 200;
+const MAX_REPORT_BYTES = 20 * 1024 * 1024;
+
+/** Removes the stored reports of a user's exams (call before deleting the exams themselves). */
+export const deleteReportsOfUser = (userId) =>
+  db.prepare('DELETE FROM exam_reports WHERE exam_id IN (SELECT id FROM exams WHERE user_id = ?)').run(userId);
 
 /* ------------------------------ Validation ------------------------------ */
 
@@ -110,12 +115,16 @@ export function createPatientRouter({ vault }) {
 
   router.get('/exams', (req, res) => {
     const rows = db
-      .prepare('SELECT id, data, created_at FROM exams WHERE user_id = ? ORDER BY created_at DESC, id DESC LIMIT ?')
+      .prepare(
+        `SELECT e.id, e.data, e.created_at, r.exam_id IS NOT NULL AS has_report
+           FROM exams e LEFT JOIN exam_reports r ON r.exam_id = e.id
+          WHERE e.user_id = ? ORDER BY e.created_at DESC, e.id DESC LIMIT ?`
+      )
       .all(req.user.id, MAX_EXAMS);
     const exams = [];
     for (const row of rows) {
       try {
-        exams.push({ id: row.id, createdAt: row.created_at, ...vault.decryptJson(row.data) });
+        exams.push({ id: row.id, createdAt: row.created_at, hasReport: Boolean(row.has_report), ...vault.decryptJson(row.data) });
       } catch (err) {
         console.error(`Exam ${row.id} could not be decrypted:`, err.message); // skip one bad row, not the whole list
       }
@@ -126,13 +135,35 @@ export function createPatientRouter({ vault }) {
   router.delete('/exams/:id', (req, res) => {
     const id = Number(req.params.id);
     if (!Number.isInteger(id)) return res.status(400).json({ message: 'Invalid exam id.' });
+    db.prepare('DELETE FROM exam_reports WHERE exam_id = (SELECT id FROM exams WHERE id = ? AND user_id = ?)').run(id, req.user.id);
     const { changes } = db.prepare('DELETE FROM exams WHERE id = ? AND user_id = ?').run(id, req.user.id);
     if (!changes) return res.status(404).json({ message: 'Exam not found.' });
     res.json({ message: 'Exam deleted.' });
   });
 
+  // The detailed PDF saved with an exam. Only the exam's owner can fetch it.
+  router.get('/exams/:id/report', (req, res) => {
+    const id = Number(req.params.id);
+    if (!Number.isInteger(id)) return res.status(400).json({ message: 'Invalid exam id.' });
+    const row = db
+      .prepare('SELECT r.data, e.created_at FROM exam_reports r JOIN exams e ON e.id = r.exam_id WHERE e.id = ? AND e.user_id = ?')
+      .get(id, req.user.id);
+    if (!row) return res.status(404).json({ message: 'No report is stored for this exam.' });
+    let pdf;
+    try {
+      pdf = vault.decryptBytes(row.data);
+    } catch (err) {
+      console.error(`Report of exam ${id} could not be decrypted:`, err.message);
+      return res.status(500).json({ message: 'The stored report could not be read.' });
+    }
+    const day = new Date(row.created_at).toISOString().slice(0, 10);
+    res.set({ 'Content-Type': 'application/pdf', 'Content-Disposition': `attachment; filename="retina-rescue-report-${day}.pdf"` });
+    res.send(pdf);
+  });
+
   // Erase everything health-related for this user (the account itself is kept).
   router.delete('/data', (req, res) => {
+    deleteReportsOfUser(req.user.id);
     const exams = db.prepare('DELETE FROM exams WHERE user_id = ?').run(req.user.id).changes;
     const profile = db.prepare('DELETE FROM patient_profiles WHERE user_id = ?').run(req.user.id).changes;
     res.json({ message: 'Your health data was deleted.', deleted: { exams, profile } });
@@ -157,13 +188,16 @@ export function createInternalRouter({ vault, serviceKey }) {
     next();
   });
 
-  router.post('/exams', (req, res) => {
+  const requireServiceKey = (req, res, next) => {
     if (!serviceKey) return res.status(503).json({ message: 'Exam recording is not configured (SERVICE_KEY).' });
     const supplied = req.get('x-service-key') || '';
     if (!crypto.timingSafeEqual(sha(supplied), sha(serviceKey))) {
       return res.status(401).json({ message: 'Invalid service key.' });
     }
+    next();
+  };
 
+  router.post('/exams', requireServiceKey, (req, res) => {
     const exam = validateExam(req.body?.exam);
     const userId = Number(req.body?.userId);
     if (!exam || !Number.isInteger(userId)) return res.status(400).json({ message: 'Invalid exam.' });
@@ -175,6 +209,21 @@ export function createInternalRouter({ vault, serviceKey }) {
       .prepare('INSERT INTO exams (user_id, data, created_at) VALUES (?, ?, ?)')
       .run(userId, vault.encryptJson(exam), Date.now());
     res.status(201).json({ id: Number(lastInsertRowid) });
+  });
+
+  // The ML backend stores the detailed PDF of an exam it has just recorded (the body is the PDF itself).
+  router.put('/exams/:id/report', requireServiceKey, express.raw({ type: 'application/pdf', limit: MAX_REPORT_BYTES }), (req, res) => {
+    const id = Number(req.params.id);
+    const pdf = req.body;
+    if (!Number.isInteger(id) || !Buffer.isBuffer(pdf) || pdf.subarray(0, 5).toString('latin1') !== '%PDF-') {
+      return res.status(400).json({ message: 'Invalid report.' });
+    }
+    if (!db.prepare('SELECT 1 FROM exams WHERE id = ?').get(id)) return res.status(404).json({ message: 'Exam not found.' });
+    db.prepare(
+      `INSERT INTO exam_reports (exam_id, data, created_at) VALUES (?, ?, ?)
+       ON CONFLICT(exam_id) DO UPDATE SET data = excluded.data, created_at = excluded.created_at`
+    ).run(id, vault.encryptBytes(pdf), Date.now());
+    res.status(204).end();
   });
 
   return router;

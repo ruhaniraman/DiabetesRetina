@@ -3,6 +3,8 @@ import { useTranslation } from 'react-i18next';
 import { FiArrowLeft, FiLayers, FiEye, FiInfo } from 'react-icons/fi';
 import Disclaimer from '../components/Disclaimer';
 import LanguageSwitcher from '../components/LanguageSwitcher';
+import SideNav from '../components/SideNav';
+import DeleteAccount from '../components/DeleteAccount';
 import HeroBand, { cardClass } from '../components/HeroBand';
 import ListenToReport from '../components/ListenToReport';
 import { downloadReportPdf, fetchAnatomy, fetchEnhanced, fetchHeatmap } from '../api/ml';
@@ -16,7 +18,7 @@ const LESION_ROWS = ['microaneurysms', 'hemorrhages', 'exudates', 'softExudates'
 
 const percent = (p) => (typeof p === 'number' ? `${Math.round(p * 100)}%` : null);
 
-export default function DetailedReportPage({ patient, session, onBack }) {
+export default function DetailedReportPage({ patient, session, onBack, onOpenReview, onOpenDistrictPlanner, onStartTour, onLogout, onDeleteAccount }) {
   const { t, i18n } = useTranslation();
   const { grade, tm } = useMessages();
   const lang = i18n.resolvedLanguage || 'en';
@@ -118,131 +120,66 @@ export default function DetailedReportPage({ patient, session, onBack }) {
     sub: t(`clinical.triage.${triageCase}.sub`),
     basis: assessment ? basisText(thresholdPercent, assessment?.referralThresholdSource) : basisText(null),
   };
-  const withConfidence = (label, band) => (band ? t('report.withConfidence', { grade: grade(label), band: t(`bands.${band}`, { defaultValue: band }), label: t('clinical.confidenceLabel') }) : grade(label));
-
   const eyeProbability = assessment ? (selectedEye === 'OS' ? assessment.leftReferableProbability : assessment.rightReferableProbability) : null;
   const referralThreshold = assessment?.referralThreshold;
 
   const candidateCount = (s) => (s.mask.counts ? Object.values(s.mask.counts).reduce((a, b) => a + b, 0) : null);
 
   return (
-    <div className="min-h-screen bg-[#eef1f6] text-slate-800 font-sans antialiased">
+    <div className="min-h-screen bg-[#f4f6f9] text-slate-800 font-sans antialiased">
+      {onLogout && (
+        <SideNav
+          onHome={onBack}
+          onOpenReview={onOpenReview && assessment ? onOpenReview : null}
+          onOpenDistrictPlanner={onOpenDistrictPlanner}
+          onStartTour={onStartTour}
+          onLogout={onLogout}
+        />
+      )}
+
       <HeroBand className="pb-24 sm:pb-28">
-        <div data-tour="report-header" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col sm:flex-row sm:items-center justify-between gap-5">
+        <div data-tour="report-header" className="max-w-7xl mx-auto px-4 sm:px-6 md:pl-28 lg:pr-8 py-6 flex flex-col sm:flex-row sm:items-center justify-between gap-5">
           <div className="flex items-center gap-4">
-            <button type="button" onClick={onBack} aria-label={t('report.back')} className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#1e293b] text-white ring-1 ring-slate-600 shadow-lg shadow-black/20 transition hover:bg-[#2a3a57] cursor-pointer">
+            <button type="button" onClick={onBack} aria-label={t('report.back')} className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-white/10 text-white ring-1 ring-white/20 transition hover:bg-white/20 cursor-pointer">
               <FiArrowLeft className="text-lg" />
             </button>
             <div>
-              <span className="block text-[10px] font-extrabold uppercase tracking-[0.2em] text-amber-400">{t('clinical.eyebrow')}</span>
-              <h1 className="mt-1 font-welcome text-2xl sm:text-3xl font-bold tracking-tight text-white">{t('report.title')}</h1>
+              <h1 className="text-xl sm:text-2xl font-semibold tracking-tight text-white">{t('report.title')}</h1>
             </div>
           </div>
           <div className="flex items-center gap-3 self-start sm:self-auto">
             <LanguageSwitcher />
-            <button type="button" onClick={onBack} className="rounded-2xl bg-white px-5 py-2.5 text-xs font-bold text-slate-900 shadow-lg shadow-black/10 transition hover:bg-slate-100 cursor-pointer">
-              {t('report.returnBtn')}
-            </button>
+            {onDeleteAccount && <DeleteAccount onDelete={onDeleteAccount} />}
           </div>
         </div>
       </HeroBand>
 
-      <main className="relative -mt-16 sm:-mt-20 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pb-12 space-y-6">
-
-      {/* Patient + summary */}
-      <div data-tour="report-summary" className={`${cardClass} border-l-[6px] ${theme.accent} p-6 md:p-8 shadow-[0_20px_50px_-24px_rgba(15,23,42,0.35)] space-y-6 relative overflow-hidden`}>
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 relative z-10">
-          <div className="space-y-2 flex-1">
-            <div className="flex items-center gap-3 flex-wrap">
-              <span className={`${theme.badge} text-white font-black text-[10px] uppercase tracking-wider px-3 py-1 rounded-full shadow-sm`}>{triage.priority}</span>
-              <span className="text-[9px] font-mono font-bold text-slate-400 uppercase tracking-widest">{triage.basis}</span>
-            </div>
-            <h2 className="font-welcome text-2xl md:text-3xl font-bold text-slate-900 tracking-tight uppercase">{triage.title}</h2>
-            <p className="max-w-2xl text-sm leading-relaxed font-medium text-slate-600">{triage.sub}</p>
-            {patient.fullName && <p className="text-xs font-bold text-slate-700">{t('report.patient', { name: patient.fullName })}</p>}
-          </div>
-
-          <div className={`rounded-2xl border p-5 text-left md:text-right flex flex-col justify-center min-w-[240px] ${theme.soft}`}>
-            <span className="text-[9px] font-mono font-bold text-slate-400 uppercase tracking-widest mb-1 block">{t('clinical.severity')}</span>
-            <span className={`text-xl md:text-2xl font-black ${theme.text}`}>{assessment ? riskLevel : t('clinical.notAssessed')}</span>
-          </div>
-        </div>
-
-        {assessment && (
-          <div className="relative z-10 grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {[
-              [t('leftEyeLabel'), assessment.leftGrade, assessment.leftReferableProbability, assessment.leftReferable],
-              [t('rightEyeLabel'), assessment.rightGrade, assessment.rightReferableProbability, assessment.rightReferable],
-            ].map(([label, eyeGradeLabel, probability, flagged]) => (
-              <div key={label} className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-                <div className="flex items-center justify-between gap-3">
-                  <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-500">{label}</span>
-                  <span className={`rounded-full px-2.5 py-0.5 text-[10px] font-extrabold uppercase ${flagged ? 'bg-amber-100 text-amber-900 border border-amber-300' : 'bg-slate-100 text-slate-600 border border-slate-200'}`}>
-                    {flagged ? t('report.flagged') : t('report.notFlagged')}
-                  </span>
-                </div>
-                <p className="mt-2 text-base font-extrabold tracking-tight text-slate-900">{grade(eyeGradeLabel)}</p>
-                {percent(probability) && <p className="mt-0.5 text-xs font-semibold text-slate-500">{percent(probability)}</p>}
-              </div>
-            ))}
-          </div>
-        )}
-
-        <div className="relative z-10">
-          <h3 className="text-[10px] font-mono font-bold text-slate-400 uppercase tracking-widest mb-2 ml-1">{t('clinical.rationale')}:</h3>
-          <div className="bg-slate-50 border border-slate-200 rounded-2xl p-5 md:p-6 text-[13px] font-medium text-slate-700 leading-relaxed space-y-2.5">
-            {assessment ? (
-              <>
-                <p className="font-semibold text-slate-900">
-                  {t('report.gradeLine', {
-                    leftLabel: t('report.leftOs'),
-                    left: withConfidence(assessment.leftGrade, assessment.leftConfidenceBand),
-                    rightLabel: t('report.rightOd'),
-                    right: withConfidence(assessment.rightGrade, assessment.rightConfidenceBand),
-                  })}
-                </p>
-                {percent(assessment.leftReferableProbability) && (
-                  <p>
-                    {t('report.referralLine', { left: percent(assessment.leftReferableProbability), right: percent(assessment.rightReferableProbability), threshold: percent(assessment.referralThreshold) })}
-                  </p>
-                )}
-                <p>{summary.text}</p>
-                {summary.notice && <p className="text-[11px] text-slate-500 font-semibold">{summary.notice}</p>}
-                <ListenToReport assessment={assessment} />
-                <p className="text-[11px] text-slate-500">{t('clinical.confidenceNote')}</p>
-                <p className="text-[11px] text-slate-500">{t('clinical.stageNote')}</p>
-              </>
-            ) : (
-              <p>{t('report.noAssessment')}</p>
-            )}
-          </div>
-        </div>
-      </div>
+      <main className="relative -mt-16 sm:-mt-20 mx-auto max-w-7xl px-4 sm:px-6 md:pl-28 lg:pr-8 pb-28 md:pb-12 space-y-6">
 
       {/* Viewer */}
       <div className={`${cardClass} p-5 md:p-7 space-y-6`}>
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-100 pb-4 print:hidden">
-          <div className="flex bg-slate-100 p-1 rounded-2xl text-xs font-extrabold" role="group" aria-label={t('report.eyeGroup')}>
+          <div className="flex bg-slate-100 p-1 rounded-lg text-xs font-semibold" role="group" aria-label={t('report.eyeGroup')}>
             {[['OS', t('leftEyeLabel')], ['OD', t('rightEyeLabel')]].map(([eye, label]) => (
-              <button key={eye} type="button" aria-pressed={selectedEye === eye} onClick={() => chooseEye(eye)} className={`px-5 py-2 rounded-xl transition cursor-pointer ${selectedEye === eye ? 'bg-slate-900 text-white shadow-sm' : 'text-slate-500 hover:text-slate-900'}`}>
+              <button key={eye} type="button" aria-pressed={selectedEye === eye} onClick={() => chooseEye(eye)} className={`px-5 py-2 rounded-xl transition cursor-pointer ${selectedEye === eye ? 'bg-[#0f2742] text-white shadow-sm' : 'text-slate-500 hover:text-slate-900'}`}>
                 {label}
               </button>
             ))}
           </div>
 
-          <div data-tour="report-views" className="flex bg-slate-100 p-1 rounded-2xl text-xs font-extrabold self-start md:self-auto" role="group" aria-label={t('report.viewGroup')}>
+          <div data-tour="report-views" className="flex bg-slate-100 p-1 rounded-lg text-xs font-semibold self-start md:self-auto" role="group" aria-label={t('report.viewGroup')}>
             <button type="button" aria-pressed={viewMode === 'original'} onClick={() => chooseView('original')} className={`px-3.5 py-2 rounded-xl transition cursor-pointer ${viewMode === 'original' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500'}`}>{t('report.originalPhoto')}</button>
-            <button type="button" aria-pressed={viewMode === 'heatmap'} onClick={() => chooseView('heatmap')} className={`px-3.5 py-2 rounded-xl transition cursor-pointer ${viewMode === 'heatmap' ? 'bg-amber-500 text-white shadow-sm' : 'text-slate-500'}`}>{t('aiView')}</button>
-            <button type="button" aria-pressed={viewMode === 'enhanced'} onClick={() => chooseView('enhanced')} className={`px-3.5 py-2 rounded-xl transition cursor-pointer ${viewMode === 'enhanced' ? 'bg-indigo-600 text-white shadow-sm' : 'text-slate-500'}`}>{t('report.enhancedBtn')}</button>
-            <button type="button" aria-pressed={viewMode === 'anatomy'} onClick={() => chooseView('anatomy')} className={`px-3.5 py-2 rounded-xl transition cursor-pointer ${viewMode === 'anatomy' ? 'bg-cyan-600 text-white shadow-sm' : 'text-slate-500'}`}>{t('report.anatomyBtn')}</button>
+            <button type="button" aria-pressed={viewMode === 'heatmap'} onClick={() => chooseView('heatmap')} className={`px-3.5 py-2 rounded-xl transition cursor-pointer ${viewMode === 'heatmap' ? 'bg-[#0f2742] text-white shadow-sm' : 'text-slate-500'}`}>{t('aiView')}</button>
+            <button type="button" aria-pressed={viewMode === 'enhanced'} onClick={() => chooseView('enhanced')} className={`px-3.5 py-2 rounded-xl transition cursor-pointer ${viewMode === 'enhanced' ? 'bg-[#0f2742] text-white shadow-sm' : 'text-slate-500'}`}>{t('report.enhancedBtn')}</button>
+            <button type="button" aria-pressed={viewMode === 'anatomy'} onClick={() => chooseView('anatomy')} className={`px-3.5 py-2 rounded-xl transition cursor-pointer ${viewMode === 'anatomy' ? 'bg-[#0f2742] text-white shadow-sm' : 'text-slate-500'}`}>{t('report.anatomyBtn')}</button>
             {LESION_OVERLAY_ENABLED && (
-              <button type="button" aria-pressed={viewMode === 'overlay'} onClick={() => chooseView('overlay')} className={`px-3.5 py-2 rounded-xl transition cursor-pointer ${viewMode === 'overlay' ? 'bg-slate-900 text-white shadow-sm' : 'text-slate-500'}`}>{t('report.overlayBtn')}</button>
+              <button type="button" aria-pressed={viewMode === 'overlay'} onClick={() => chooseView('overlay')} className={`px-3.5 py-2 rounded-xl transition cursor-pointer ${viewMode === 'overlay' ? 'bg-[#0f2742] text-white shadow-sm' : 'text-slate-500'}`}>{t('report.overlayBtn')}</button>
             )}
           </div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2 bg-[radial-gradient(ellipse_at_center,#16223b_0%,#0b1329_70%)] rounded-3xl p-4 min-h-[380px] sm:min-h-[460px] flex flex-col items-center justify-center text-center relative overflow-hidden ring-1 ring-slate-800 shadow-inner">
+          <div className="lg:col-span-2 bg-[radial-gradient(ellipse_at_center,#16223b_0%,#0b1329_70%)] rounded-xl p-4 min-h-[380px] sm:min-h-[460px] flex flex-col items-center justify-center text-center relative overflow-hidden ring-1 ring-slate-800 shadow-inner">
             {scan.imageUrl ? (
               <>
                 {viewMode === 'original' && <img src={scan.imageUrl} alt={t('report.scanAlt')} className="absolute inset-0 w-full h-full object-contain z-10" />}
@@ -297,7 +234,6 @@ export default function DetailedReportPage({ patient, session, onBack }) {
                         <img src={heatmap.url} alt={t('report.heatmapAlt')} className="w-full h-full object-contain" />
                         <div className="absolute inset-x-0 bottom-0 bg-slate-900 text-slate-200 text-[11px] font-semibold p-2.5">
                           {heatmap.empty ? t('clinical.heatmapEmpty') : t('clinical.heatmapNote')}
-                          {!heatmap.empty && assessment && !eyeFlagged && <span className="block mt-1">{t('clinical.heatmapBelow')}</span>}
                         </div>
                       </>
                     ) : heatmap?.status === 'error' ? (
@@ -308,7 +244,7 @@ export default function DetailedReportPage({ patient, session, onBack }) {
                       </div>
                     ) : (
                       <div className="flex flex-col items-center space-y-2">
-                        <span className="w-6 h-6 border-2 border-amber-400 border-t-transparent rounded-full animate-spin"></span>
+                        <span className="w-6 h-6 border-2 border-sky-400 border-t-transparent rounded-full animate-spin"></span>
                         <span className="text-white text-xs font-bold animate-pulse">{t('report.running')}</span>
                       </div>
                     )}
@@ -317,10 +253,10 @@ export default function DetailedReportPage({ patient, session, onBack }) {
               </>
             ) : (
               <div className="flex flex-col items-center justify-center space-y-3 z-10">
-                <div className="w-20 h-20 rounded-full bg-white/10 flex items-center justify-center text-4xl text-amber-400 backdrop-blur-md">
+                <div className="w-20 h-20 rounded-full bg-white/10 flex items-center justify-center text-4xl text-sky-300 backdrop-blur-md">
                   <FiEye />
                 </div>
-                <span className="text-white font-extrabold text-base">{selectedEye === 'OS' ? t('report.noImageLeft') : t('report.noImageRight')}</span>
+                <span className="text-white font-semibold text-base">{selectedEye === 'OS' ? t('report.noImageLeft') : t('report.noImageRight')}</span>
                 <p className="text-xs text-slate-400 max-w-md">{t('report.uploadPrompt')}</p>
               </div>
             )}
@@ -330,24 +266,24 @@ export default function DetailedReportPage({ patient, session, onBack }) {
 
           <div className="space-y-4 flex flex-col justify-between">
             <div className="space-y-3">
-              <h3 className="text-xs font-extrabold text-slate-900 uppercase tracking-wider flex items-center gap-2">
-                <FiLayers className="text-amber-600" /> {t('report.findings', { eye: selectedEye })}
+              <h3 className="text-xs font-semibold text-slate-900 uppercase tracking-wider flex items-center gap-2">
+                <FiLayers className="text-sky-700" /> {t('report.findings', { eye: selectedEye })}
               </h3>
 
               {eyeGrade && (
-                <div className="bg-slate-50 p-3.5 rounded-2xl border border-slate-200 text-xs flex justify-between items-center gap-3">
+                <div className="bg-slate-50 p-3.5 rounded-lg border border-slate-200 text-xs flex justify-between items-center gap-3">
                   <span className="font-bold text-slate-900">{t('report.modelGrade')}</span>
-                  <span className="font-black text-slate-900">
+                  <span className="font-bold text-slate-900">
                     {grade(eyeGrade)}
                     {eyeConfidence && <span className="text-slate-500 font-semibold"> · {t(`bands.${eyeConfidence}`, { defaultValue: eyeConfidence })} {t('clinical.confidenceLabel')}</span>}
                   </span>
                 </div>
               )}
               {eyeReferral && (
-                <div className={`p-3.5 rounded-2xl border text-xs ${eyeFlagged ? 'bg-amber-50 border-amber-200' : 'bg-slate-50 border-slate-200'}`}>
+                <div className={`p-3.5 rounded-lg border text-xs ${eyeFlagged ? 'bg-amber-50 border-amber-200' : 'bg-slate-50 border-slate-200'}`}>
                   <div className="flex justify-between items-center">
                     <span className="font-bold text-slate-900">{t('report.referralScore')}</span>
-                    <span className="font-black text-slate-900">
+                    <span className="font-bold text-slate-900">
                       {eyeReferral}
                       <span className="text-slate-500 font-semibold"> · {eyeFlagged ? t('report.flagged') : t('report.notFlagged')}</span>
                     </span>
@@ -364,7 +300,7 @@ export default function DetailedReportPage({ patient, session, onBack }) {
               )}
 
               {anatomyView?.status === 'success' && (
-                <div className="bg-cyan-50 p-3.5 rounded-2xl border border-cyan-200 text-xs space-y-1">
+                <div className="bg-slate-50 p-3.5 rounded-lg border border-slate-200 text-xs space-y-1">
                   <p className="font-bold text-slate-900">{t('report.anatomyTitle')}</p>
                   <p className="text-slate-700">{t('report.anatomyVessels', { pct: anatomyView.vesselDensity.toFixed(1) })}</p>
                   <p className="text-slate-700">
@@ -380,16 +316,16 @@ export default function DetailedReportPage({ patient, session, onBack }) {
               {scan.mask.status === 'success' ? (
                 <div className="space-y-2 text-xs">
                   {LESION_ROWS.map((key) => (
-                    <div key={key} className="bg-amber-50 p-3 rounded-2xl border border-amber-100 flex justify-between items-center">
-                      <span className="font-bold text-amber-950">{t(`report.${key}`)}</span>
-                      <span className="font-black text-amber-900 bg-amber-200/60 px-2 py-1 rounded-lg">{scan.mask.counts[key] ?? 0}</span>
+                    <div key={key} className="bg-slate-50 px-3 py-2.5 rounded-lg border border-slate-200 flex justify-between items-center">
+                      <span className="font-medium text-slate-800">{t(`report.${key}`)}</span>
+                      <span className="font-semibold tabular-nums text-slate-900">{scan.mask.counts[key] ?? 0}</span>
                     </div>
                   ))}
                   {candidateCount(scan) === 0 && (
                     <p className="font-semibold text-slate-600 text-[11px] pt-1">{t('clinical.lesionNoneNote')}</p>
                   )}
                   {scan.mask.evidence && candidateCount(scan) > 0 && (
-                    <div className="bg-slate-50 p-3 rounded-2xl border border-slate-200 text-[11px] text-slate-700 space-y-1">
+                    <div className="bg-slate-50 p-3 rounded-lg border border-slate-200 text-[11px] text-slate-700 space-y-1">
                       <p className="font-bold text-slate-900">{t('report.evidenceTitle')}</p>
                       <ul className="list-disc pl-4 space-y-1">
                         {scan.mask.evidence.onlyMA && <li>{t('report.evidenceOnlyMA')}</li>}
@@ -403,7 +339,7 @@ export default function DetailedReportPage({ patient, session, onBack }) {
                   )}
                 </div>
               ) : (
-                <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200 text-xs text-slate-600">
+                <div className="bg-slate-50 p-4 rounded-lg border border-slate-200 text-xs text-slate-600">
                   {!scan.file
                     ? t('report.noImageEye')
                     : scan.mask.status === 'loading'
@@ -428,19 +364,82 @@ export default function DetailedReportPage({ patient, session, onBack }) {
                 type="button"
                 disabled={!canDownload || pdf.status === 'working'}
                 onClick={downloadPdf}
-                className="w-full bg-gradient-to-r from-[#0d1424] to-[#1e293b] hover:from-[#16223b] hover:to-[#26344f] disabled:opacity-45 disabled:cursor-not-allowed text-white font-bold py-4 rounded-2xl shadow-lg shadow-slate-900/20 transition text-xs uppercase tracking-wider cursor-pointer"
+                className="w-full bg-[#0f2742] hover:bg-[#173a5e] disabled:opacity-45 disabled:cursor-not-allowed text-white font-bold py-4 rounded-lg shadow-sm transition text-xs uppercase tracking-wider cursor-pointer"
               >
                 {pdf.status === 'working' ? t('report.preparing') : t('report.download')}
               </button>
-              <p className="text-[11px] text-slate-500 leading-snug">
-                {!assessment ? t('clinical.pdfNeedsAssessment') : !hasPhotos ? t('clinical.pdfNeedsPhotos') : t('clinical.pdfPrivacy')}
-              </p>
+              {!canDownload && (
+                <p className="text-[11px] text-slate-500 leading-snug">{!assessment ? t('clinical.pdfNeedsAssessment') : t('clinical.pdfNeedsPhotos')}</p>
+              )}
               {pdf.status === 'error' && (
                 <p role="alert" className="text-[11px] font-semibold text-rose-600">
                   {pdf.error}
                 </p>
               )}
             </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Patient + summary */}
+      <div data-tour="report-summary" className={`${cardClass} border-l-[6px] ${theme.accent} p-6 md:p-8 shadow-[0_20px_50px_-24px_rgba(15,23,42,0.35)] space-y-6 relative overflow-hidden`}>
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 relative z-10">
+          <div className="space-y-2 flex-1">
+            <div className="flex items-center gap-3 flex-wrap">
+              <span className={`${theme.badge} text-white font-bold text-[10px] uppercase tracking-wider px-3 py-1 rounded-full shadow-sm`}>{triage.priority}</span>
+              <span className="text-[9px] font-mono font-bold text-slate-400 uppercase tracking-widest">{triage.basis}</span>
+            </div>
+            <h2 className="text-2xl md:text-3xl font-bold text-slate-900 tracking-tight uppercase">{triage.title}</h2>
+            <p className="max-w-2xl text-sm leading-relaxed font-medium text-slate-600">{triage.sub}</p>
+            {patient.fullName && <p className="text-xs font-bold text-slate-700">{t('report.patient', { name: patient.fullName })}</p>}
+          </div>
+
+          <div className={`rounded-lg border p-5 text-left md:text-right flex flex-col justify-center min-w-[240px] ${theme.soft}`}>
+            <span className="text-[9px] font-mono font-bold text-slate-400 uppercase tracking-widest mb-1 block">{t('clinical.severity')}</span>
+            <span className={`text-xl md:text-2xl font-bold ${theme.text}`}>{assessment ? riskLevel : t('clinical.notAssessed')}</span>
+          </div>
+        </div>
+
+        {assessment && (
+          <div className="relative z-10 grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {[
+              [t('leftEyeLabel'), assessment.leftGrade, assessment.leftReferableProbability, assessment.leftReferable, assessment.leftConfidenceBand],
+              [t('rightEyeLabel'), assessment.rightGrade, assessment.rightReferableProbability, assessment.rightReferable, assessment.rightConfidenceBand],
+            ].map(([label, eyeGradeLabel, probability, flagged, band]) => (
+              <div key={label} className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+                <div className="flex items-center justify-between gap-3">
+                  <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-500">{label}</span>
+                  <span className={`rounded-full px-2.5 py-0.5 text-[10px] font-semibold uppercase ${flagged ? 'bg-amber-100 text-amber-900 border border-amber-300' : 'bg-slate-100 text-slate-600 border border-slate-200'}`}>
+                    {flagged ? t('report.flagged') : t('report.notFlagged')}
+                  </span>
+                </div>
+                <p className="mt-2 text-base font-semibold tracking-tight text-slate-900">{grade(eyeGradeLabel)}</p>
+                <dl className="mt-2 grid grid-cols-2 gap-2 text-xs">
+                  <div>
+                    <dt className="text-slate-500">{t('report.referralScore')}</dt>
+                    <dd className="font-semibold tabular-nums text-slate-900">{percent(probability) ?? '—'}</dd>
+                  </div>
+                  <div>
+                    <dt className="text-slate-500">{t('clinical.confidenceLabel')}</dt>
+                    <dd className="font-semibold text-slate-900">{band ? t(`bands.${band}`, { defaultValue: band }) : '—'}</dd>
+                  </div>
+                </dl>
+              </div>
+            ))}
+          </div>
+        )}
+
+        <div className="relative z-10">
+          <div className="bg-slate-50 border border-slate-200 rounded-lg p-5 md:p-6 text-[13px] font-medium text-slate-700 leading-relaxed space-y-2.5">
+            {assessment ? (
+              <>
+                <p>{summary.text}</p>
+                {summary.notice && <p className="text-[11px] text-slate-500 font-semibold">{summary.notice}</p>}
+                <ListenToReport assessment={assessment} />
+              </>
+            ) : (
+              <p>{t('report.noAssessment')}</p>
+            )}
           </div>
         </div>
       </div>

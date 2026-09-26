@@ -3,7 +3,7 @@ import en from './en.json';
 import hi from './hi.json';
 import kn from './kn.json';
 import ta from './ta.json';
-import { BANNER_TEXT, CONFIDENCE, DISCLAIMER, HEATMAP_BELOW_NOTE, HEATMAP_EMPTY_NOTE, HEATMAP_NOTE, IDLE_NOTE, LESION_NONE_NOTE, LESION_NOTE, PDF_NEEDS_ASSESSMENT, PDF_NEEDS_PHOTOS, PDF_PRIVACY_NOTE, REFERRAL_CHIP, REPORT_LABELS, STAGE_NOTE, TRIAGE, basisText } from '../clinicalText';
+import { BANNER_TEXT, CONFIDENCE, DISCLAIMER, HEATMAP_EMPTY_NOTE, HEATMAP_NOTE, IDLE_NOTE, LESION_NONE_NOTE, LESION_NOTE, PDF_NEEDS_ASSESSMENT, PDF_NEEDS_PHOTOS, REFERRAL_CHIP, REPORT_LABELS, TRIAGE, basisText } from '../clinicalText';
 import { localizeMessage, localizeGrade, localizeStage } from '../messages';
 import i18n from '../i18n';
 
@@ -49,21 +49,15 @@ describe('the English text', () => {
     for (const [name, text] of Object.entries(TRIAGE)) {
       for (const field of ['title', 'priority', 'sub']) expect(source[`clinical.triage.${name}.${field}`], `${name}.${field}`).toBe(text[field]);
     }
-    expect(source['clinical.eyebrow']).toBe(REPORT_LABELS.eyebrow);
     expect(source['clinical.severity']).toBe(REPORT_LABELS.severity);
     expect(source['clinical.notAssessed']).toBe(REPORT_LABELS.notAssessed);
-    expect(source['clinical.rationale']).toBe(REPORT_LABELS.rationaleHeading);
     expect(source['clinical.confidenceLabel']).toBe(CONFIDENCE.label);
-    expect(source['clinical.confidenceNote']).toBe(CONFIDENCE.note);
-    expect(source['clinical.stageNote']).toBe(STAGE_NOTE);
     expect(source['clinical.referralChipLabel']).toBe(REFERRAL_CHIP.label);
     expect(source['clinical.referralChipHint']).toBe(REFERRAL_CHIP.hint);
     expect(source['clinical.heatmapNote']).toBe(HEATMAP_NOTE);
     expect(source['clinical.lesionNote']).toBe(LESION_NOTE);
     expect(source['clinical.lesionNoneNote']).toBe(LESION_NONE_NOTE);
-    expect(source['clinical.heatmapBelow']).toBe(HEATMAP_BELOW_NOTE);
     expect(source['clinical.heatmapEmpty']).toBe(HEATMAP_EMPTY_NOTE);
-    expect(source['clinical.pdfPrivacy']).toBe(PDF_PRIVACY_NOTE);
     expect(source['clinical.pdfNeedsAssessment']).toBe(PDF_NEEDS_ASSESSMENT);
     expect(source['clinical.pdfNeedsPhotos']).toBe(PDF_NEEDS_PHOTOS);
     expect(source['clinical.basisGrade']).toBe(basisText(null));
@@ -77,7 +71,7 @@ describe('localizeMessage', () => {
     for (const lang of ['en', 'hi', 'kn', 'ta']) {
       await i18n.changeLanguage(lang);
       const t = i18n.t.bind(i18n);
-      expect(localizeMessage(t, 'Incorrect email or password.')).toBe(t('msg.badLogin'));
+      expect(localizeMessage(t, 'Incorrect mobile number or password.')).toBe(t('msg.badLogin'));
       expect(localizeMessage(t, 'Please wait 42s before requesting another code.')).toBe(t('msg.waitCode', { n: '42' }));
       expect(localizeMessage(t, 'Image is dark; results may be less reliable.')).toBe(t('msg.dark_warn'));
     }

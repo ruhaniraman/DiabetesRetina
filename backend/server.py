@@ -28,7 +28,7 @@ import httpx
 import numpy as np
 import uvicorn
 from dotenv import load_dotenv
-from fastapi import Depends, FastAPI, File, Form, Header, HTTPException, Request, Response, UploadFile
+from fastapi import BackgroundTasks, Depends, FastAPI, File, Form, Header, HTTPException, Request, Response, UploadFile
 from fastapi.concurrency import run_in_threadpool
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
@@ -159,7 +159,7 @@ CSRF_HEADER_VALUE = "retina-rescue"
 
 
 async def require_user(request: Request, authorization: str | None = Header(default=None)) -> dict:
-    """Reject the request unless the auth-server accepts the session token. Returns the user ({id, fullName, email}).
+    """Reject the request unless the auth-server accepts the session token. Returns the user ({id, fullName, phone}).
 
     The token comes from the HttpOnly session cookie (browsers) or a Bearer header (other clients). A cookie is sent by the
     browser automatically, so a POST authenticated only by it must also carry X-Requested-With, which a cross-site page cannot add.
@@ -639,10 +639,43 @@ async def record_exam(user_id: int, exam: dict) -> int | None:
     return None
 
 
+async def store_report(exam_id: int, pdf: bytes) -> bool:
+    """Save an exam's PDF with the exam in the auth-server (encrypted there). Best-effort, like record_exam."""
+    if not SERVICE_KEY:
+        return False
+    try:
+        async with httpx.AsyncClient(timeout=30.0) as client:
+            resp = await client.put(
+                f"{AUTH_SERVER_URL}/api/internal/exams/{exam_id}/report",
+                headers={"X-Service-Key": SERVICE_KEY, "Content-Type": "application/pdf"},
+                content=pdf,
+            )
+        if resp.status_code == 204:
+            return True
+        log.warning("Auth server refused to store the report of exam %s (%s): %s", exam_id, resp.status_code, resp.text[:200])
+    except httpx.HTTPError:
+        log.exception("Could not store the report of exam %s", exam_id)
+    return False
+
+
+async def save_report_in_background(exam_id: int, left_img: np.ndarray, right_img: np.ndarray, result: dict, patient: dict) -> None:
+    """After an assessment is saved: build the same detailed PDF the report page downloads, from this result, and keep it with the exam.
+    Runs after the response is sent, so the result is never delayed; a failure only means that exam has no stored PDF."""
+    try:
+        pdf = await build_full_report(left_img, right_img, result, patient, stored=True)
+        if await store_report(exam_id, pdf):
+            log.info("Stored the report of exam %s (%d KB)", exam_id, len(pdf) // 1024)
+    except Exception:  # noqa: BLE001 - never let a background failure surface
+        log.exception("Could not build the report of exam %s", exam_id)
+
+
 @app.post("/api/stage3-assessment")
 async def run_stage3_assessment(
+    background: BackgroundTasks,
     leftEye: UploadFile = File(...),
     rightEye: UploadFile = File(...),
+    patientName: str | None = Form(default=None),
+    patientDob: str | None = Form(default=None),
     user: dict = Depends(require_user),
 ):
     left_img = await read_image(leftEye)
@@ -654,7 +687,14 @@ async def run_stage3_assessment(
         exam = {k: result[k] for k in ("overallRisk", "leftGrade", "rightGrade", "leftConfidence", "rightConfidence")}
         exam["summary"] = result["overallSummary"]
         exam_id = await record_exam(user["id"], exam)
-    return result | {"saved": exam_id is not None, "examId": exam_id}
+    report_pending = exam_id is not None and bool(SERVICE_KEY)
+    if report_pending:
+        try:
+            patient = _clean_patient(patientName, patientDob)
+        except HTTPException:
+            patient = {}  # details that cannot be printed are left off the stored copy; they never block the result
+        background.add_task(save_report_in_background, exam_id, left_img, right_img, result, patient)
+    return result | {"saved": exam_id is not None, "examId": exam_id, "reportPending": report_pending}
 
 
 def _finite(value) -> float | None:
@@ -760,6 +800,18 @@ def _clean_patient(name: str | None, dob: str | None) -> dict:
     return out
 
 
+async def build_full_report(left_img: np.ndarray, right_img: np.ndarray, result: dict, patient: dict, *, stored: bool = False) -> bytes:
+    """The detailed PDF for a graded pair: heatmaps (and lesions when the overlay is on) for both eyes, then the report."""
+    eyes = {}
+    for eye, img in (("left", left_img), ("right", right_img)):
+        heat, _score, empty, analysed = await run_in_threadpool(render_gradcam, img, True)
+        eyes[eye] = {"analysed": analysed, "heatmap": heat, "heatmap_empty": empty}
+        if LESION_OVERLAY_ENABLED:
+            _overlay, counts, _areas, evidence, composite = await run_in_threadpool(render_lesions, img, True)
+            eyes[eye] |= {"lesions": composite, "lesion_counts": counts, "lesion_evidence": evidence}
+    return await run_in_threadpool(lambda: build_report_pdf(result, eyes, patient=patient, stored=stored))
+
+
 @app.post("/api/report-pdf")
 async def run_report(
     leftEye: UploadFile = File(...),
@@ -768,21 +820,14 @@ async def run_report(
     patientDob: str | None = Form(default=None),
     user: dict = Depends(require_user),
 ):
-    """Grade both photographs, draw the heatmaps and return a PDF report. The report is built in memory and returned; the server keeps neither it
-    nor the photographs, and nothing is added to the patient's exam history (only the assessment endpoint does that)."""
+    """Grade both photographs, draw the heatmaps and return a PDF report. The report is built in memory and returned; this endpoint keeps neither it
+    nor the photographs, and nothing is added to the patient's exam history (the assessment endpoint does that, and stores that exam's PDF)."""
     patient = _clean_patient(patientName, patientDob)
     left_img = await read_image(leftEye)
     right_img = await read_image(rightEye)
     result = await assess_pair(left_img, right_img)
     try:
-        eyes = {}
-        for eye, img in (("left", left_img), ("right", right_img)):
-            heat, _score, empty, analysed = await run_in_threadpool(render_gradcam, img, True)
-            eyes[eye] = {"analysed": analysed, "heatmap": heat, "heatmap_empty": empty}
-            if LESION_OVERLAY_ENABLED:
-                _overlay, counts, _areas, evidence, composite = await run_in_threadpool(render_lesions, img, True)
-                eyes[eye] |= {"lesions": composite, "lesion_counts": counts, "lesion_evidence": evidence}
-        pdf = await run_in_threadpool(lambda: build_report_pdf(result, eyes, patient=patient))
+        pdf = await build_full_report(left_img, right_img, result, patient)
     except HTTPException:
         raise
     except Exception:

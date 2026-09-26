@@ -7,17 +7,22 @@ import rateLimit from 'express-rate-limit';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import db from './db.js';
-import { createInternalRouter, createPatientRouter } from './health.js';
+import { createInternalRouter, createPatientRouter, deleteReportsOfUser } from './health.js';
 import { createVault } from './vault.js';
 import { productionProblems, trustProxySetting } from './prodcheck.js';
-import { isMailConfigured, sendPasswordResetEmail, sendVerificationEmail } from './mailer.js';
+import { sendCodeSms } from './sms.js';
 
 /* ------------------------------ Config ------------------------------ */
 
 const PORT = process.env.PORT || 4000;
 const CLIENT_ORIGIN = process.env.CLIENT_ORIGIN || 'http://localhost:5173';
 const JWT_SECRET = process.env.JWT_SECRET;
-const REQUIRE_GMAIL = process.env.REQUIRE_GMAIL === 'true';
+// Demo/development only: every verification and reset code is this value and no SMS is sent. Blocked in production.
+const FIXED_OTP = process.env.FIXED_OTP?.trim() || null;
+if (FIXED_OTP && !/^\d{6}$/.test(FIXED_OTP)) {
+  console.error('FIXED_OTP must be exactly 6 digits.');
+  process.exit(1);
+}
 
 if (!JWT_SECRET) {
   console.error('Missing JWT_SECRET. Copy .env.example to .env and set it.');
@@ -43,17 +48,24 @@ const vault = createVault(DATA_KEY || `health-data:${JWT_SECRET}`);
 const SERVICE_KEY = process.env.SERVICE_KEY; // shared with the ML backend so it can record exam results
 
 const CODE_TTL_MS = 10 * 60 * 1000; // verification / reset code lifetime
-const RESEND_COOLDOWN_MS = 60 * 1000; // minimum gap between emails
+const RESEND_COOLDOWN_MS = 60 * 1000; // minimum gap between SMS codes
 const MAX_CODE_ATTEMPTS = 5;
 
-// Compared against when the email doesn't exist, so response time doesn't leak which emails are registered.
+// Compared against when the number doesn't exist, so response time doesn't leak which numbers are registered.
 const DUMMY_HASH = bcrypt.hashSync('not-a-real-password', 12);
 
 /* ----------------------------- Helpers ------------------------------ */
 
-const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
-const isGmail = (email) => /@(gmail|googlemail)\.com$/i.test(email);
-const normalizeEmail = (v) => String(v ?? '').trim().toLowerCase();
+// Mobile numbers are stored in E.164 form (+<country code><number>). A bare 10-digit number is taken as Indian (+91).
+const PHONE_RE = /^\+[1-9]\d{7,14}$/;
+function normalizePhone(v) {
+  const s = String(v ?? '').replace(/[\s\-().]/g, '');
+  if (/^\d{10}$/.test(s)) return `+91${s}`;
+  if (/^0\d{10}$/.test(s)) return `+91${s.slice(1)}`;
+  if (/^91\d{10}$/.test(s)) return `+${s}`;
+  if (s.startsWith('00')) return `+${s.slice(2)}`;
+  return s;
+}
 
 function passwordError(pw) {
   if (!pw) return 'Password is required.';
@@ -65,7 +77,7 @@ function passwordError(pw) {
   return '';
 }
 
-const publicUser = (u) => ({ id: u.id, fullName: u.full_name, email: u.email });
+const publicUser = (u) => ({ id: u.id, fullName: u.full_name, phone: u.phone });
 // `sub` is a string (per the JWT spec); `v` lets logout revoke every token issued before it.
 const signToken = (user) =>
   jwt.sign({ sub: String(user.id), v: user.token_version ?? 0 }, JWT_SECRET, { expiresIn: '7d' });
@@ -97,8 +109,8 @@ function readCookie(req, name) {
 }
 
 // `purpose` keeps verification and reset codes from being interchangeable.
-const hashCode = (email, code, purpose = '') =>
-  crypto.createHmac('sha256', JWT_SECRET).update(`${purpose}${email}:${code}`).digest('hex');
+const hashCode = (phone, code, purpose = '') =>
+  crypto.createHmac('sha256', JWT_SECRET).update(`${purpose}${phone}:${code}`).digest('hex');
 
 function safeEqual(a, b) {
   const bufA = Buffer.from(a);
@@ -106,31 +118,33 @@ function safeEqual(a, b) {
   return bufA.length === bufB.length && crypto.timingSafeEqual(bufA, bufB);
 }
 
-// Generates a fresh 6-digit code, stores its hash, and emails the plain code.
+const newCode = () => FIXED_OTP || crypto.randomInt(0, 1_000_000).toString().padStart(6, '0');
+
+// Generates a fresh 6-digit code, stores its hash, and texts the plain code (unless FIXED_OTP is set).
 async function issueVerificationCode(user) {
-  const code = crypto.randomInt(0, 1_000_000).toString().padStart(6, '0');
+  const code = newCode();
   const now = Date.now();
   db.prepare(
     `UPDATE users
         SET verification_code_hash = ?, verification_expires_at = ?,
             verification_attempts = 0, verification_sent_at = ?
       WHERE id = ?`
-  ).run(hashCode(user.email, code), now + CODE_TTL_MS, now, user.id);
+  ).run(hashCode(user.phone, code), now + CODE_TTL_MS, now, user.id);
 
-  await sendVerificationEmail(user.email, user.full_name, code);
+  if (!FIXED_OTP) await sendCodeSms(user.phone, code, 'Verification code');
 }
 
 // Same idea for password reset, stored in the reset_* columns.
 async function issueResetCode(user) {
-  const code = crypto.randomInt(0, 1_000_000).toString().padStart(6, '0');
+  const code = newCode();
   const now = Date.now();
   db.prepare(
     `UPDATE users
         SET reset_code_hash = ?, reset_expires_at = ?, reset_attempts = 0, reset_sent_at = ?
       WHERE id = ?`
-  ).run(hashCode(user.email, code, 'reset:'), now + CODE_TTL_MS, now, user.id);
+  ).run(hashCode(user.phone, code, 'reset:'), now + CODE_TTL_MS, now, user.id);
 
-  await sendPasswordResetEmail(user.email, user.full_name, code);
+  if (!FIXED_OTP) await sendCodeSms(user.phone, code, 'Password reset code');
 }
 
 const cooldownRemainingMs = (user) =>
@@ -197,13 +211,12 @@ app.get('/api/health', (_req, res) => res.json({ ok: true }));
 
 app.post('/api/auth/signup', signupLimiter, async (req, res) => {
   const fullName = String(req.body?.fullName ?? '').trim();
-  const email = normalizeEmail(req.body?.email);
+  const phone = normalizePhone(req.body?.phone);
   const password = String(req.body?.password ?? '');
 
   const errors = {};
   if (fullName.length < 2) errors.fullName = 'Enter your full name.';
-  if (!EMAIL_RE.test(email)) errors.email = 'Enter a valid email address.';
-  else if (REQUIRE_GMAIL && !isGmail(email)) errors.email = 'Please use a Gmail address (@gmail.com).';
+  if (!PHONE_RE.test(phone)) errors.phone = 'Enter a valid mobile number.';
   const pwErr = passwordError(password);
   if (pwErr) errors.password = pwErr;
 
@@ -212,20 +225,20 @@ app.post('/api/auth/signup', signupLimiter, async (req, res) => {
   }
 
   // 1. Does this user already exist?
-  const existing = db.prepare('SELECT * FROM users WHERE email = ?').get(email);
+  const existing = db.prepare('SELECT * FROM users WHERE phone = ?').get(phone);
   if (existing?.is_verified) {
     return res.status(409).json({
-      message: 'An account with this email already exists.',
-      errors: { email: 'An account with this email already exists. Try signing in.' },
+      message: 'An account with this mobile number already exists.',
+      errors: { phone: 'An account with this mobile number already exists. Try signing in.' },
     });
   }
 
   // 2. A pending (unverified) sign-up whose code is still valid must not be overwritten: otherwise
-  //    anyone could re-register the victim's email with their own password, and the victim would then
+  //    anyone could re-register the victim's number with their own password, and the victim would then
   //    verify an account the attacker controls. Send them to the verify screen instead; the code that
-  //    was already emailed still works and "Resend code" is available.
+  //    was already texted still works and "Resend code" is available.
   if (existing && Date.now() < (existing.verification_expires_at || 0)) {
-    return res.status(201).json({ message: 'A verification code was already sent to this email.', email });
+    return res.status(201).json({ message: 'A verification code was already sent to this number.', phone });
   }
 
   // 3. New user, or an earlier sign-up whose code expired: (re)save details and send a code.
@@ -236,34 +249,34 @@ app.post('/api/auth/signup', signupLimiter, async (req, res) => {
     user = { ...existing, full_name: fullName };
   } else {
     const { lastInsertRowid } = db
-      .prepare('INSERT INTO users (full_name, email, password_hash, created_at) VALUES (?, ?, ?, ?)')
-      .run(fullName, email, passwordHash, Date.now());
-    user = { id: lastInsertRowid, full_name: fullName, email };
+      .prepare('INSERT INTO users (full_name, phone, password_hash, created_at) VALUES (?, ?, ?, ?)')
+      .run(fullName, phone, passwordHash, Date.now());
+    user = { id: lastInsertRowid, full_name: fullName, phone };
   }
 
   try {
     await issueVerificationCode(user);
   } catch (err) {
-    console.error('Failed to send verification email:', err);
-    return res.status(502).json({ message: "We couldn't send the verification email. Please try again." });
+    console.error('Failed to send verification code:', err);
+    return res.status(502).json({ message: "We couldn't send the verification code. Please try again." });
   }
 
-  res.status(201).json({ message: 'Verification code sent.', email });
+  res.status(201).json({ message: 'Verification code sent.', phone });
 });
 
-/* --------------------------- Verify email --------------------------- */
+/* --------------------------- Verify phone --------------------------- */
 
-app.post('/api/auth/verify-email', verifyLimiter, (req, res) => {
-  const email = normalizeEmail(req.body?.email);
+app.post('/api/auth/verify-phone', verifyLimiter, (req, res) => {
+  const phone = normalizePhone(req.body?.phone);
   const code = String(req.body?.code ?? '').trim();
 
   if (!/^\d{6}$/.test(code)) {
-    return res.status(400).json({ message: 'Enter the 6-digit code from your email.' });
+    return res.status(400).json({ message: 'Enter the 6-digit code sent to your phone.' });
   }
 
-  const user = db.prepare('SELECT * FROM users WHERE email = ?').get(email);
+  const user = db.prepare('SELECT * FROM users WHERE phone = ?').get(phone);
   if (!user) return res.status(400).json({ message: 'Invalid or expired code. Request a new one.' });
-  if (user.is_verified) return res.status(409).json({ message: 'This email is already verified. Please sign in.' });
+  if (user.is_verified) return res.status(409).json({ message: 'This number is already verified. Please sign in.' });
   if (!user.verification_code_hash || Date.now() > user.verification_expires_at) {
     return res.status(400).json({ message: 'That code has expired. Request a new one.' });
   }
@@ -271,7 +284,7 @@ app.post('/api/auth/verify-email', verifyLimiter, (req, res) => {
     return res.status(429).json({ message: 'Too many incorrect attempts. Request a new code.' });
   }
 
-  if (!safeEqual(hashCode(email, code), user.verification_code_hash)) {
+  if (!safeEqual(hashCode(phone, code), user.verification_code_hash)) {
     db.prepare('UPDATE users SET verification_attempts = verification_attempts + 1 WHERE id = ?').run(user.id);
     const left = MAX_CODE_ATTEMPTS - user.verification_attempts - 1;
     return res.status(400).json({
@@ -292,8 +305,8 @@ app.post('/api/auth/verify-email', verifyLimiter, (req, res) => {
 /* ---------------------------- Resend code --------------------------- */
 
 app.post('/api/auth/resend-code', resendLimiter, async (req, res) => {
-  const email = normalizeEmail(req.body?.email);
-  const user = db.prepare('SELECT * FROM users WHERE email = ?').get(email);
+  const phone = normalizePhone(req.body?.phone);
+  const user = db.prepare('SELECT * FROM users WHERE phone = ?').get(phone);
 
   // Same answer whether or not the account exists.
   if (!user || user.is_verified) {
@@ -309,8 +322,8 @@ app.post('/api/auth/resend-code', resendLimiter, async (req, res) => {
   try {
     await issueVerificationCode(user);
   } catch (err) {
-    console.error('Failed to resend verification email:', err);
-    return res.status(502).json({ message: "We couldn't send the verification email. Please try again." });
+    console.error('Failed to resend verification code:', err);
+    return res.status(502).json({ message: "We couldn't send the verification code. Please try again." });
   }
   res.json({ message: 'A new code has been sent.' });
 });
@@ -318,19 +331,19 @@ app.post('/api/auth/resend-code', resendLimiter, async (req, res) => {
 /* ------------------------------ Sign in ----------------------------- */
 
 app.post('/api/auth/login', loginLimiter, async (req, res) => {
-  const email = normalizeEmail(req.body?.email);
+  const phone = normalizePhone(req.body?.phone);
   const password = String(req.body?.password ?? '');
 
-  if (!EMAIL_RE.test(email) || !password) {
-    return res.status(400).json({ message: 'Enter your email and password.' });
+  if (!PHONE_RE.test(phone) || !password) {
+    return res.status(400).json({ message: 'Enter your mobile number and password.' });
   }
 
-  const user = db.prepare('SELECT * FROM users WHERE email = ?').get(email);
+  const user = db.prepare('SELECT * FROM users WHERE phone = ?').get(phone);
   const passwordOk = await bcrypt.compare(password, user?.password_hash ?? DUMMY_HASH);
 
   // One generic message for "no such user" and "wrong password".
   if (!user || !passwordOk) {
-    return res.status(401).json({ message: 'Incorrect email or password.' });
+    return res.status(401).json({ message: 'Incorrect mobile number or password.' });
   }
 
   if (!user.is_verified) {
@@ -339,13 +352,13 @@ app.post('/api/auth/login', loginLimiter, async (req, res) => {
       try {
         await issueVerificationCode(user);
       } catch (err) {
-        console.error('Failed to send verification email on login:', err);
+        console.error('Failed to send verification code on login:', err);
       }
     }
     return res.status(403).json({
-      code: 'EMAIL_NOT_VERIFIED',
-      message: 'Please verify your email to continue.',
-      email: user.email,
+      code: 'PHONE_NOT_VERIFIED',
+      message: 'Please verify your mobile number to continue.',
+      phone: user.phone,
     });
   }
 
@@ -354,37 +367,37 @@ app.post('/api/auth/login', loginLimiter, async (req, res) => {
 
 /* ------------------------- Forgot / reset password ------------------------ */
 
-const FORGOT_REPLY = { message: 'If an account exists for that email, a reset code has been sent.' };
+const FORGOT_REPLY = { message: 'If an account exists for that number, a reset code has been sent.' };
 
-// Always answers the same way, so the endpoint can't be used to discover which emails are registered.
+// Always answers the same way, so the endpoint can't be used to discover which numbers are registered.
 app.post('/api/auth/forgot-password', forgotLimiter, async (req, res) => {
-  const email = normalizeEmail(req.body?.email);
-  if (!EMAIL_RE.test(email)) return res.status(400).json({ message: 'Enter a valid email address.' });
+  const phone = normalizePhone(req.body?.phone);
+  if (!PHONE_RE.test(phone)) return res.status(400).json({ message: 'Enter a valid mobile number.' });
 
-  const user = db.prepare('SELECT * FROM users WHERE email = ?').get(email);
+  const user = db.prepare('SELECT * FROM users WHERE phone = ?').get(phone);
   if (user && resetCooldownRemainingMs(user) === 0) {
     try {
       await issueResetCode(user);
     } catch (err) {
-      console.error('Failed to send password reset email:', err); // logged, but not revealed to the caller
+      console.error('Failed to send password reset code:', err); // logged, but not revealed to the caller
     }
   }
   res.json(FORGOT_REPLY);
 });
 
 app.post('/api/auth/reset-password', resetLimiter, async (req, res) => {
-  const email = normalizeEmail(req.body?.email);
+  const phone = normalizePhone(req.body?.phone);
   const code = String(req.body?.code ?? '').trim();
   const password = String(req.body?.password ?? '');
 
   if (!/^\d{6}$/.test(code)) {
-    return res.status(400).json({ message: 'Enter the 6-digit code from your email.' });
+    return res.status(400).json({ message: 'Enter the 6-digit code sent to your phone.' });
   }
   const pwErr = passwordError(password);
   if (pwErr) return res.status(400).json({ message: pwErr, errors: { password: pwErr } });
 
   const INVALID = { message: 'Invalid or expired code. Request a new one.' };
-  const user = db.prepare('SELECT * FROM users WHERE email = ?').get(email);
+  const user = db.prepare('SELECT * FROM users WHERE phone = ?').get(phone);
   if (!user || !user.reset_code_hash || Date.now() > (user.reset_expires_at || 0)) {
     return res.status(400).json(INVALID);
   }
@@ -392,7 +405,7 @@ app.post('/api/auth/reset-password', resetLimiter, async (req, res) => {
     return res.status(429).json({ message: 'Too many incorrect attempts. Request a new code.' });
   }
 
-  if (!safeEqual(hashCode(email, code, 'reset:'), user.reset_code_hash)) {
+  if (!safeEqual(hashCode(phone, code, 'reset:'), user.reset_code_hash)) {
     db.prepare('UPDATE users SET reset_attempts = reset_attempts + 1 WHERE id = ?').run(user.id);
     const left = MAX_CODE_ATTEMPTS - user.reset_attempts - 1;
     return res.status(400).json({
@@ -400,7 +413,7 @@ app.post('/api/auth/reset-password', resetLimiter, async (req, res) => {
     });
   }
 
-  // The code proves control of the mailbox, so this also verifies an account that never finished sign-up.
+  // The code proves control of the phone, so this also verifies an account that never finished sign-up.
   // Bumping token_version signs the account out everywhere (e.g. after a suspected compromise).
   const passwordHash = await bcrypt.hash(password, 12);
   db.prepare(
@@ -443,6 +456,7 @@ app.delete('/api/auth/account', deleteLimiter, requireAuth, async (req, res) => 
   }
   db.exec('BEGIN');
   try {
+    deleteReportsOfUser(req.user.id);
     db.prepare('DELETE FROM exams WHERE user_id = ?').run(req.user.id);
     db.prepare('DELETE FROM patient_profiles WHERE user_id = ?').run(req.user.id);
     db.prepare('DELETE FROM users WHERE id = ?').run(req.user.id);
@@ -470,8 +484,8 @@ app.use((err, _req, res, _next) => {
 app.listen(PORT, () => {
   console.log(`Retina Rescue API running on http://localhost:${PORT}`);
   console.log(
-    isMailConfigured()
-      ? `Email: sending through Gmail as ${process.env.GMAIL_USER}`
-      : 'Email: NOT configured. Codes are printed to this console instead of being emailed (development only).'
+    FIXED_OTP
+      ? `SMS: OFF. FIXED_OTP is set, so every verification and reset code is ${FIXED_OTP} (demo only).`
+      : 'SMS: NOT configured. Codes are printed to this console instead of being texted (development only).'
   );
 });

@@ -19,7 +19,7 @@ describe('routing', () => {
     expect(await screen.findByText('Welcome Back')).toBeInTheDocument();
   });
 
-  it('sends the verify page to sign-up when there is no pending email', async () => {
+  it('sends the verify page to sign-up when there is no pending number', async () => {
     renderAt('/verify');
     expect(await screen.findByText('Create Account')).toBeInTheDocument();
   });

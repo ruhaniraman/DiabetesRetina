@@ -2,11 +2,12 @@
 
 @theme {
   --font-sans: 'Plus Jakarta Sans Variable', sans-serif;
-  --font-welcome: 'Outfit Variable', sans-serif;
+  --font-welcome: 'Plus Jakarta Sans Variable', sans-serif;
+  --font-display: 'Outfit Variable', sans-serif;
 }
 
 body {
-  background-color: #F4F6FA;
+  background-color: #f4f6f9;
   margin: 0;
   font-family: 'Plus Jakarta Sans Variable', system-ui, -apple-system, sans-serif;
 }

@@ -1,5 +1,8 @@
 import { useTranslation } from 'react-i18next';
-import { FiTrash2 } from 'react-icons/fi';
+import { useState } from 'react';
+import { FiDownload, FiLoader, FiTrash2 } from 'react-icons/fi';
+import { downloadExamReport } from '../api/patient';
+import { saveBlob } from '../utils/download';
 import { bannerConfig } from '../utils/drStyles';
 import { useMessages } from '../messages';
 import { changeFromPrevious } from '../utils/examChange';
@@ -15,7 +18,22 @@ export default function ExamHistory({ history }) {
   const { t, i18n } = useTranslation();
   const { stage } = useMessages();
   const lang = i18n.resolvedLanguage || 'en';
-  const { status, exams, remove } = history;
+  const { status, exams, remove, reportPendingFor } = history;
+  const [downloading, setDownloading] = useState(null);
+  const [downloadError, setDownloadError] = useState('');
+
+  const handleDownload = async (exam) => {
+    setDownloading(exam.id);
+    setDownloadError('');
+    try {
+      const blob = await downloadExamReport(exam.id);
+      saveBlob(blob, `retina-rescue-report-${new Date(exam.createdAt).toISOString().slice(0, 10)}.pdf`);
+    } catch {
+      setDownloadError(t('history.downloadFailed'));
+    } finally {
+      setDownloading(null);
+    }
+  };
 
   const handleDelete = async (exam) => {
     if (!window.confirm(t('history.confirmDelete', { when: formatWhen(exam.createdAt, lang) }))) return;
@@ -27,8 +45,8 @@ export default function ExamHistory({ history }) {
   };
 
   return (
-    <div className="bg-slate-50 border border-slate-200 p-4 rounded-2xl">
-      <h4 className="text-[11px] font-extrabold text-slate-900 uppercase tracking-wider mb-4">{t('history.title')}</h4>
+    <div className="bg-slate-50 border border-slate-200 p-4 rounded-lg">
+      <h4 className="text-[11px] font-semibold text-slate-900 uppercase tracking-wider mb-4">{t('history.title')}</h4>
 
       {status === 'loading' && <p className="text-[11px] text-slate-500 font-medium">{t('history.loading')}</p>}
       {status === 'error' && exams.length === 0 && (
@@ -46,11 +64,28 @@ export default function ExamHistory({ history }) {
                 <div className={`absolute -left-[23px] top-1 w-3 h-3 rounded-full ring-4 ring-slate-50 ${i === 0 ? banner.badge : 'bg-slate-300'}`}></div>
                 <div className="flex items-start justify-between gap-2">
                   <div className="min-w-0">
-                    <p className="text-xs font-bold text-slate-900">{formatWhen(exam.createdAt, lang)}</p>
+                    {exam.hasReport ? (
+                      <button
+                        type="button"
+                        onClick={() => handleDownload(exam)}
+                        disabled={downloading === exam.id}
+                        title={t('history.download')}
+                        className="flex items-center gap-1.5 text-xs font-bold text-slate-900 hover:text-sky-700 hover:underline disabled:opacity-60 cursor-pointer"
+                      >
+                        {formatWhen(exam.createdAt, lang)}
+                        {downloading === exam.id ? <FiLoader className="animate-spin text-sky-700" aria-hidden="true" /> : <FiDownload className="text-sky-700" aria-hidden="true" />}
+                        <span className="sr-only">{t('history.download')}</span>
+                      </button>
+                    ) : (
+                      <p className="text-xs font-bold text-slate-900">{formatWhen(exam.createdAt, lang)}</p>
+                    )}
                     <p className="text-[11px] text-slate-500 font-medium">
-                      <span className={`inline-block px-2 py-0.5 mr-1.5 rounded-full text-[9px] font-black uppercase text-white ${banner.badge}`}>{t(`clinical.banner.${bannerKey}.badge`)}</span>
+                      <span className={`inline-block px-2 py-0.5 mr-1.5 rounded-full text-[9px] font-bold uppercase text-white ${banner.badge}`}>{t(`clinical.banner.${bannerKey}.badge`)}</span>
                       OS {stage(exam.leftGrade)} · OD {stage(exam.rightGrade)}
                     </p>
+                    {!exam.hasReport && (
+                      <p className="text-[10px] text-slate-400">{reportPendingFor === exam.id ? t('history.preparing') : t('history.noReport')}</p>
+                    )}
                     {(() => {
                       const change = changeFromPrevious(exam, exams[i + 1]);
                       return change ? (
@@ -72,6 +107,7 @@ export default function ExamHistory({ history }) {
           })}
         </ul>
       )}
+      {downloadError && <p role="alert" className="text-[11px] text-rose-700 font-medium mt-3">{downloadError}</p>}
       {exams.length > VISIBLE && <p className="text-[11px] text-slate-500 font-medium mt-3">{t('history.more', { n: exams.length - VISIBLE })}</p>}
     </div>
   );

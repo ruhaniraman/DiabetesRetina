@@ -58,26 +58,15 @@ export const basisText = (thresholdPercent, source) =>
     : 'Basis: model grade';
 
 export const REPORT_LABELS = {
-  eyebrow: 'RETINARESCUE • SCREENING REPORT',
   severity: 'Estimated DR severity',
   notAssessed: 'Not assessed',
-  rationaleHeading: 'How this result was reached',
 };
 
 // Confidence is shown as a band, not a percentage: the model's raw probabilities are over-confident (in testing, the
 // "Moderate" band claims about 81% but is right about 75% of the time). See validation/REPORT.md.
 export const CONFIDENCE = {
   label: 'confidence',
-  note:
-    'Lower confidence means the grade is less likely to be right. In testing, the referral decision was wrong in about 1% of high-confidence ' +
-    'results and about 15% of the rest.',
 };
-
-export const STAGE_NOTE =
-  'The referral decision is the more reliable output. On held-out test images it found about 97% of referable cases, while the exact stage ' +
-  'matched the reference grade about 79% of the time. Results depend on the camera and population: on a second public dataset it flagged many more eyes that had no disease ' +
-  '(see validation/REPORT.md).';
-
 export const REFERRAL_CHIP = {
   label: 'Referral flagged',
   hint: "The most likely stage is lower, but the screening model's referral threshold was reached",
@@ -86,10 +75,6 @@ export const REFERRAL_CHIP = {
 export const HEATMAP_NOTE =
   "Shows the regions that raised this eye's referral score, on a coarse grid. A rough guide, not a lesion detection: warm colours do not by themselves mean disease, " +
   'and disease can be present outside them.';
-
-export const HEATMAP_BELOW_NOTE =
-  "This eye's referral score is below the threshold, so it was not flagged. The map shows where the score was relatively highest, not a finding.";
-
 export const HEATMAP_EMPTY_NOTE = "No region raised this eye's referral score, so nothing is highlighted. That does not rule out disease.";
 
 // Stage 2 lesion overlay (calibrated lesion network; off unless VITE_ENABLE_LESION_OVERLAY). Same sentences as the PDF (backend/clinical_text.py).
@@ -98,10 +83,6 @@ export const LESION_NOTE =
   '1 in 3 eyes that had no retinopathy, and it misses some lesions.';
 
 export const LESION_NONE_NOTE = 'The lesion model marked nothing in this photograph. That does not rule out disease.';
-
-export const PDF_PRIVACY_NOTE =
-  "The PDF prints the patient's name and date of birth from their profile. To create it, the photographs are sent to the server again; the server does not keep the photographs or the report file.";
-
 // Read aloud by the Listen button (src/speech/reportScript.js). Only these fixed lines are new wording; everything else spoken is text the app already shows.
 export const SPEECH = {
   intro: 'This is your diabetic retinopathy screening result.',
@@ -110,6 +91,19 @@ export const SPEECH = {
   flagged: 'Referral recommended.', // the same words as the PDF's result badge (backend/clinical_text.py, PDF_TEXT)
   notFlagged: 'No referral flagged.',
   photos: 'About the photographs:',
+};
+
+// Printed on the downloadable PDF only (backend/clinical_text.py, PDF_TEXT; a backend test keeps the two identical). Not shown on screen.
+export const PDF_ONLY = {
+  confidenceNote:
+    'Lower confidence means the grade is less likely to be right. In testing, the referral decision was wrong in about 1% of high-confidence ' +
+    'results and about 15% of the rest.',
+  stageNote:
+    'The referral decision is the more reliable output. On held-out test images it found about 97% of referable cases, while the exact stage ' +
+    'matched the reference grade about 79% of the time. Results depend on the camera and population: on a second public dataset it flagged many more eyes that had no disease ' +
+    '(see validation/REPORT.md).',
+  heatmapBelowThreshold:
+    "This eye's referral score is below the threshold, so it was not flagged. The map shows where the score was relatively highest, not a finding.",
 };
 
 export const PDF_NEEDS_ASSESSMENT = 'Run the AI assessment first; the PDF report is made from its result.';

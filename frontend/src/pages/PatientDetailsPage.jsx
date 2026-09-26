@@ -5,8 +5,8 @@ import LanguageSwitcher from '../components/LanguageSwitcher';
 import { useMessages } from '../messages';
 
 const inputClass =
-  'w-full bg-slate-50 border border-slate-200/80 rounded-2xl py-3 pr-3 text-xs font-semibold text-slate-800 focus:outline-none focus:border-slate-900 transition';
-const labelClass = 'text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block mb-1';
+  'w-full bg-slate-50 border border-slate-200/80 rounded-lg py-3 pr-3 text-xs font-semibold text-slate-800 focus:outline-none focus:border-slate-900 transition';
+const labelClass = 'text-[10px] font-semibold text-slate-400 uppercase tracking-wider block mb-1';
 
 const BLOOD_GROUPS = ['A+', 'A-', 'B+', 'B-', 'O+', 'O-', 'AB+', 'AB-'];
 const GENDERS = ['Female', 'Male', 'Other', 'Prefer not to say'];
@@ -72,17 +72,17 @@ export default function PatientDetailsPage({ initialData, onSubmit, onErase, onC
 
   return (
     <div className="min-h-screen bg-[#f1f3f7] flex items-center justify-center p-4 font-sans">
-      <div className="bg-white border border-slate-100 rounded-[2.5rem] p-8 max-w-lg w-full shadow-sm" data-tour="patient">
+      <div className="bg-white border border-slate-100 rounded-xl p-8 max-w-lg w-full shadow-sm" data-tour="patient">
         <div className="flex justify-end mb-4">
           <LanguageSwitcher />
         </div>
         <div className="flex items-center gap-3 mb-6">
-          <div className="w-12 h-12 rounded-2xl bg-amber-100 text-amber-700 flex items-center justify-center text-2xl">
+          <div className="w-12 h-12 rounded-lg bg-sky-50 text-sky-700 ring-1 ring-sky-200 flex items-center justify-center text-2xl">
             <FiEye />
           </div>
           <div>
-            <span className="text-[10px] font-extrabold tracking-wider text-slate-400 uppercase block">{t('patient.eyebrow')}</span>
-            <h1 className="text-xl font-black text-slate-900 tracking-tight">{t('patient.title')}</h1>
+            <span className="text-[10px] font-semibold tracking-wider text-slate-400 uppercase block">{t('patient.eyebrow')}</span>
+            <h1 className="text-xl font-bold text-slate-900 tracking-tight">{t('patient.title')}</h1>
           </div>
         </div>
 
@@ -144,7 +144,7 @@ export default function PatientDetailsPage({ initialData, onSubmit, onErase, onC
           <button
             type="submit"
             disabled={saving}
-            className="w-full mt-6 bg-slate-900 hover:bg-slate-800 disabled:opacity-60 disabled:cursor-not-allowed text-white font-bold py-4 rounded-2xl shadow-md transition flex items-center justify-center gap-2 text-xs uppercase tracking-wider cursor-pointer active:scale-[0.99]"
+            className="w-full mt-6 bg-slate-900 hover:bg-slate-800 disabled:opacity-60 disabled:cursor-not-allowed text-white font-bold py-4 rounded-lg shadow-md transition flex items-center justify-center gap-2 text-xs uppercase tracking-wider cursor-pointer active:scale-[0.99]"
           >
             <span>{saving ? t('patient.saving') : t('patient.save')}</span>
             {!saving && <FiArrowRight className="text-base" />}
@@ -156,7 +156,7 @@ export default function PatientDetailsPage({ initialData, onSubmit, onErase, onC
         </form>
 
         <div className="mt-8 pt-6 border-t border-slate-100">
-          <h2 className="text-[11px] font-extrabold text-slate-900 uppercase tracking-wider mb-1">{t('patient.yourData')}</h2>
+          <h2 className="text-[11px] font-semibold text-slate-900 uppercase tracking-wider mb-1">{t('patient.yourData')}</h2>
           <p className="text-[11px] text-slate-500 font-medium mb-3">
             {t('patient.yourDataText')}
           </p>

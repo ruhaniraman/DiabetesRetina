@@ -48,14 +48,14 @@ export function useScanSession() {
 
   const canRun = left.quality.status === 'accepted' && right.quality.status === 'accepted' && !running;
 
-  const runAssessment = async () => {
+  const runAssessment = async (patient) => {
     if (!canRun) return;
     const id = (runId.current += 1);
     setRunning(true);
     setError('');
     setAssessment(null);
     try {
-      const result = await assessEyes(left.file, right.file);
+      const result = await assessEyes(left.file, right.file, patient);
       if (id === runId.current) setAssessment(result);
     } catch (err) {
       if (id === runId.current) setError(err.message);

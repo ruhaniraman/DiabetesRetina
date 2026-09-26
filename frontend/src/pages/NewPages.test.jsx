@@ -16,7 +16,6 @@ import simulated from '../../../backend/pipeline_results.json';
 import DistrictPlannerPage from './DistrictPlannerPage';
 import SpecialistReviewPage from './SpecialistReviewPage';
 import DetailedReportPage from './DetailedReportPage';
-import EvidencePage from './EvidencePage';
 
 const photo = new File([new Uint8Array(10)], 'eye.png', { type: 'image/png' });
 const eye = { file: photo, imageUrl: 'blob:eye', mask: { status: 'idle', url: null, counts: null, error: '' } };
@@ -117,24 +116,5 @@ describe('DetailedReportPage extra views', () => {
     render(<DetailedReportPage patient={{}} session={{ left: eye, right: eye, assessment }} onBack={() => {}} />);
     await userEvent.click(screen.getByRole('button', { name: 'Enhanced' }));
     expect(await screen.findByText(/The AI grades the original photo/)).toBeInTheDocument();
-  });
-});
-
-describe('EvidencePage', () => {
-  it('lists every requirement with its status and source', () => {
-    const rows = [
-      { stage: 3, requirement: 'Referable DR sensitivity', target: '> 90%', result: '96.9%', status: 'met', source: 'validation/REPORT.md' },
-      { stage: 2, requirement: 'Neovascularisation', target: 'x', result: 'image-level only', status: 'partial', source: 'validation/results/nv.md' },
-    ];
-    render(<EvidencePage rows={rows} onBack={() => {}} />);
-    expect(screen.getByText('Referable DR sensitivity')).toBeInTheDocument();
-    expect(screen.getByText('validation/REPORT.md')).toBeInTheDocument();
-    expect(screen.getByText('1 met')).toBeInTheDocument();
-    expect(screen.getByText('1 partly met')).toBeInTheDocument();
-  });
-
-  it('renders the generated evidence', () => {
-    render(<EvidencePage onBack={() => {}} />);
-    expect(screen.getByText('Referable DR specificity')).toBeInTheDocument();
   });
 });

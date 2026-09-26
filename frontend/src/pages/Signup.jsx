@@ -2,13 +2,13 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import AuthLayout, { Field, FormAlert } from '../components/AuthLayout';
 import { signup, ApiError } from '../api/auth';
-import { validateName, validateEmail, validatePassword, passwordRules } from '../utils/validation';
+import { validateName, validatePhone, normalizePhone, validatePassword, passwordRules } from '../utils/validation';
 import { useMessages } from '../messages';
 
 export default function Signup({ onSignup, onGoToLogin }) {
   const { t } = useTranslation();
   const { tm } = useMessages();
-  const [form, setForm] = useState({ fullName: '', email: '', password: '', confirmPassword: '' });
+  const [form, setForm] = useState({ fullName: '', phone: '', password: '', confirmPassword: '' });
   const [errors, setErrors] = useState({});
   const [formError, setFormError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -22,7 +22,7 @@ export default function Signup({ onSignup, onGoToLogin }) {
   const validate = () => {
     const next = {
       fullName: validateName(form.fullName),
-      email: validateEmail(form.email),
+      phone: validatePhone(form.phone),
       password: validatePassword(form.password),
       confirmPassword: !form.confirmPassword
         ? 'Please confirm your password.'
@@ -38,14 +38,14 @@ export default function Signup({ onSignup, onGoToLogin }) {
     e.preventDefault();
     if (loading || !validate()) return;
 
-    const email = form.email.trim().toLowerCase();
+    const phone = normalizePhone(form.phone);
     setLoading(true);
     setFormError('');
     try {
-      await signup({ fullName: form.fullName.trim(), email, password: form.password });
-      onSignup(email); // go to the verification screen
+      await signup({ fullName: form.fullName.trim(), phone, password: form.password });
+      onSignup(phone); // go to the verification screen
     } catch (err) {
-      // The server returns per-field errors, e.g. "account already exists" on the email field.
+      // The server returns per-field errors, e.g. "account already exists" on the phone field.
       if (err instanceof ApiError && err.data?.errors) {
         setErrors((prev) => ({ ...prev, ...err.data.errors }));
       } else {
@@ -77,14 +77,14 @@ export default function Signup({ onSignup, onGoToLogin }) {
         />
 
         <Field
-          id="signup-email"
-          label={t('signup.email')}
-          type="email"
-          autoComplete="email"
-          value={form.email}
-          onChange={update('email')}
-          placeholder="doctor@retinarescue.com"
-          error={tm(errors.email)}
+          id="signup-phone"
+          label={t('signup.phone')}
+          type="tel"
+          autoComplete="tel"
+          value={form.phone}
+          onChange={update('phone')}
+          placeholder="98765 43210"
+          error={tm(errors.phone)}
         />
 
         <div>

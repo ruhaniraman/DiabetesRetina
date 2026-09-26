@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { FiEye, FiAlertTriangle, FiLogOut, FiRefreshCw, FiPlay, FiArrowRight, FiUser, FiX, FiEdit2, FiDroplet, FiHeart, FiActivity, FiClock, FiMap, FiCheckSquare, FiAward, FiHelpCircle } from 'react-icons/fi';
-import Logo from '../components/Logo';
+import { FiEye, FiAlertTriangle, FiRefreshCw, FiPlay, FiArrowRight, FiUser, FiX, FiEdit2, FiDroplet, FiHeart, FiActivity, FiClock } from 'react-icons/fi';
+import SideNav from '../components/SideNav';
 import HeroBand, { cardClass } from '../components/HeroBand';
 import ListenToReport from '../components/ListenToReport';
 import LanguageSwitcher from '../components/LanguageSwitcher';
@@ -48,7 +48,7 @@ const understated = (flagged, label) => Boolean(flagged) && /Stage [01]/.test(la
 
 const dash = (value, suffix = '') => (value === '' || value == null ? '—' : `${value}${suffix}`);
 
-export default function Dashboard({ user, patient, session, history, onEditPatient, onViewDetailedReport, onOpenDistrictPlanner, onOpenReview, onOpenEvidence, onStartTour, onLogout, onDeleteAccount }) {
+export default function Dashboard({ user, patient, session, history, onEditPatient, onViewDetailedReport, onOpenDistrictPlanner, onOpenReview, onStartTour, onLogout, onDeleteAccount }) {
   const { t, i18n } = useTranslation();
   const { grade, tm } = useMessages();
   const lang = i18n.resolvedLanguage || 'en';
@@ -62,6 +62,8 @@ export default function Dashboard({ user, patient, session, history, onEditPatie
   const summary = useResultSummary(assessment, lang);
 
   const displayName = patient.fullName || user?.fullName || '';
+  // "Welcome, {{name}}" in the chosen language, split around the name so the greeting and the name can be styled apart.
+  const greeting = t('welcomePatient', { name: '\u0000' }).split('\u0000').concat('');
   const age = calcAge(patient.dob);
   const identityLine = [age != null && t('dash.years', { n: age }), patient.gender && t(`patient.genders.${patient.gender}`, { defaultValue: patient.gender }), patient.dob && t('dash.dob', { date: formatDob(patient.dob) })]
     .filter(Boolean)
@@ -75,146 +77,40 @@ export default function Dashboard({ user, patient, session, history, onEditPatie
   const RiskIcon = bannerKey === 'Pending' || bannerKey === 'No_DR' ? FiEye : FiAlertTriangle;
 
   return (
-    <div className="min-h-screen bg-[#eef1f6] text-slate-800 font-sans antialiased">
+    <div className="min-h-screen bg-[#f4f6f9] text-slate-800 font-sans antialiased">
+      <SideNav
+        onOpenReview={onOpenReview && assessment ? onOpenReview : null}
+        onOpenDistrictPlanner={onOpenDistrictPlanner}
+        onStartTour={onStartTour}
+        onLogout={onLogout}
+      />
+
       <HeroBand className="pb-28 sm:pb-32">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 py-5">
-            <div className="flex items-center gap-3">
-              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white shadow-lg shadow-black/20 shrink-0">
-                <Logo className="w-8 h-6" />
-              </div>
-              <div>
-                <span className="block text-lg font-extrabold leading-none tracking-tight text-white">{t('common.brand')}</span>
-                <span className="mt-1 block text-[10px] font-black uppercase tracking-[0.2em] text-amber-400">{t('common.portal')}</span>
-              </div>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 md:pl-28 lg:pr-8">
+          <header className="flex flex-col-reverse sm:flex-row sm:items-start justify-between gap-4 pt-7 sm:pt-9">
+            <div>
+              <h1 data-tour="welcome" className="font-display text-3xl sm:text-4xl leading-tight tracking-tight text-white">
+                <span className="font-normal text-sky-200">{greeting[0]}</span>
+                <span className="font-semibold">{displayName}</span>
+                <span className="font-normal text-sky-200">{greeting[1]}</span>
+              </h1>
+              {identityLine && <p className="mt-2 text-sm text-slate-300">{identityLine}</p>}
             </div>
-            <div className="flex flex-wrap items-center gap-2.5 self-start sm:self-auto">
-              <div className="flex items-center gap-2.5">
-              {onOpenReview && session.assessment && (
-                <button
-                  type="button"
-                  onClick={onOpenReview}
-                  data-tour="review-button"
-                  title="30-second specialist review"
-                  className="flex items-center gap-2 rounded-xl border border-amber-300/40 bg-amber-500/20 px-3 py-2 text-xs font-bold text-amber-100 hover:bg-amber-500/30 transition cursor-pointer"
-                >
-                  <FiCheckSquare aria-hidden="true" /> <span className="hidden md:inline">Specialist review</span>
-                </button>
-              )}
-              {onOpenEvidence && (
-                <button
-                  type="button"
-                  onClick={onOpenEvidence}
-                  data-tour="evidence-button"
-                  title="Evidence: requirements vs measured results"
-                  className="flex items-center gap-2 rounded-xl border border-white/20 bg-white/10 px-3 py-2 text-xs font-bold text-white hover:bg-white/20 transition cursor-pointer"
-                >
-                  <FiAward aria-hidden="true" /> <span className="hidden md:inline">Evidence</span>
-                </button>
-              )}
-              {onOpenDistrictPlanner && (
-                <button
-                  type="button"
-                  onClick={onOpenDistrictPlanner}
-                  data-tour="district-button"
-                  title="District Planner (Stage 5)"
-                  className="flex items-center gap-2 rounded-xl border border-white/20 bg-white/10 px-3 py-2 text-xs font-bold text-white hover:bg-white/20 transition cursor-pointer"
-                >
-                  <FiMap aria-hidden="true" /> <span className="hidden md:inline">District Planner</span>
-                </button>
-              )}
-              </div>
-              {onStartTour && (
-                <button
-                  type="button"
-                  onClick={onStartTour}
-                  title={t('tour.replayTitle')}
-                  data-tour="replay"
-                  className="flex items-center gap-2 rounded-xl border border-white/20 bg-white/10 px-3 py-2 text-xs font-bold text-white hover:bg-white/20 transition cursor-pointer"
-                >
-                  <FiHelpCircle aria-hidden="true" /> <span className="hidden md:inline">{t('tour.replay')}</span>
-                </button>
-              )}
+            <div className="flex items-center gap-2.5 self-start">
               <div data-tour="language">
                 <LanguageSwitcher />
               </div>
-              <div className="flex items-center gap-2.5" data-tour="account">
-              <DeleteAccount onDelete={onDeleteAccount} />
-              <button
-                type="button"
-                onClick={onLogout}
-                title={t('logout')}
-                aria-label={t('logout')}
-                className="p-2.5 rounded-xl text-slate-500 hover:text-rose-600 hover:bg-rose-50 border border-slate-200/90 bg-white shadow-2xs transition cursor-pointer"
-              >
-                <FiLogOut className="text-base" />
-              </button>
+              <div data-tour="account">
+                <DeleteAccount onDelete={onDeleteAccount} />
               </div>
             </div>
           </header>
-
-          <div className="pt-4 sm:pt-6">
-            <span className="text-[10px] font-extrabold uppercase tracking-[0.2em] text-amber-400/90">{t('portalSub')}</span>
-            <h1 data-tour="welcome" className="mt-2 font-welcome text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight leading-tight text-white">
-              {t('welcomePatient', { name: displayName })}
-            </h1>
-            {identityLine && <p className="mt-2 text-sm font-medium text-slate-300">{identityLine}</p>}
-          </div>
         </div>
       </HeroBand>
 
-      <main className="relative -mt-20 sm:-mt-24 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pb-12 flex flex-col gap-6">
-        {/* Risk banner: reflects only a real backend result */}
-        <section data-tour="banner" className={`${cardClass} overflow-hidden border-l-[6px] p-5 md:p-7 space-y-5 shadow-[0_20px_50px_-24px_rgba(15,23,42,0.35)] ${activeBanner.accent}`}>
-          <div className="flex items-start gap-4 md:gap-5">
-            <div className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl text-white shadow-lg ${activeBanner.iconBg}`}>
-              <RiskIcon className="text-2xl" aria-hidden="true" />
-            </div>
-            <div className="min-w-0 space-y-2">
-              <span className={`inline-block rounded-full px-3 py-1 text-[10px] font-black uppercase tracking-wider text-white ${activeBanner.badge}`}>
-                {t(`clinical.banner.${bannerKey}.badge`)}
-              </span>
-              <h2 className="text-lg md:text-xl font-extrabold text-slate-900 tracking-tight">{t(`clinical.banner.${bannerKey}.title`)}</h2>
-            </div>
-          </div>
-
-          <div className="rounded-2xl bg-slate-50 border border-slate-200 p-4 md:p-5 space-y-2">
-            <p className="max-w-4xl text-sm leading-relaxed text-slate-700 font-medium">{summary.text}</p>
-            {summary.notice && <p className="text-[11px] text-slate-500 font-semibold">{summary.notice}</p>}
-          </div>
-
-          {assessment && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {[
-                [t('leftEyeLabel'), leftTag, assessment.leftReferable],
-                [t('rightEyeLabel'), rightTag, assessment.rightReferable],
-              ].map(([label, tag, flagged]) => (
-                <div key={label} className="flex items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-white p-3.5 shadow-sm">
-                  <div className="min-w-0">
-                    <span className="block text-[10px] font-extrabold uppercase tracking-wider text-slate-500">{label}</span>
-                    <span className={`mt-1.5 inline-block rounded-full border px-3 py-1 text-[11px] font-bold ${tag.cls}`}>{tag.label}</span>
-                  </div>
-                  {flagged && (
-                    <span className="shrink-0 rounded-full border border-amber-300 bg-amber-100 px-2.5 py-1 text-[10px] font-extrabold uppercase text-amber-900">
-                      {t('clinical.referralChipLabel')}
-                    </span>
-                  )}
-                </div>
-              ))}
-            </div>
-          )}
-
-          {assessment && <ListenToReport assessment={assessment} compact />}
-        </section>
-
-        {assessment && assessment.saved === false && (
-          <div role="status" className="bg-amber-50 border border-amber-200 text-amber-900 rounded-2xl px-5 py-3 text-xs font-semibold">
-            {t('dash.notSaved')}
-          </div>
-        )}
-
+      <main className="relative -mt-20 sm:-mt-24 mx-auto max-w-7xl px-4 sm:px-6 md:pl-28 lg:pr-8 pb-28 md:pb-12 flex flex-col gap-6">
         {error && (
-          <div role="alert" className="bg-rose-50 border border-rose-200 text-rose-800 rounded-2xl px-5 py-4 text-sm font-semibold">
+          <div role="alert" className="bg-rose-50 border border-rose-200 text-rose-800 rounded-lg px-5 py-4 text-sm font-semibold">
             {t('dash.assessError', { error: tm(error) })}
           </div>
         )}
@@ -223,34 +119,32 @@ export default function Dashboard({ user, patient, session, history, onEditPatie
           <div className={`${cardClass} flex-1 p-5 sm:p-7 flex flex-col justify-between space-y-6`}>
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-slate-100">
               <div className="flex items-center gap-3.5">
-                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-amber-50 text-amber-600 ring-1 ring-amber-200/70">
+                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-sky-50 text-sky-700 ring-1 ring-sky-200">
                   <FiEye className="text-xl" aria-hidden="true" />
                 </div>
                 <div>
-                  <h3 className="font-extrabold text-slate-900 text-base tracking-tight">{t('dualCardTitle')}</h3>
-                  <p className="text-xs text-slate-500 font-medium mt-0.5">{t('dash.cardSub')}</p>
+                  <h3 className="font-semibold text-slate-900 text-base tracking-tight">{t('dualCardTitle')}</h3>
                 </div>
               </div>
               <div className="flex flex-col items-start sm:items-end gap-1.5" data-tour="run">
                 <button
                   type="button"
-                  onClick={runAssessment}
+                  onClick={() => runAssessment(patient)}
                   disabled={!canRun}
-                  className="px-5 py-3 rounded-2xl text-xs font-bold bg-gradient-to-r from-[#0d1424] to-[#1e293b] hover:from-[#16223b] hover:to-[#26344f] disabled:opacity-45 disabled:cursor-not-allowed text-white flex items-center gap-2 transition cursor-pointer shadow-lg shadow-slate-900/20 enabled:hover:-translate-y-px enabled:active:translate-y-0"
+                  className="px-5 py-3 rounded-lg text-xs font-bold bg-[#0f2742] hover:bg-[#173a5e] disabled:opacity-45 disabled:cursor-not-allowed text-white flex items-center gap-2 transition cursor-pointer shadow-sm enabled:hover:-translate-y-px enabled:active:translate-y-0"
                 >
-                  {running ? <FiRefreshCw className="animate-spin text-sm" /> : <FiPlay className="text-xs fill-current text-amber-400" />}
+                  {running ? <FiRefreshCw className="animate-spin text-sm" /> : <FiPlay className="text-xs fill-current" />}
                   <span>{running ? t('dash.assessing') : t('dash.run')}</span>
                 </button>
                 {hint && <span className="text-[11px] text-slate-500 font-medium">{hint}</span>}
               </div>
             </div>
 
-            <div data-tour="low-bandwidth" className="flex flex-wrap items-center gap-x-4 gap-y-1 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-2.5">
+            <div data-tour="low-bandwidth" className="flex flex-wrap items-center gap-x-4 gap-y-1 rounded-lg border border-slate-200 bg-slate-50 px-4 py-2.5">
               <label className="flex items-center gap-2 text-xs font-bold text-slate-800 cursor-pointer">
-                <input type="checkbox" checked={session.lowBandwidth} onChange={(e) => session.setLowBandwidth(e.target.checked)} className="h-4 w-4 accent-blue-600" />
+                <input type="checkbox" checked={session.lowBandwidth} onChange={(e) => session.setLowBandwidth(e.target.checked)} className="h-4 w-4 accent-sky-700" />
                 {t('dash.lowBandwidth')}
               </label>
-              <span className="text-[11px] text-slate-500">{t('dash.lowBandwidthHint')}</span>
               {[['left', t('leftEyeLabel')], ['right', t('rightEyeLabel')]].map(([eye, label]) =>
                 session.transfer?.[eye] ? (
                   <span key={eye} className="text-[11px] font-semibold text-slate-600">
@@ -289,8 +183,8 @@ export default function Dashboard({ user, patient, session, history, onEditPatie
             </div>
 
             {LESION_OVERLAY_ENABLED && (left.viewMode === 'mapped' || right.viewMode === 'mapped') && (
-              <div className="mt-2 bg-slate-50 border border-slate-200/90 rounded-2xl p-4 flex flex-wrap items-center justify-center gap-6">
-                <span className="text-xs font-black text-slate-800 uppercase tracking-wider mr-2">{t('dash.highlights')}</span>
+              <div className="mt-2 bg-slate-50 border border-slate-200/90 rounded-lg p-4 flex flex-wrap items-center justify-center gap-6">
+                <span className="text-xs font-bold text-slate-800 uppercase tracking-wider mr-2">{t('dash.highlights')}</span>
                 {/* Colours match stage2_structure/dl/lesionOverlayToFile.m */}
                 {[
                   ['bg-rose-500 border-rose-300', t('dash.hemorrhage')],
@@ -298,7 +192,7 @@ export default function Dashboard({ user, patient, session, history, onEditPatie
                   ['bg-violet-400 border-violet-300', t('dash.softExudate')],
                   ['bg-amber-400 border-amber-300', t('dash.microaneurysm')],
                 ].map(([dot, name]) => (
-                  <div key={name} className="flex items-center gap-2 text-[11px] font-extrabold text-slate-600 uppercase">
+                  <div key={name} className="flex items-center gap-2 text-[11px] font-semibold text-slate-600 uppercase">
                     <span className={`w-3 h-3 rounded-full shadow-sm border ${dot}`}></span>
                     {name}
                   </div>
@@ -313,7 +207,7 @@ export default function Dashboard({ user, patient, session, history, onEditPatie
             <div className="space-y-6">
               <div data-tour="profile">
                 <div className="flex items-center justify-between mb-4 gap-2">
-                  <h2 className="text-base font-extrabold text-slate-900 tracking-tight">{t('recordsTitle')}</h2>
+                  <h2 className="text-base font-semibold text-slate-900 tracking-tight">{t('recordsTitle')}</h2>
                   {patient.bloodGroup && (
                     <span className="inline-flex items-center gap-1.5 rounded-full bg-rose-50 px-3 py-1 text-[11px] font-bold text-rose-700 border border-rose-200">
                       <FiDroplet aria-hidden="true" />
@@ -321,8 +215,8 @@ export default function Dashboard({ user, patient, session, history, onEditPatie
                     </span>
                   )}
                 </div>
-                <div className="flex items-center gap-3.5 rounded-2xl bg-slate-50 border border-slate-200 p-3.5">
-                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-[#0d1424] to-[#334155] text-sm font-extrabold text-white shadow-md">
+                <div className="flex items-center gap-3.5 rounded-lg bg-slate-50 border border-slate-200 p-3.5">
+                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-[#0f2742] text-sm font-semibold text-white shadow-md">
                     {initials === '?' ? <FiUser /> : initials}
                   </div>
                   <div className="min-w-0 flex-1">
@@ -362,13 +256,62 @@ export default function Dashboard({ user, patient, session, history, onEditPatie
               type="button"
               onClick={onViewDetailedReport}
               data-tour="report-button"
-              className="group w-full rounded-2xl bg-gradient-to-r from-[#0d1424] to-[#1e293b] py-4 text-xs font-bold uppercase tracking-wider text-white shadow-lg shadow-slate-900/20 transition hover:from-[#16223b] hover:to-[#26344f] flex items-center justify-center gap-2 cursor-pointer"
+              className="group w-full rounded-lg bg-[#0f2742] hover:bg-[#173a5e] py-4 text-xs font-bold uppercase tracking-wider text-white shadow-sm transition hover:from-[#16223b] hover:to-[#26344f] flex items-center justify-center gap-2 cursor-pointer"
             >
               <span>{t('detailedReportBtn')}</span>
-              <FiArrowRight className="text-sm text-amber-400 transition-transform group-hover:translate-x-0.5" />
+              <FiArrowRight className="text-sm transition-transform group-hover:translate-x-0.5" />
             </button>
           </aside>
         </div>
+
+        {/* Risk banner: reflects only a real backend result */}
+        <section data-tour="banner" className={`${cardClass} overflow-hidden border-l-[6px] p-5 md:p-7 space-y-5 shadow-[0_20px_50px_-24px_rgba(15,23,42,0.35)] ${activeBanner.accent}`}>
+          <div className="flex items-start gap-4 md:gap-5">
+            <div className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-lg text-white shadow-lg ${activeBanner.iconBg}`}>
+              <RiskIcon className="text-2xl" aria-hidden="true" />
+            </div>
+            <div className="min-w-0 space-y-2">
+              <span className={`inline-block rounded-full px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-white ${activeBanner.badge}`}>
+                {t(`clinical.banner.${bannerKey}.badge`)}
+              </span>
+              <h2 className="text-lg md:text-xl font-semibold text-slate-900 tracking-tight">{t(`clinical.banner.${bannerKey}.title`)}</h2>
+            </div>
+          </div>
+
+          <div className="rounded-lg bg-slate-50 border border-slate-200 p-4 md:p-5 space-y-2">
+            <p className="max-w-4xl text-sm leading-relaxed text-slate-700 font-medium">{summary.text}</p>
+            {summary.notice && <p className="text-[11px] text-slate-500 font-semibold">{summary.notice}</p>}
+          </div>
+
+          {assessment && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {[
+                [t('leftEyeLabel'), leftTag, assessment.leftReferable],
+                [t('rightEyeLabel'), rightTag, assessment.rightReferable],
+              ].map(([label, tag, flagged]) => (
+                <div key={label} className="flex items-center justify-between gap-3 rounded-lg border border-slate-200 bg-white p-3.5 shadow-sm">
+                  <div className="min-w-0">
+                    <span className="block text-[10px] font-semibold uppercase tracking-wider text-slate-500">{label}</span>
+                    <span className={`mt-1.5 inline-block rounded-full border px-3 py-1 text-[11px] font-bold ${tag.cls}`}>{tag.label}</span>
+                  </div>
+                  {flagged && (
+                    <span className="shrink-0 rounded-full border border-amber-300 bg-amber-100 px-2.5 py-1 text-[10px] font-semibold uppercase text-amber-900">
+                      {t('clinical.referralChipLabel')}
+                    </span>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+
+          {assessment && <ListenToReport assessment={assessment} compact />}
+        </section>
+
+        {assessment && assessment.saved === false && (
+          <div role="status" className="bg-amber-50 border border-amber-200 text-amber-900 rounded-lg px-5 py-3 text-xs font-semibold">
+            {t('dash.notSaved')}
+          </div>
+        )}
       </main>
 
       {fullscreenImage && (
@@ -390,7 +333,7 @@ export default function Dashboard({ user, patient, session, history, onEditPatie
             >
               <FiX className="text-xl" />
             </button>
-            <img src={fullscreenImage} alt={t('dash.fullscreen')} className="max-h-[90vh] max-w-full object-contain rounded-2xl shadow-2xl border border-slate-800" />
+            <img src={fullscreenImage} alt={t('dash.fullscreen')} className="max-h-[90vh] max-w-full object-contain rounded-lg shadow-2xl border border-slate-800" />
           </div>
         </div>
       )}
@@ -400,12 +343,12 @@ export default function Dashboard({ user, patient, session, history, onEditPatie
 
 function Vital({ icon: Icon, tone, label, value, unit }) {
   return (
-    <div className="flex items-center gap-3 rounded-2xl bg-slate-50 p-3 border border-slate-200">
+    <div className="flex items-center gap-3 rounded-lg bg-slate-50 p-3 border border-slate-200">
       <span className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl ${tone}`}>
         <Icon aria-hidden="true" />
       </span>
       <div className="min-w-0">
-        <span className="block truncate text-[10px] font-extrabold uppercase tracking-wider text-slate-500">{label}</span>
+        <span className="block truncate text-[10px] font-semibold uppercase tracking-wider text-slate-500">{label}</span>
         <p className="mt-0.5 text-sm font-bold text-slate-900">
           {value} {unit && <span className="text-[10px] font-medium text-slate-500">{unit}</span>}
         </p>

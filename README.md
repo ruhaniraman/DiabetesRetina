@@ -9,7 +9,7 @@ A screening aid that grades diabetic retinopathy (DR) from fundus photographs of
 
 ```
 frontend/       React + Vite web app (port 5173)
-auth-server/    Node/Express: sign-up, email verification, login, sessions (port 4000, SQLite via node:sqlite)
+auth-server/    Node/Express: sign-up, phone (SMS code) verification, login, sessions (port 4000, SQLite via node:sqlite)
 backend/        Python/FastAPI: image analysis API (port 5000)
    ├─ Stage 1  image quality check           OpenCV (MATLAB port: stage1_quality/assessFundusQuality.m); enhanced view: MATLAB enhanceForReview
    ├─ Stage 2  anatomy: vessels (U-Net), optic disc + fovea (localiser)   MATLAB → stage2_structure/dl/anatomyOverlayToFile.m
@@ -42,8 +42,8 @@ cp .env.example .env        # set JWT_SECRET (see the file for a generator comma
 npm install
 npm run dev
 ```
-With `GMAIL_USER` / `GMAIL_APP_PASSWORD` unset, verification and password-reset codes are printed in this terminal
-instead of emailed. That is for development only; see [Email setup](#email-setup) to send real mail.
+Verification and password-reset codes are printed in this terminal instead of being texted (development only), or set
+`FIXED_OTP` for a fixed demo code; see [Phone verification](#phone-verification-sms-codes).
 
 **2. ML backend**
 ```bash
@@ -66,8 +66,8 @@ Override the API addresses with `frontend/.env.local` (see `frontend/.env.exampl
 
 ## Using it
 
-1. Create an account and verify your email, then sign in. Forgot your password? Use **Forgot password?** on the sign-in page:
-   you'll get a 6-digit code by email, choose a new password, and every existing session is signed out.
+1. Create an account with your mobile number and verify it, then sign in. Forgot your password? Use **Forgot password?** on the sign-in page:
+   you'll get a 6-digit code by SMS, choose a new password, and every existing session is signed out.
 2. Complete the patient profile (edit icon in "My Health Record"). It is saved to your account, so it is there next time you sign in.
 3. Upload a fundus photo for each eye. Each is quality-checked; rejected images must be replaced.
 4. **Run AI Assessment**, then open **Detailed Report** (its **Download PDF Report** button makes a report for both eyes) for per-eye grades and a heatmap of the regions that raised the referral score (a rough guide, not a lesion detector: `validation/results/gradcam.md`).
@@ -105,7 +105,7 @@ with the current sentence highlighted. Which sentences are spoken: `frontend/src
 After every sign-in (not when a page reload only restores the session) a guided tour starts. It first spotlights the language buttons and asks "Choose your language" in all four
 scripts; tapping one switches the site and starts a hands-on walkthrough of a full screening. At most steps the person **does the task**: fill in their details, switch low-bandwidth
 mode, upload both photos (the tour waits until both pass the quality check), run the assessment, open the report, try a view, download the PDF, then visit Specialist review (only once there is
-a result), District Planner and Evidence and come back. Only the spotlighted element can be used; the tour moves on by itself when the task is done ("Done!"), and brings the person back if they
+a result) and District Planner and come back. Only the spotlighted element can be used; the tour moves on by itself when the task is done ("Done!"), and brings the person back if they
 leave the page. Steps without a task have Next; every task has "Skip this step"; Skip tour or Esc closes it, and the **Tour** button on the Dashboard replays it. Each popup is read aloud in the chosen language. The tour text holds no health information, so online voices may
 be used for it. Hindi, Kannada and Tamil narration are unreviewed drafts and follow the same `VITE_ALLOW_UNREVIEWED_SPEECH` switch as Listen (otherwise the popup says why it is text only).
 The speaker button mutes it (remembered in the browser). Steps and their tasks: `frontend/src/tour/steps.js`; words: `tour.*` in `frontend/src/locales/*.json`; elements are found by their `data-tour` attribute.
@@ -116,7 +116,16 @@ The speaker button mutes it (remembered in the browser). Steps and their tasks: 
 same Stage 1 checks and grading as the assessment, draws each eye's heatmap, builds a one-page PDF in memory (`backend/report_pdf.py`) and returns it. It does **not** keep
 the photographs or the PDF, and it does **not** add an entry to the exam history. The name and date of birth are printed on the report only. Because the photographs are
 graded again, it takes about as long as an assessment and queues behind other MATLAB work. Names in scripts the report font cannot print (Devanagari, Kannada, ...) are replaced by
-a note. The wording is in `backend/clinical_text.py` (`PDF_TEXT`) and is part of the clinician review packet (`docs/CLINICAL_REVIEW.md`, section 3d). `stage4_explainability/report/createMedicalReport.m`
+a note.
+
+**Reports kept with the exam history.** Each assessment that is saved to the exam history also gets its own copy of this PDF: after the result has been
+returned, the backend draws the heatmaps for the same photographs, builds the PDF from that same result (with the patient's name and date of birth from their
+profile) and stores it with the exam (`PUT /api/internal/exams/:id/report`, service key only). The auth-server keeps it AES-256-GCM encrypted with `DATA_KEY`,
+like the rest of the health data. **This copy contains the patient's eye photographs.** Clicking an exam's date in Exam History downloads it
+(`GET /api/patient/exams/:id/report`, the owner only); exams saved before this feature, or whose PDF could not be built, say "No PDF saved". The copy is deleted
+with its exam, with "erase my health data" and with the account. Building it uses the MATLAB engine for two heatmap runs after each assessment.
+
+The wording is in `backend/clinical_text.py` (`PDF_TEXT`) and is part of the clinician review packet (`docs/CLINICAL_REVIEW.md`, section 3d). `stage4_explainability/report/createMedicalReport.m`
 is an older single-photograph MATLAB generator kept as a developer tool; the app does not use it.
 
 ## Accounts and sessions
@@ -133,7 +142,7 @@ touched (see `deploy/DEPLOYMENT.md`). The API also accepts `DELETE /api/auth/acc
 | Each assessment: date, per-eye grade and confidence, overall grade, summary text | Grad-CAM heatmaps and lesion overlays; the downloadable PDF report (below) |
 
 - **Encrypted at rest.** Profile and exam payloads are AES-256-GCM encrypted with `DATA_KEY` before they reach SQLite, so a
-  copied database file is unreadable without the key (and tampering is detected). The account name, email and login data are
+  copied database file is unreadable without the key (and tampering is detected). The account name, mobile number and login data are
   ordinary columns. **Back up `DATA_KEY` and never change it:** existing data cannot be decrypted without it.
 - **Exam results come from the model, not the browser.** The ML backend saves each result itself using `SERVICE_KEY`
   (the same value in `auth-server/.env` and `backend/.env`); a signed-in user cannot write to their own history.
@@ -143,26 +152,16 @@ touched (see `deploy/DEPLOYMENT.md`). The API also accepts `DELETE /api/auth/acc
 - This is not a compliance certification. For real patient data you still need consent, an access/audit policy, backups,
   TLS, and a legal review for your jurisdiction (e.g. HIPAA, GDPR, India's DPDP Act).
 
-## Email setup
+## Phone verification (SMS codes)
 
-Sign-up verification and password reset both send a 6-digit code by email through a Gmail account.
+Accounts are identified by mobile number. Sign-up verification and password reset both send a 6-digit code by SMS.
+A bare 10-digit number is taken as Indian (+91); other countries need the `+` country code.
 
-1. In the Google account that will *send* the mail, turn on 2-Step Verification.
-2. Create an App Password at <https://myaccount.google.com/apppasswords> (a 16-character code; not your normal password).
-3. Put it in `auth-server/.env` (never commit that file):
-   ```
-   GMAIL_USER=your.address@gmail.com
-   GMAIL_APP_PASSWORD=xxxx xxxx xxxx xxxx
-   ```
-4. Check it works, then restart the auth-server:
-   ```bash
-   cd auth-server
-   npm run check-email             # logs in to Gmail, sends nothing
-   npm run check-email -- --send   # also emails a test message to GMAIL_USER
-   ```
-The server prints which mode it is in at startup. With `NODE_ENV=production` it refuses to start unless Gmail is configured.
-Gmail limits how much a personal account may send (about 500 messages/day), so use a transactional email provider
-(e.g. SES, Postmark) if you expect real traffic.
+No SMS provider is connected yet (`auth-server/sms.js`). In development the code is printed in the auth-server's terminal;
+with `NODE_ENV=production` sending fails, so connect a provider (e.g. Twilio, MSG91) there before going live.
+
+For a demo, set `FIXED_OTP=123456` in `auth-server/.env`: every sign-up and reset then accepts that code and nothing is sent.
+It lets anyone verify any number or reset any password, so the server refuses to start with it in production.
 
 ## Model validation
 

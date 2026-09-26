@@ -16,10 +16,10 @@ export default function Logo({ className = "w-12 h-12 md:w-16 md:h-16" }) {
       />
       {/* Central Iris Circle */}
       <circle cx="50" cy="30" r="23.5" fill="#0F172A" />
-      {/* 4-Point Sparkle Star in Amber */}
+      {/* 4-Point Sparkle Star */}
       <path 
         d="M 50 14 Q 50 30, 66 30 Q 50 30, 50 46 Q 50 30, 34 30 Q 50 30, 50 14 Z" 
-        fill="#D97706" 
+        fill="#0369A1" 
       />
     </svg>
   );

@@ -10,12 +10,12 @@ const CSRF = { 'X-Requested-With': 'retina-rescue' };
 const PROFILE = JSON.stringify({ fullName: 'Test Patient', dob: '1972-05-12', gender: 'Female', bloodGroup: 'A+', diabetesDuration: '12', systolicBP: '138', diastolicBP: '88', hba1c: '7.8', fastingSugar: '140' });
 
 // Logs in with the browser's flow and returns the raw Cookie header a browser would send back.
-async function browserSession(email) {
-  await s.signUpVerified(email, 'Password1');
+async function browserSession(phone) {
+  await s.signUpVerified(phone, 'Password1');
   const res = await fetch(`${s.api}/auth/login`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email, password: 'Password1' }),
+    body: JSON.stringify({ phone, password: 'Password1' }),
   });
   const setCookie = res.headers.get('set-cookie');
   return { res, setCookie, cookie: setCookie.split(';')[0] };
@@ -25,7 +25,7 @@ const withCookie = (cookie, method, route, extra = {}) =>
 
 describe('session cookie', () => {
   it('login sets an HttpOnly, SameSite=Lax cookie', async () => {
-    const { setCookie } = await browserSession('c1@example.com');
+    const { setCookie } = await browserSession('+919876500012');
     assert.match(setCookie, /^rr_session=/);
     assert.match(setCookie, /HttpOnly/i);
     assert.match(setCookie, /SameSite=Lax/i);
@@ -33,13 +33,13 @@ describe('session cookie', () => {
   });
 
   it('the cookie alone authenticates reads', async () => {
-    const { cookie } = await browserSession('c2@example.com');
+    const { cookie } = await browserSession('+919876500013');
     assert.equal((await withCookie(cookie, 'GET', '/auth/me')).status, 200);
     assert.equal((await withCookie('rr_session=garbage', 'GET', '/auth/me')).status, 401);
   });
 
   it('a cookie-authenticated change is refused without the request header, and works with it', async () => {
-    const { cookie } = await browserSession('c3@example.com');
+    const { cookie } = await browserSession('+919876500014');
     const noHeader = await withCookie(cookie, 'PUT', '/patient/profile', { body: PROFILE });
     assert.equal(noHeader.status, 403);
     const withHeader = await withCookie(cookie, 'PUT', '/patient/profile', { body: PROFILE, headers: CSRF });
@@ -47,12 +47,12 @@ describe('session cookie', () => {
   });
 
   it('a Bearer token needs no request header (non-browser clients)', async () => {
-    const token = await s.signUpVerified('c4@example.com', 'Password1');
+    const token = await s.signUpVerified('+919876500015', 'Password1');
     assert.equal((await s.post('/auth/logout', {}, token)).status, 200);
   });
 
   it('logout clears the cookie and the old cookie stops working', async () => {
-    const { cookie } = await browserSession('c5@example.com');
+    const { cookie } = await browserSession('+919876500016');
     const out = await withCookie(cookie, 'POST', '/auth/logout', { headers: CSRF, body: '{}' });
     assert.equal(out.status, 200);
     assert.match(out.headers.get('set-cookie'), /rr_session=;/);
@@ -60,7 +60,7 @@ describe('session cookie', () => {
   });
 
   it('deleting the account also clears the cookie', async () => {
-    const { cookie } = await browserSession('c6@example.com');
+    const { cookie } = await browserSession('+919876500017');
     const del = await withCookie(cookie, 'DELETE', '/auth/account', { headers: CSRF, body: JSON.stringify({ password: 'Password1' }) });
     assert.equal(del.status, 200);
     assert.match(del.headers.get('set-cookie'), /rr_session=;/);

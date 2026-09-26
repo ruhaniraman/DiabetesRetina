@@ -44,21 +44,21 @@ describe('patient profile', () => {
   });
 
   it('starts empty, then saves and returns the profile', async () => {
-    const token = await s.signUpVerified('profile1@example.com', 'Password1');
+    const token = await s.signUpVerified('+919876500019', 'Password1');
     assert.equal((await s.call('GET', '/patient/profile', { token })).body.profile, null);
     assert.equal((await s.call('PUT', '/patient/profile', { token, body: profile })).status, 200);
     assert.deepEqual((await s.call('GET', '/patient/profile', { token })).body.profile, profile);
   });
 
   it('updates in place', async () => {
-    const token = await s.signUpVerified('profile2@example.com', 'Password1');
+    const token = await s.signUpVerified('+919876500020', 'Password1');
     await s.call('PUT', '/patient/profile', { token, body: profile });
     await s.call('PUT', '/patient/profile', { token, body: { ...profile, hba1c: 6.5 } });
     assert.equal((await s.call('GET', '/patient/profile', { token })).body.profile.hba1c, '6.5');
   });
 
   it('rejects invalid values with per-field errors', async () => {
-    const token = await s.signUpVerified('profile3@example.com', 'Password1');
+    const token = await s.signUpVerified('+919876500021', 'Password1');
     const bad = { ...profile, dob: '2999-01-01', gender: 'Robot', hba1c: 99, systolicBP: 'abc', fullName: 'x' };
     const res = await s.call('PUT', '/patient/profile', { token, body: bad });
     assert.equal(res.status, 400);
@@ -66,14 +66,14 @@ describe('patient profile', () => {
   });
 
   it("never shows one user's profile to another", async () => {
-    const a = await s.signUpVerified('owner-p@example.com', 'Password1');
-    const b = await s.signUpVerified('other-p@example.com', 'Password1');
+    const a = await s.signUpVerified('+919876500022', 'Password1');
+    const b = await s.signUpVerified('+919876500023', 'Password1');
     await s.call('PUT', '/patient/profile', { token: a, body: profile });
     assert.equal((await s.call('GET', '/patient/profile', { token: b })).body.profile, null);
   });
 
   it('is stored encrypted on disk', async () => {
-    const token = await s.signUpVerified('enc@example.com', 'Password1');
+    const token = await s.signUpVerified('+919876500024', 'Password1');
     await s.call('PUT', '/patient/profile', { token, body: profile });
     const row = rawDb().prepare('SELECT data FROM patient_profiles WHERE user_id = ?').get(await userIdOf(token));
     assert.match(row.data, /^v1:/);
@@ -84,7 +84,7 @@ describe('patient profile', () => {
 
 describe('exam history', () => {
   it('only the ML backend (correct service key) can record exams', async () => {
-    const token = await s.signUpVerified('exams1@example.com', 'Password1');
+    const token = await s.signUpVerified('+919876500025', 'Password1');
     const id = await userIdOf(token);
     assert.equal((await record(id, exam, 'wrong-key')).status, 401);
     assert.equal((await s.call('POST', '/internal/exams', { body: { userId: id, exam } })).status, 401);
@@ -94,7 +94,7 @@ describe('exam history', () => {
   });
 
   it('lists a users exams newest first, decrypted', async () => {
-    const token = await s.signUpVerified('exams2@example.com', 'Password1');
+    const token = await s.signUpVerified('+919876500026', 'Password1');
     const id = await userIdOf(token);
     await record(id, { ...exam, overallRisk: 'Mild', leftGrade: 'Stage 1 - Mild' });
     await new Promise((r) => setTimeout(r, 5));
@@ -107,7 +107,7 @@ describe('exam history', () => {
   });
 
   it('rejects malformed exams and unknown users', async () => {
-    const token = await s.signUpVerified('exams3@example.com', 'Password1');
+    const token = await s.signUpVerified('+919876500027', 'Password1');
     const id = await userIdOf(token);
     assert.equal((await record(id, { ...exam, overallRisk: 'Cured' })).status, 400);
     assert.equal((await record(id, { ...exam, leftConfidence: 7 })).status, 400);
@@ -115,8 +115,8 @@ describe('exam history', () => {
   });
 
   it("keeps users' exams separate, including deletes", async () => {
-    const a = await s.signUpVerified('exams-a@example.com', 'Password1');
-    const b = await s.signUpVerified('exams-b@example.com', 'Password1');
+    const a = await s.signUpVerified('+919876500028', 'Password1');
+    const b = await s.signUpVerified('+919876500029', 'Password1');
     const { body } = await record(await userIdOf(a));
     assert.equal((await s.call('GET', '/patient/exams', { token: b })).body.exams.length, 0);
     assert.equal((await s.call('DELETE', `/patient/exams/${body.id}`, { token: b })).status, 404);
@@ -125,7 +125,7 @@ describe('exam history', () => {
   });
 
   it('deletes all health data but keeps the account', async () => {
-    const token = await s.signUpVerified('wipe@example.com', 'Password1');
+    const token = await s.signUpVerified('+919876500030', 'Password1');
     const id = await userIdOf(token);
     await s.call('PUT', '/patient/profile', { token, body: profile });
     await record(id);
@@ -138,7 +138,7 @@ describe('exam history', () => {
   });
 
   it('skips a tampered row instead of failing the whole list', async () => {
-    const token = await s.signUpVerified('tamper@example.com', 'Password1');
+    const token = await s.signUpVerified('+919876500031', 'Password1');
     const id = await userIdOf(token);
     await record(id);
     const { body } = await record(id, { ...exam, overallRisk: 'Severe' });
@@ -174,7 +174,7 @@ describe('account deletion', () => {
   });
 
   it('refuses without the password or with a wrong one, and deletes nothing', async () => {
-    const token = await s.signUpVerified('del-wrong@example.com', 'Password1');
+    const token = await s.signUpVerified('+919876500032', 'Password1');
     const id = await userIdOf(token);
     assert.equal((await del(token, {})).status, 400);
     assert.equal((await del(token, { password: 'Nope12345' })).status, 403);
@@ -183,7 +183,7 @@ describe('account deletion', () => {
   });
 
   it('erases the account, profile and every exam, and the session stops working', async () => {
-    const token = await s.signUpVerified('del-ok@example.com', 'Password1');
+    const token = await s.signUpVerified('+919876500033', 'Password1');
     const id = await userIdOf(token);
     await s.call('PUT', '/patient/profile', { token, body: profile });
     await record(id);
@@ -195,17 +195,17 @@ describe('account deletion', () => {
     assert.equal(rowsFor('patient_profiles', id), 0);
     assert.equal(rowsFor('exams', id), 0);
     assert.equal(await s.me(token), 401);
-    assert.equal((await s.post('/auth/login', { email: 'del-ok@example.com', password: 'Password1' })).status, 401);
+    assert.equal((await s.post('/auth/login', { phone: '+919876500033', password: 'Password1' })).status, 401);
   });
 
-  it('leaves other users untouched, and the email can be registered again', async () => {
-    const a = await s.signUpVerified('del-a@example.com', 'Password1');
-    const b = await s.signUpVerified('del-b@example.com', 'Password1');
+  it('leaves other users untouched, and the number can be registered again', async () => {
+    const a = await s.signUpVerified('+919876500034', 'Password1');
+    const b = await s.signUpVerified('+919876500035', 'Password1');
     const idB = await userIdOf(b);
     await record(idB);
     await del(a, { password: 'Password1' });
     assert.equal(rowsFor('exams', idB), 1);
     assert.equal(await s.me(b), 200);
-    assert.ok(await s.signUpVerified('del-a@example.com', 'Password2'));
+    assert.ok(await s.signUpVerified('+919876500034', 'Password2'));
   });
 });

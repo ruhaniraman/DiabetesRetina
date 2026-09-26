@@ -57,7 +57,7 @@ function Slider({ id, label, value, display, min, max, step, onChange, note }) {
     <div className="space-y-1.5">
       <div className="flex items-baseline justify-between gap-3">
         <label htmlFor={id} className="text-xs font-bold uppercase tracking-wider text-slate-500">{label}</label>
-        <span className="text-sm font-extrabold text-slate-900 tabular-nums">{display}</span>
+        <span className="text-sm font-semibold text-slate-900 tabular-nums">{display}</span>
       </div>
       <input id={id} type="range" min={min} max={max} step={step} value={value} onChange={(e) => onChange(Number(e.target.value))} className="w-full accent-blue-600" />
       {note && <p className="text-[11px] text-slate-500">{note}</p>}
@@ -72,7 +72,7 @@ function Resource({ icon: Icon, label, value, detail, busy }) {
         <Icon aria-hidden="true" />
         <span className="text-[11px] font-bold uppercase tracking-wider">{label}</span>
       </div>
-      <div className="text-3xl font-extrabold text-slate-900 tabular-nums">{value}</div>
+      <div className="text-3xl font-semibold text-slate-900 tabular-nums">{value}</div>
       <p className="text-xs text-slate-500">{detail}</p>
       <div className="h-2 rounded-full bg-slate-100 overflow-hidden" title={`${pct(busy)} busy on an average day`}>
         <div className={`h-full rounded-full ${busy > 0.85 ? 'bg-rose-500' : busy > 0.6 ? 'bg-amber-500' : 'bg-emerald-500'}`} style={{ width: `${Math.min(100, 100 * busy)}%` }} />
@@ -103,7 +103,7 @@ function BacklogChart({ series, limit }) {
 function SimulinkResult({ result }) {
   return (
     <div className="space-y-4">
-      <div className={`flex items-center gap-2 text-sm font-extrabold ${result.meetsTargets ? 'text-emerald-700' : 'text-rose-700'}`}>
+      <div className={`flex items-center gap-2 text-sm font-semibold ${result.meetsTargets ? 'text-emerald-700' : 'text-rose-700'}`}>
         {result.meetsTargets ? <FiCheckCircle aria-hidden="true" /> : <FiAlertTriangle aria-hidden="true" />}
         {result.meetsTargets ? 'Meets every backlog target over the simulated year' : `Misses targets: ${result.reasons.join('; ')}`}
       </div>
@@ -116,7 +116,7 @@ function SimulinkResult({ result }) {
           const st = result.stages?.[key];
           if (!st) return null;
           return (
-            <div key={key} className="rounded-2xl border border-slate-200 p-3">
+            <div key={key} className="rounded-lg border border-slate-200 p-3">
               <div className="flex justify-between text-xs">
                 <span className="font-bold text-slate-800">{label}</span>
                 <span className="text-slate-500">
@@ -201,17 +201,17 @@ export default function DistrictPlannerPage({ onBack }) {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <header data-tour="district" className="flex items-center justify-between gap-4 py-5">
             <div className="flex items-center gap-3">
-              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white shadow-lg shadow-black/20 shrink-0">
+              <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-white shadow-sm shrink-0">
                 <Logo className="w-8 h-6" />
               </div>
-              <span className="text-lg font-extrabold tracking-tight text-white">District Planner</span>
+              <span className="text-lg font-semibold tracking-tight text-white">District Planner</span>
             </div>
             <button type="button" onClick={onBack} className="flex items-center gap-2 rounded-xl bg-white/10 px-3 py-2 text-sm font-semibold text-white hover:bg-white/20 cursor-pointer">
               <FiArrowLeft aria-hidden="true" /> Back
             </button>
           </header>
           <div className="pt-4 sm:pt-6 max-w-3xl">
-            <span className="text-[10px] font-extrabold uppercase tracking-[0.2em] text-amber-400/90">Stage 5 · Simulink resource model</span>
+            <span className="text-[10px] font-semibold uppercase tracking-wider text-sky-300">Stage 5 · Simulink resource model</span>
             <h1 className="mt-2 text-3xl sm:text-4xl font-bold tracking-tight text-white">What does a district need to screen every diabetic?</h1>
             <p className="mt-2 text-sm text-slate-300">
               Change the district and see the cheapest mix of camera sites, bandwidth, AI servers and specialist reviewers. The AI&apos;s own measured
@@ -264,17 +264,17 @@ export default function DistrictPlannerPage({ onBack }) {
               <section className={`${cardClass} p-5 grid grid-cols-1 md:grid-cols-3 gap-5`} aria-label="Summary">
                 <div>
                   <p className="text-[11px] font-bold uppercase tracking-wider text-slate-500">Cost per patient screened</p>
-                  <p className="text-3xl font-extrabold text-slate-900">{inr(plan.costPerPatient)}</p>
+                  <p className="text-3xl font-semibold text-slate-900">{inr(plan.costPerPatient)}</p>
                   <p className="text-xs text-slate-500">{inr(plan.cost)} a year (assumed prices)</p>
                 </div>
                 <div>
                   <p className="text-[11px] font-bold uppercase tracking-wider text-slate-500">What limits the district</p>
-                  <p className="text-xl font-extrabold text-slate-900 capitalize">{plan.binding}</p>
+                  <p className="text-xl font-semibold text-slate-900 capitalize">{plan.binding}</p>
                   <p className="text-xs text-slate-500">{pct(plan.reviewFraction)} of patients go to a specialist</p>
                 </div>
                 <div>
                   <p className="text-[11px] font-bold uppercase tracking-wider text-slate-500">The 30-second report saves</p>
-                  <p className="text-xl font-extrabold text-emerald-700">
+                  <p className="text-xl font-semibold text-emerald-700">
                     {without ? `${Math.round((plan.reviewCasesPerDay * (120 - reviewSeconds)) / 3600)} specialist hours a day` : '—'}
                   </p>
                   <p className="text-xs text-slate-500">
@@ -285,14 +285,14 @@ export default function DistrictPlannerPage({ onBack }) {
               <section className={`${cardClass} p-5 space-y-4`} aria-label="Simulink check">
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <div>
-                    <h2 className="text-lg font-extrabold text-slate-900">Check this plan in Simulink</h2>
+                    <h2 className="text-lg font-semibold text-slate-900">Check this plan in Simulink</h2>
                     <p className="text-xs text-slate-500">Runs a working year of DistrictScreening.slx with day-to-day variation in arrivals.</p>
                   </div>
                   <button
                     type="button"
                     onClick={confirmInSimulink}
                     disabled={simView.status === 'running'}
-                    className="rounded-2xl bg-gradient-to-r from-[#0d1424] to-[#1e293b] px-5 py-3 text-xs font-bold uppercase tracking-wider text-white shadow-lg disabled:opacity-50 cursor-pointer"
+                    className="rounded-lg bg-[#0f2742] hover:bg-[#173a5e] px-5 py-3 text-xs font-bold uppercase tracking-wider text-white shadow-lg disabled:opacity-50 cursor-pointer"
                   >
                     {simView.status === 'running' ? 'Simulating a year…' : 'Confirm in Simulink'}
                   </button>
@@ -313,7 +313,7 @@ export default function DistrictPlannerPage({ onBack }) {
 
           <section className={`${cardClass} p-5 space-y-3 overflow-x-auto`} aria-label="Simulated scenarios">
             <div>
-              <h2 className="text-lg font-extrabold text-slate-900">Scenarios confirmed in Simulink</h2>
+              <h2 className="text-lg font-semibold text-slate-900">Scenarios confirmed in Simulink</h2>
               <p className="text-xs text-slate-500">
                 Each plan was simulated for a working year in DistrictScreening.slx (capture → upload → AI → specialist review queues, day by day) and meets every
                 backlog target{simulated.created ? ` · run ${simulated.created}` : ''}.

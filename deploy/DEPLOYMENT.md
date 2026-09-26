@@ -42,8 +42,6 @@ CLIENT_ORIGIN=https://retina.yourdomain.org
 JWT_SECRET=<secret 1>
 DATA_KEY=<secret 2>          # encrypts health data. BACK IT UP. Changing/losing it makes stored data unreadable.
 SERVICE_KEY=<secret 3>       # must equal SERVICE_KEY in backend/.env
-GMAIL_USER=...               # real email is mandatory in production; verify with: npm run check-email -- --send
-GMAIL_APP_PASSWORD=...
 ```
 `NODE_ENV=production` and `TRUST_PROXY=1` are set by the systemd unit.
 
@@ -83,14 +81,14 @@ curl -si  -X POST $D/auth-api/internal/exams | head -1                 # HTTP/2 
 curl -s   $D/docs | grep -ci swagger                                   # 0  (the API docs are not exposed)
 curl -si  -X POST $D/ml-api/stage1-quality | head -1                   # HTTP/2 401  (needs a session)
 ```
-Then sign up with a real address, confirm the emailed code arrives, run an assessment, and check Exam History.
+Then sign up with a real mobile number, confirm the SMS code arrives, run an assessment, and check Exam History.
 Test HTTPS quality at <https://www.ssllabs.com/ssltest/> and headers at <https://securityheaders.com>.
 
 ## What this setup protects, and what it does not
 | Protected | Notes |
 |---|---|
 | Traffic in transit | TLS via Caddy; HSTS tells browsers to refuse plain HTTP. |
-| Health data at rest | Profile and exam payloads are AES-256-GCM encrypted (`DATA_KEY`). Names/emails/password hashes are not field-encrypted; use disk encryption on the server too. |
+| Health data at rest | Profile and exam payloads, and the PDF report kept with each exam (which contains the eye photographs), are AES-256-GCM encrypted (`DATA_KEY`). Names/mobile numbers/password hashes are not field-encrypted; use disk encryption on the server too. |
 | Service-to-service endpoint | Blocked at the proxy **and** refused by the auth-server if a request arrived through a proxy. |
 | Brute force | Rate limits are per real client IP (`TRUST_PROXY=1` lets the server see it). Set it to the true number of proxies in front. |
 | Abuse of uploads | Proxy caps bodies (40 MB ML, 64 KB auth); the app also caps each image at 15 MB. |
@@ -104,10 +102,12 @@ Test HTTPS quality at <https://www.ssllabs.com/ssltest/> and headers at <https:/
 - **Fonts are bundled with the app** (Outfit and Plus Jakarta Sans, via `@fontsource`), so visitors' browsers contact no third party for them and the CSP allows only `'self'` for styles and fonts.
 - **PDF reports contain personal data and are made on demand.** `POST /api/report-pdf` returns the PDF to the requesting browser only; the server writes nothing to disk and keeps no copy, and
   the request is logged without the name or date of birth. Anything the user saves or prints afterwards is outside the server's control. Each report re-grades both photographs (two extra MATLAB heatmap runs), so it competes with assessments for the single MATLAB engine.
+- **Each saved assessment keeps its PDF report, including the eye photographs.** It is stored encrypted in the auth-server database (about 1 MB per exam) and
+  deleted with the exam or the account; say so in your privacy policy. Building it adds two MATLAB heatmap runs after every assessment.
 - **One MATLAB engine handles one request at a time.** Concurrent assessments queue. That is fine for a clinic; for
   district-scale load you need multiple backend instances (each needs a MATLAB license).
 - **SQLite is a single file on one server.** Back up `auth-server/retina-rescue.db*` **and** `DATA_KEY` (separately!) on a schedule, and test a restore. Deleting an account removes it from the live database only; copies in your backups remain until those backups expire, so state that in your privacy policy.
-- **Email uses a personal Gmail account (about 500 messages/day).** Use a transactional provider for real traffic.
+- **No SMS provider is connected yet.** Codes cannot be delivered in production until one is wired into `auth-server/sms.js` (see the README).
 
 ## Before you go live
 These are not code problems, and no configuration substitutes for them:
