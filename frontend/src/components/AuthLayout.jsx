@@ -52,7 +52,7 @@ export default function AuthLayout({ heroTitle, heroText, title, subtitle, child
 
         {/* Right Side: Form Panel */}
         <div className="w-full md:w-1/2 p-4 sm:p-8 flex flex-col justify-center">
-          <div className="flex justify-end mb-3">
+          <div className="flex justify-end mb-3 -mt-3 sm:-mt-5">
             <LanguageSwitcher />
           </div>
           {/* Brand Header with the app logo (same as the side navigation) */}
